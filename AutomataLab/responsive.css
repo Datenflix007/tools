@@ -1,0 +1,79 @@
+/* Shell-aware sizing: the app retains its desktop workbench and becomes scrollable on touch screens. */
+.has-datenflix-shell {
+  min-height: 100%;
+  height: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.has-datenflix-shell .app-grid {
+  height: calc(100dvh - var(--df-header-height, 66px) - 88px);
+}
+
+@media (max-width: 1050px) {
+  .has-datenflix-shell .inspector {
+    top: calc(var(--df-header-height, 66px) + 72px);
+  }
+}
+
+@media (max-width: 760px) {
+  .has-datenflix-shell .menubar {
+    height: auto;
+    min-height: 58px;
+    flex-wrap: wrap;
+    align-items: center;
+    padding-block: 7px;
+    overflow: visible;
+  }
+
+  .has-datenflix-shell .app-title {
+    min-width: 0;
+    flex: 1 1 155px;
+  }
+
+  .has-datenflix-shell .menu-group,
+  .has-datenflix-shell .menu-btn {
+    height: 40px;
+  }
+
+  .has-datenflix-shell .menu-btn {
+    padding-inline: 9px;
+  }
+
+  .has-datenflix-shell .history-actions {
+    margin-left: 0;
+  }
+
+  .has-datenflix-shell .type-control {
+    flex: 1 1 118px;
+  }
+
+  .has-datenflix-shell .app-grid {
+    min-height: calc(100dvh - var(--df-header-height, 60px) - 58px);
+    height: auto;
+    padding: 6px;
+  }
+
+  .has-datenflix-shell .workspace {
+    min-height: 620px;
+  }
+
+  .has-datenflix-shell .workspace-bar {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .has-datenflix-shell .machine-name {
+    flex: 1 1 160px;
+    width: auto;
+  }
+
+  .has-datenflix-shell .mode-hint {
+    order: 3;
+    flex-basis: 100%;
+  }
+
+  .has-datenflix-shell .sim-data-grid {
+    grid-template-columns: 1fr;
+  }
+}
