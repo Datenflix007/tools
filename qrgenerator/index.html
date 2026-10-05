@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/png" href="../../../media/favicon.png">
+    <title>QR-Generator</title>
+    <meta name="description" content="Wandelt eine eingegebene URL in einen QR‑Code um (Größenwahl + Logo in der Mitte). Einzeldatei für GitHub Pages." />
+    <meta name="theme-color" content="#0e1628" />
+    <style>
+         :root {
+            --bg: #0e1628;
+            --panel: #101a2f;
+            --panel-2: #0c1324;
+            --outline: #1c2742;
+            --text: #e6ebf5;
+            --muted: #9aa6c7;
+            --accent: #3b82f6;
+            --accent-2: #60a5fa;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --shadow: 0 10px 30px rgba(0, 0, 0, .35), inset 0 1px 0 rgba(255, 255, 255, .02);
+            --radius: 18px;
+        }
+        
+        * {
+            box-sizing: border-box
+        }
+        
+        html,
+        body {
+            height: 100%
+        }
+        
+        body {
+            margin: 0;
+            font: 16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial;
+            color: var(--text);
+            background: radial-gradient(1200px 800px at 70% -10%, rgba(59, 130, 246, .08), transparent 60%), var(--bg);
+        }
+        
+        a {
+            color: var(--accent)
+        }
+        
+        .wrap {
+            max-width: 1100px;
+            margin: auto;
+            padding: 32px 20px 24px
+        }
+        
+        header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px
+        }
+        
+        .logo {
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            background: linear-gradient(145deg, var(--accent), var(--accent-2));
+            display: grid;
+            place-items: center;
+            color: #fff;
+            font-weight: 700;
+            box-shadow: var(--shadow)
+        }
+        
+        h1 {
+            margin: 0;
+            font-size: 28px
+        }
+        
+        .card {
+            background: linear-gradient(180deg, rgba(255, 255, 255, .02), rgba(255, 255, 255, 0)), var(--panel);
+            border: 1px solid var(--outline);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow)
+        }
+        
+        .card .inner {
+            padding: 20px
+        }
+        
+        label {
+            display: block;
+            font-size: 14px;
+            color: var(--muted);
+            margin-bottom: 8px
+        }
+        
+        .row {
+            display: flex;
+            gap: 10px
+        }
+        
+        input,
+        select {
+            background: var(--panel-2);
+            color: var(--text);
+            border: 1px solid var(--outline);
+            border-radius: 14px;
+            padding: 12px
+        }
+        
+        .btn {
+            border: 1px solid var(--outline);
+            background: var(--panel-2);
+            color: var(--text);
+            padding: 12px 14px;
+            border-radius: 14px;
+            cursor: pointer;
+            font-weight: 600
+        }
+        
+        .btn.primary {
+            background: linear-gradient(180deg, var(--accent-2), var(--accent));
+            border-color: transparent;
+            color: #fff;
+            box-shadow: 0 6px 18px rgba(59, 130, 246, .35)
+        }
+        
+        .preview {
+            display: grid;
+            place-items: center;
+            min-height: 360px;
+            margin-top: 16px;
+            padding-top: 18px;
+            border-top: 1px dashed var(--outline)
+        }
+        
+        #qrcode {
+            display: grid;
+            place-items: center;
+            padding: 14px;
+            background: var(--panel-2);
+            border: 1px solid var(--outline);
+            border-radius: 12px
+        }
+        
+        footer {
+            margin-top: 28px;
+            color: var(--muted);
+            font-size: 13px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            justify-content: space-between
+        }
+    </style>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+
+<body>
+    <div class="wrap">
+        <header>
+            <div class="logo">QR</div>
+            <h1>QR-Generator</h1>
+        </header>
+
+        <main class="card">
+            <div class="inner">
+                <label for="url">URL eingeben</label>
+                <div class="row">
+                    <input id="url" type="url" placeholder="https://beispiel.de" />
+                    <button id="generate" class="btn primary">Erzeugen</button>
+                </div>
+                <div class="row" style="margin-top:10px;flex-wrap:wrap">
+                    <label for="size" style="margin:0">Größe</label>
+                    <select id="size">
+            <option value="128">128 px</option>
+            <option value="256" selected>256 px</option>
+            <option value="384">384 px</option>
+            <option value="512">512 px</option>
+          </select>
+                    <label for="logoUpload" style="margin:0 0 0 8px">Logo</label>
+                    <input id="logoUpload" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" />
+                    <button id="removeLogo" class="btn" type="button" title="Logo entfernen">Logo entfernen</button>
+                    <button id="download" class="btn" type="button" title="QR-Code als PNG speichern">Als PNG speichern</button>
+                </div>
+
+                <div class="preview" aria-live="polite">
+                    <div id="qrcode" role="img" aria-label="QR-Code Vorschau"></div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <div>© <span id="year"></span> Felix Staacke · Alle Rechte vorbehalten</div>
+            <a href="#" onclick="window.scrollTo({top:0,behavior:'smooth'})">Nach oben ↑</a>
+        </footer>
+    </div>
+
+    <script>
+        // Jahr
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        // DOM
+        const holder = document.getElementById('qrcode');
+        const urlInput = document.getElementById('url');
+        const sizeSelect = document.getElementById('size');
+        const genBtn = document.getElementById('generate');
+        const dlBtn = document.getElementById('download');
+        const removeLogoBtn = document.getElementById('removeLogo');
+        const logoInput = document.getElementById('logoUpload');
+
+        let logoImage = null;
+
+        // Logo laden (Data-URL => CORS-frei)
+        logoInput.addEventListener('change', () => {
+            const file = logoInput.files && logoInput.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = e => {
+                const img = new Image();
+                img.onload = () => {
+                    logoImage = img;
+                    render();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        removeLogoBtn.addEventListener('click', () => {
+            logoImage = null;
+            logoInput.value = '';
+            render();
+        });
+
+        function ensureHttp(u) {
+            return /^https?:\/\//i.test(u) ? u : 'https://' + u;
+        }
+
+        // QR OFF-DOM erzeugen -> Element (img oder canvas) zurückgeben
+        function generateOffscreen(text, size) {
+            return new Promise(resolve => {
+                const tmp = document.createElement('div'); // nicht im DOM
+                new QRCode(tmp, {
+                    text,
+                    width: size,
+                    height: size,
+                    colorDark: '#000000',
+                    colorLight: '#ffffff',
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+                // Warten bis qrcodejs gerendert hat
+                const tryIt = () => {
+                    const canvas = tmp.querySelector('canvas');
+                    if (canvas) return resolve(canvas);
+                    const img = tmp.querySelector('img');
+                    if (img) {
+                        if (img.complete) return resolve(img);
+                        img.addEventListener('load', () => resolve(img), {
+                            once: true
+                        });
+                        return;
+                    }
+                    requestAnimationFrame(tryIt);
+                };
+                tryIt();
+            });
+        }
+
+        // Beliebiges Element (img/canvas) auf eine eigene Canvas kopieren
+        function elementToCanvas(el, size) {
+            const out = document.createElement('canvas');
+            out.width = size;
+            out.height = size;
+            const ctx = out.getContext('2d');
+
+            // Quelle lesen
+            let sw, sh;
+            if (el instanceof HTMLCanvasElement) {
+                sw = el.width;
+                sh = el.height;
+                ctx.drawImage(el, 0, 0, sw, sh, 0, 0, size, size);
+            } else {
+                sw = el.naturalWidth || el.width;
+                sh = el.naturalHeight || el.height;
+                ctx.drawImage(el, 0, 0, sw, sh, 0, 0, size, size);
+            }
+            return out;
+        }
+
+        // Logo mittig mit weißem, abgerundetem Hintergrund
+        function drawLogoCentered(canvas) {
+            if (!logoImage) return canvas;
+            const size = canvas.width;
+            const ctx = canvas.getContext('2d');
+            const logoSize = Math.round(size * 0.22);
+            const x = Math.round((size - logoSize) / 2);
+            const y = x;
+
+            // Weißer Hintergrund (mit Rand), damit der Code gut scanbar bleibt
+            const r = Math.max(6, Math.round(logoSize * 0.18));
+            ctx.save();
+            ctx.fillStyle = '#ffffff';
+            roundedRect(ctx, x - 6, y - 6, logoSize + 12, logoSize + 12, r);
+            ctx.fill();
+            ctx.restore();
+
+            ctx.drawImage(logoImage, x, y, logoSize, logoSize);
+            return canvas;
+        }
+
+        function roundedRect(ctx, x, y, w, h, r) {
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.arcTo(x + w, y, x + w, y + h, r);
+            ctx.arcTo(x + w, y + h, x, y + h, r);
+            ctx.arcTo(x, y + h, x, y, r);
+            ctx.arcTo(x, y, x + w, y, r);
+            ctx.closePath();
+        }
+
+        async function render() {
+            const size = parseInt(sizeSelect.value, 10) || 256;
+            const url = ensureHttp((urlInput.value || 'https://github.com/').trim());
+
+            // 1) Off-DOM generieren
+            const el = await generateOffscreen(url, size);
+
+            // 2) In eigene Canvas kopieren
+            const canvas = elementToCanvas(el, size);
+
+            // 3) Logo einzeichnen (optional)
+            drawLogoCentered(canvas);
+
+            // 4) Final anzeigen (nur Canvas, nichts anderes)
+            holder.innerHTML = '';
+            holder.appendChild(canvas);
+            // Optional: knackige Darstellung
+            canvas.style.imageRendering = 'pixelated';
+            canvas.style.maxWidth = '100%';
+            canvas.style.height = 'auto';
+        }
+
+        // Events
+        genBtn.addEventListener('click', render);
+        urlInput.addEventListener('keydown', e => {
+            if (e.key === 'Enter') render();
+        });
+        sizeSelect.addEventListener('change', render);
+
+        // Download IMMER vom aktuell sichtbaren Canvas
+        dlBtn.addEventListener('click', () => {
+            const canvas = holder.querySelector('canvas');
+            if (!canvas) return;
+            const link = document.createElement('a');
+            link.download = 'qr-code.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        });
+
+        // Initial
+        render();
+    </script>
+    <script src="../../../feedback-widget.js" defer></script>
+</body>
+
+</html>

@@ -1,0 +1,1362 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Markdown Generator</title>
+    <link rel="icon" type="image/png" href="../../../media/favicon.png">
+<style>
+         :root {
+            --bg-0: #0b1020;
+            --bg-1: #0e1428;
+            --text-0: #e7ecff;
+            --text-1: #a9b1d6;
+            --accent: #7aa2f7;
+            --accent-2: #a78bfa;
+            --shadow: 0 10px 30px rgba(0, 0, 0, .35);
+            --radius: 18px;
+        }
+        
+        * {
+            box-sizing: border-box
+        }
+        
+        html,
+        body {
+            height: 100%
+        }
+        
+        body {
+            margin: 0;
+            color: var(--text-0);
+            background: radial-gradient(1200px 800px at 10% -10%, #1a1f3a 0%, transparent 60%), radial-gradient(900px 700px at 100% 20%, #111a3f 0%, transparent 60%), linear-gradient(180deg, var(--bg-0), #050814 60%);
+            font: 15px/1.55 system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial, "Noto Sans";
+            overflow: hidden
+        }
+        
+        .app {
+            height: 100%;
+            display: grid;
+            grid-template-rows: 64px 1fr;
+            gap: 18px;
+            padding: 24px
+        }
+        
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, .04), rgba(255, 255, 255, .02));
+            border: 1px solid rgba(255, 255, 255, .08);
+            box-shadow: var(--shadow);
+            border-radius: var(--radius);
+            padding: 12px 16px
+        }
+        
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px
+        }
+        
+        .brandLogo {
+            background: linear-gradient(135deg, #7aa2f7, #a78bfa);
+            padding: 4px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 40px;
+            width: 40px;
+            transition: all 0.3s ease;
+        }
+        
+        .brandLogo img {
+            width: 24px;
+            height: 24px;
+            transition: all 0.3s ease;
+        }
+        
+        .brandLogo:hover img {
+            width: 60px;
+            height: 60px;
+        }
+        
+        .brand h1 {
+            margin: 0;
+            font-size: 18px
+        }
+        
+        .main {
+            min-height: 0;
+            display: grid;
+            grid-template-columns: 240px 1fr 1fr;
+            gap: 18px
+        }
+        
+        .toolbar {
+            background: linear-gradient(180deg, rgba(255, 255, 255, .03), rgba(255, 255, 255, .015));
+            border: 1px solid rgba(255, 255, 255, .08);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            overflow: auto
+        }
+        
+        .toolbar h2 {
+            margin: 0 0 8px;
+            font-size: 14px;
+            color: var(--text-1);
+            font-weight: 600;
+            text-transform: uppercase
+        }
+
+        .toolbar h2:not(:first-child) {
+            margin-top: 14px
+        }
+        
+        .btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid rgba(255, 255, 255, .08);
+            background: linear-gradient(180deg, rgba(255, 255, 255, .025), rgba(255, 255, 255, .01));
+            color: var(--text-0);
+            border-radius: 12px;
+            cursor: pointer
+        }
+        
+        .btn:hover {
+            border-color: rgba(122, 162, 247, .55)
+        }
+        
+        .btn small {
+            color: var(--text-1);
+            margin-left: auto
+        }
+        
+        .card {
+            background: linear-gradient(180deg, rgba(255, 255, 255, .04), rgba(255, 255, 255, .02));
+            border: 1px solid rgba(255, 255, 255, .08);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            min-height: 0
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 10px 10px;
+            border-bottom: 1px dashed rgba(255, 255, 255, .08);
+            margin: 0 0 10px
+        }
+        
+        .card-header h3 {
+            margin: 0;
+            font-size: 14px;
+            color: var(--text-1);
+            text-transform: uppercase
+        }
+        
+        .icon-btn {
+            background: rgba(255, 255, 255, .02);
+            border: 1px solid rgba(255, 255, 255, .12);
+            color: var(--text-0);
+            border-radius: 10px;
+            padding: 6px 10px;
+            cursor: pointer
+        }
+        
+        .icon-btn:hover {
+            border-color: rgba(122, 162, 247, .55)
+        }
+        
+        textarea#editor {
+            flex: 1;
+            width: 100%;
+            min-height: 0;
+            resize: none;
+            border: none;
+            outline: none;
+            border-radius: 12px;
+            padding: 14px;
+            font: 14px/1.5 ui-monospace, Monaco, Consolas, monospace;
+            color: var(--text-0);
+            background: rgba(255, 255, 255, .02);
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .06)
+        }
+        
+        .preview {
+            flex: 1;
+            overflow: auto;
+            padding: 6px 10px 12px
+        }
+        
+        .preview h1 {
+            font-size: 28px
+        }
+        
+        .preview h2 {
+            font-size: 22px
+        }
+        
+        .preview h3 {
+            font-size: 18px
+        }
+        
+        .preview a {
+            color: var(--accent);
+            text-decoration: none;
+            border-bottom: 1px dashed rgba(122, 162, 247, .6)
+        }
+        
+        .preview img {
+            max-width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, .35)
+        }
+        
+        .preview h4 {
+            font-size: 16px
+        }
+
+        .preview h5,
+        .preview h6 {
+            font-size: 14px
+        }
+
+        .preview p {
+            margin: 0 0 12px
+        }
+
+        .preview ul,
+        .preview ol {
+            padding-left: 20px;
+            margin: 8px 0
+        }
+
+        .preview li {
+            margin: 4px 0
+        }
+
+        .preview li.task-list-item {
+            list-style: none;
+            margin-left: -20px
+        }
+
+        .preview input[type="checkbox"] {
+            margin-right: 8px;
+            transform: translateY(1px)
+        }
+
+        .preview blockquote {
+            margin: 12px 0;
+            padding: 4px 0 4px 14px;
+            border-left: 4px solid rgba(169, 177, 214, .45);
+            color: var(--text-1)
+        }
+
+        .preview table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 14px 0;
+            overflow: hidden
+        }
+
+        .preview th,
+        .preview td {
+            border: 1px solid rgba(255, 255, 255, .14);
+            padding: 8px 10px;
+            text-align: left;
+            vertical-align: top
+        }
+
+        .preview th {
+            background: rgba(122, 162, 247, .12);
+            color: var(--text-0)
+        }
+
+        .preview code {
+            background: rgba(255, 255, 255, .08);
+            border: 1px solid rgba(255, 255, 255, .08);
+            border-radius: 6px;
+            padding: 1px 5px;
+            font-family: ui-monospace, Monaco, Consolas, monospace
+        }
+        
+        .preview pre {
+            background: rgba(255, 255, 255, .04);
+            border: 1px solid rgba(255, 255, 255, .08);
+            padding: 12px;
+            border-radius: 12px;
+            overflow: auto
+        }
+
+        .preview pre code {
+            display: block;
+            padding: 0;
+            border: none;
+            background: transparent
+        }
+
+        .preview .gh-alert {
+            border-left-width: 4px;
+            border-radius: 10px;
+            padding: 10px 14px;
+            background: rgba(255, 255, 255, .035);
+            color: var(--text-0)
+        }
+
+        .preview .gh-alert-title {
+            margin: 0 0 6px;
+            font-weight: 700
+        }
+
+        .preview .gh-alert-note {
+            border-left-color: #7aa2f7
+        }
+
+        .preview .gh-alert-tip {
+            border-left-color: #4ade80
+        }
+
+        .preview .gh-alert-important {
+            border-left-color: #a78bfa
+        }
+
+        .preview .gh-alert-warning {
+            border-left-color: #facc15
+        }
+
+        .preview .gh-alert-caution {
+            border-left-color: #fb7185
+        }
+
+        .preview .gh-mention,
+        .preview .gh-issue-ref {
+            color: #8ab4ff;
+            font-weight: 600
+        }
+
+        .preview .emoji {
+            font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif
+        }
+
+        .preview .gh-color-code {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px
+        }
+
+        .preview .gh-color-swatch {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, .5);
+            box-shadow: 0 0 0 1px rgba(0, 0, 0, .25)
+        }
+
+        .preview .footnotes {
+            margin-top: 24px;
+            padding-top: 12px;
+            border-top: 1px dashed rgba(255, 255, 255, .14);
+            color: var(--text-1);
+            font-size: 13px
+        }
+
+        .preview .footnotes h2 {
+            font-size: 15px
+        }
+
+        .preview .footnote-backref {
+            border-bottom: none;
+            margin-left: 4px
+        }
+        /* Neuer Footer */
+        
+        footer {
+            position: fixed;
+            bottom: 50px;
+            left: 70px;
+            right: 0;
+            text-align: left;
+            font-size: 13px;
+            color: var(--text-1);
+        }
+
+        @media (max-width: 980px) {
+            body {
+                overflow: auto
+            }
+
+            .app {
+                height: auto;
+                min-height: 100%;
+                grid-template-rows: auto 1fr;
+                padding: 16px
+            }
+
+            .header {
+                align-items: flex-start;
+                flex-direction: column
+            }
+
+            .main {
+                grid-template-columns: 1fr
+            }
+
+            .toolbar {
+                max-height: none
+            }
+
+            .card {
+                min-height: 360px
+            }
+
+            footer {
+                position: static;
+                padding: 0 16px 16px
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app">
+        <header class="header">
+            <div class="brand">
+                <div class="brandLogo">
+                    <img src="https://github.com/Datenflix007/MarkdownGenerator/raw/main/logo.png" alt="Logo">
+                </div>
+                <span style="font-size: 18px"><b>Markdown Generator</b></span>
+            </div>
+            <div class="hint">Editor links · Vorschau rechts · Elemente im linken Menüband</div>
+        </header>
+
+        <div class="main">
+            <aside class="toolbar">
+                <h2>Elemente</h2>
+                <button class="btn" data-action="h1">Überschrift <small>#</small></button>
+                <button class="btn" data-action="h2">Unterüberschrift <small>##</small></button>
+                <button class="btn" data-action="h3">Abschnitt <small>###</small></button>
+                <button class="btn" data-action="bold">Fett <small>** **</small></button>
+                <button class="btn" data-action="italic">Kursiv <small>* *</small></button>
+                <button class="btn" data-action="strike">Durchstreichen <small>~~ ~~</small></button>
+                <button class="btn" data-action="inline-code">Inline-Code <small>` `</small></button>
+                <button class="btn" data-action="link">Link <small>[ ]( )</small></button>
+                <button class="btn" data-action="image">Bild <small>![ ]( )</small></button>
+                <button class="btn" data-action="ul">Liste <small>-</small></button>
+                <button class="btn" data-action="ol">Nummeriert <small>1.</small></button>
+                <button class="btn" data-action="quote">Zitat <small>&gt;</small></button>
+                <button class="btn" data-action="br">Zeilenumbruch <small>&lt;br /&gt;</small></button>
+                <button class="btn" data-action="code">Code <small>```</small></button>
+                <h2>GitHub</h2>
+                <button class="btn" data-action="task">Aufgabenliste <small>[x]</small></button>
+                <button class="btn" data-action="table">Tabelle <small>| |</small></button>
+                <button class="btn" data-action="footnote">Fußnote <small>[^1]</small></button>
+                <button class="btn" data-action="color">Farbwert <small>#RRGGBB</small></button>
+                <button class="btn" data-action="comment">Kommentar <small>&lt;!-- --&gt;</small></button>
+                <h2>Hinweise</h2>
+                <button class="btn" data-action="alert-note">Hinweis <small>[!NOTE]</small></button>
+                <button class="btn" data-action="alert-tip">Tipp <small>[!TIP]</small></button>
+                <button class="btn" data-action="alert-important">Wichtig <small>[!IMPORTANT]</small></button>
+                <button class="btn" data-action="alert-warning">Warnung <small>[!WARNING]</small></button>
+                <button class="btn" data-action="alert-caution">Vorsicht <small>[!CAUTION]</small></button>
+                <button class="btn" data-action="outline">Gliederung</button>
+            </aside>
+
+            <section class="card">
+                <div class="card-header">
+                    <h3>Editor</h3><button id="downloadMd" class="icon-btn" title="README.md herunterladen">⬇️ MD</button></div>
+                <textarea id="editor" placeholder="Passen Sie die Überschrift und den Autor an. Schreiben Sie dann hier Ihren Artikel"></textarea>
+            </section>
+
+            <section class="card">
+                <div class="card-header">
+                    <h3>Vorschau</h3>
+                </div>
+                <div id="preview" class="preview"></div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        © 2025 Felix Staacke
+    </footer>
+
+    <!-- exakt formatgetreuer PDF-Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.4.14/dist/purify.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@18.0.11/lib/marked.umd.js"></script>
+
+    <script>
+        const MARKED_OPTIONS = {
+            gfm: true,
+            breaks: false,
+            pedantic: false
+        };
+
+        const SANITIZE_CONFIG = {
+            ADD_TAGS: ['del', 'input', 'ins', 'picture', 'source', 'sub', 'sup'],
+            ADD_ATTR: ['align', 'aria-label', 'checked', 'class', 'disabled', 'id', 'media', 'name', 'rel', 'sizes', 'srcset', 'start', 'target', 'type'],
+            FORBID_TAGS: ['iframe', 'object', 'script', 'style']
+        };
+
+        const ALERTS = {
+            note: 'Hinweis',
+            tip: 'Tipp',
+            important: 'Wichtig',
+            warning: 'Warnung',
+            caution: 'Vorsicht'
+        };
+
+        const ALERT_SNIPPETS = {
+            note: 'Nützliche Information, die beim Überfliegen helfen soll.',
+            tip: 'Praktischer Tipp, der die Umsetzung erleichtert.',
+            important: 'Zentrale Information, die für das Ziel wichtig ist.',
+            warning: 'Dringender Hinweis, um Probleme zu vermeiden.',
+            caution: 'Hinweis auf Risiken oder mögliche negative Folgen.'
+        };
+
+        const EMOJI = {
+            '+1': '👍',
+            '-1': '👎',
+            tada: '🎉',
+            shipit: '🚢',
+            heart: '❤️',
+            rocket: '🚀',
+            smile: '😄',
+            warning: '⚠️',
+            bulb: '💡',
+            memo: '📝',
+            white_check_mark: '✅',
+            x: '❌',
+            fire: '🔥',
+            eyes: '👀',
+            pray: '🙏'
+        };
+
+        function escapeHtml(value) {
+            return String(value).replace(/[&<>"']/g, ch => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            }[ch]));
+        }
+
+        function getMarkedParser() {
+            if (!window.marked) return null;
+            if (typeof window.marked.parse === 'function') return window.marked;
+            if (window.marked.marked && typeof window.marked.marked.parse === 'function') return window.marked.marked;
+            if (typeof window.marked === 'function') {
+                return {
+                    parse: window.marked
+                };
+            }
+            return null;
+        }
+
+        function plainHeadingText(text) {
+            return text
+                .replace(/`([^`]+)`/g, '$1')
+                .replace(/!\[([^\]]*)\]\([^)]+\)/g, '$1')
+                .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+                .replace(/<[^>]+>/g, '')
+                .replace(/[*_~]/g, '')
+                .trim();
+        }
+
+        function githubSlug(text) {
+            const slug = plainHeadingText(text)
+                .toLowerCase()
+                .replace(/[^\p{Letter}\p{Number}\s-]/gu, '')
+                .trim()
+                .replace(/\s+/g, '-')
+                .replace(/-+/g, '-');
+            return slug || 'section';
+        }
+
+        function createSlugger() {
+            const counts = new Map();
+            return text => {
+                const base = githubSlug(text);
+                const count = counts.get(base) || 0;
+                counts.set(base, count + 1);
+                return count ? `${base}-${count}` : base;
+            };
+        }
+
+        function footnoteId(id) {
+            return `fn-${String(id).toLowerCase().replace(/[^\p{Letter}\p{Number}-]+/gu, '-').replace(/^-+|-+$/g, '') || 'note'}`;
+        }
+
+        function footnoteReferenceId(id, count = 1) {
+            return `${footnoteId(id)}-ref${count > 1 ? `-${count}` : ''}`;
+        }
+
+        function getInlineCodeRanges(line) {
+            const ranges = [];
+            let index = 0;
+
+            while (index < line.length) {
+                if (line[index] !== '`') {
+                    index++;
+                    continue;
+                }
+
+                const start = index;
+                while (index < line.length && line[index] === '`') index++;
+
+                const marker = line.slice(start, index);
+                const end = line.indexOf(marker, index);
+                if (end === -1) break;
+
+                ranges.push([start, end + marker.length]);
+                index = end + marker.length;
+            }
+
+            return ranges;
+        }
+
+        function getHtmlCommentRanges(line, startsInComment) {
+            const ranges = [];
+            let index = 0;
+            let inComment = startsInComment;
+
+            if (inComment) {
+                const end = line.indexOf('-->');
+                if (end === -1) return {
+                    ranges: [[0, line.length]],
+                    inComment: true
+                };
+
+                ranges.push([0, end + 3]);
+                index = end + 3;
+                inComment = false;
+            }
+
+            while (index < line.length) {
+                const start = line.indexOf('<!--', index);
+                if (start === -1) break;
+
+                const end = line.indexOf('-->', start + 4);
+                if (end === -1) {
+                    ranges.push([start, line.length]);
+                    inComment = true;
+                    break;
+                }
+
+                ranges.push([start, end + 3]);
+                index = end + 3;
+            }
+
+            return {
+                ranges,
+                inComment
+            };
+        }
+
+        function overlapsRange(start, end, ranges) {
+            return ranges.some(([rangeStart, rangeEnd]) => start < rangeEnd && end > rangeStart);
+        }
+
+        function getFootnoteLabelTokens(src) {
+            const tokens = [];
+            const lines = src.replace(/\r\n?/g, '\n').split('\n');
+            let offset = 0;
+            let inFence = false;
+            let fenceChar = '';
+            let fenceLength = 0;
+            let inHtmlComment = false;
+
+            lines.forEach((line, lineIndex) => {
+                const fence = line.match(/^ {0,3}(`{3,}|~{3,})/);
+                if (fence) {
+                    const marker = fence[1];
+                    if (!inFence) {
+                        inFence = true;
+                        fenceChar = marker[0];
+                        fenceLength = marker.length;
+                    } else if (marker[0] === fenceChar && marker.length >= fenceLength) {
+                        inFence = false;
+                        fenceChar = '';
+                        fenceLength = 0;
+                    }
+                    offset += line.length + (lineIndex < lines.length - 1 ? 1 : 0);
+                    return;
+                }
+
+                if (!inFence) {
+                    const commentState = getHtmlCommentRanges(line, inHtmlComment);
+                    inHtmlComment = commentState.inComment;
+                    const ignoredRanges = [...getInlineCodeRanges(line), ...commentState.ranges];
+                    const definition = line.match(/^( {0,3})\[\^([^\]\s]+)\]:/);
+                    const referencePattern = /\[\^([^\]\s]+)\]/g;
+                    let match;
+
+                    if (definition && !overlapsRange(definition[1].length, definition[0].length, ignoredRanges)) {
+                        tokens.push({
+                            kind: 'def',
+                            id: definition[2],
+                            start: offset + definition[1].length,
+                            end: offset + definition[0].length
+                        });
+                        referencePattern.lastIndex = definition[0].length;
+                    }
+
+                    while ((match = referencePattern.exec(line))) {
+                        if (overlapsRange(match.index, match.index + match[0].length, ignoredRanges)) continue;
+
+                        tokens.push({
+                            kind: 'ref',
+                            id: match[1],
+                            start: offset + match.index,
+                            end: offset + match.index + match[0].length
+                        });
+                    }
+                }
+
+                offset += line.length + (lineIndex < lines.length - 1 ? 1 : 0);
+            });
+
+            return tokens;
+        }
+
+        function buildFootnoteNumbering(tokens, includeDefinitions = false) {
+            const orderedIds = [];
+            const numberById = new Map();
+            const addId = id => {
+                if (numberById.has(id)) return;
+
+                numberById.set(id, numberById.size + 1);
+                orderedIds.push(id);
+            };
+
+            tokens.filter(token => token.kind === 'ref').forEach(token => addId(token.id));
+            if (includeDefinitions) tokens.filter(token => token.kind === 'def').forEach(token => addId(token.id));
+
+            return {
+                orderedIds,
+                numberById
+            };
+        }
+
+        function adjustPositionForReplacements(position, replacements) {
+            let adjusted = position;
+
+            replacements.forEach(replacement => {
+                const originalLength = replacement.end - replacement.start;
+                const delta = replacement.text.length - originalLength;
+
+                if (replacement.end <= adjusted) {
+                    adjusted += delta;
+                    return;
+                }
+
+                if (replacement.start < adjusted && adjusted < replacement.end) {
+                    adjusted = replacement.start + replacement.text.length;
+                }
+            });
+
+            return adjusted;
+        }
+
+        function applyTextReplacements(value, replacements, selectionStart, selectionEnd) {
+            if (!replacements.length) {
+                return {
+                    value,
+                    selectionStart,
+                    selectionEnd,
+                    changed: false
+                };
+            }
+
+            const relevant = replacements
+                .filter(replacement => value.slice(replacement.start, replacement.end) !== replacement.text)
+                .sort((a, b) => a.start - b.start);
+
+            if (!relevant.length) {
+                return {
+                    value,
+                    selectionStart,
+                    selectionEnd,
+                    changed: false
+                };
+            }
+
+            let nextValue = value;
+            relevant.slice().reverse().forEach(replacement => {
+                nextValue = nextValue.slice(0, replacement.start) + replacement.text + nextValue.slice(replacement.end);
+            });
+
+            return {
+                value: nextValue,
+                selectionStart: adjustPositionForReplacements(selectionStart, relevant),
+                selectionEnd: adjustPositionForReplacements(selectionEnd, relevant),
+                changed: true
+            };
+        }
+
+        function renumberFootnotesInMarkdownSource(src, selectionStart = 0, selectionEnd = 0) {
+            const normalizedSrc = src.replace(/\r\n?/g, '\n');
+            const normalizedSelectionStart = src.slice(0, selectionStart).replace(/\r\n?/g, '\n').length;
+            const normalizedSelectionEnd = src.slice(0, selectionEnd).replace(/\r\n?/g, '\n').length;
+            const tokens = getFootnoteLabelTokens(normalizedSrc);
+            const numbering = buildFootnoteNumbering(tokens, true);
+
+            const replacements = tokens
+                .filter(token => numbering.numberById.has(token.id))
+                .map(token => {
+                    const number = numbering.numberById.get(token.id);
+                    return {
+                        start: token.start,
+                        end: token.end,
+                        text: token.kind === 'def' ? `[^${number}]:` : `[^${number}]`
+                    };
+                });
+
+            const replaced = applyTextReplacements(normalizedSrc, replacements, normalizedSelectionStart, normalizedSelectionEnd);
+            return {
+                ...replaced,
+                changed: replaced.changed || normalizedSrc !== src
+            };
+        }
+
+        function extractFootnotes(src) {
+            const lines = src.replace(/\r\n?/g, '\n').split('\n');
+            const footnotes = [];
+            const body = [];
+            let current = null;
+
+            for (const line of lines) {
+                const definition = line.match(/^\[\^([^\]\s]+)\]:\s*(.*)$/);
+                if (definition) {
+                    current = {
+                        id: definition[1],
+                        content: [definition[2]]
+                    };
+                    footnotes.push(current);
+                    continue;
+                }
+
+                if (current && /^(?: {2,}|\t)/.test(line)) {
+                    current.content.push(line.replace(/^(?: {2,}|\t)/, ''));
+                    continue;
+                }
+
+                current = null;
+                body.push(line);
+            }
+
+            return {
+                markdown: body.join('\n'),
+                footnotes
+            };
+        }
+
+        function buildFootnoteState(markdown, footnotes) {
+            const definitions = new Map();
+            const numbering = buildFootnoteNumbering(getFootnoteLabelTokens(markdown));
+
+            footnotes.forEach(note => {
+                if (!definitions.has(note.id)) definitions.set(note.id, note);
+            });
+
+            return {
+                definitions,
+                orderedIds: numbering.orderedIds,
+                numberById: numbering.numberById
+            };
+        }
+
+        function replaceFootnoteReferences(markdown, footnoteState) {
+            const referenceCounts = new Map();
+            const replacements = getFootnoteLabelTokens(markdown)
+                .filter(token => token.kind === 'ref')
+                .map(token => {
+                    const number = footnoteState.numberById.get(token.id);
+                    const count = (referenceCounts.get(token.id) || 0) + 1;
+                    referenceCounts.set(token.id, count);
+
+                    return {
+                        start: token.start,
+                        end: token.end,
+                        text: `<sup id="${footnoteReferenceId(token.id, count)}" class="footnote-ref"><a href="#${footnoteId(token.id)}" aria-label="Fußnote ${number}">${number}</a></sup>`
+                    };
+                });
+
+            return applyTextReplacements(markdown, replacements, 0, 0).value;
+        }
+
+        function addHeadingIds(root) {
+            const slugFor = createSlugger();
+            root.querySelectorAll('h1, h2, h3, h4, h5, h6').forEach(heading => {
+                if (!heading.id) heading.id = slugFor(heading.textContent);
+            });
+        }
+
+        function enhanceAlerts(root) {
+            root.querySelectorAll('blockquote').forEach(blockquote => {
+                const first = blockquote.firstElementChild;
+                if (!first) return;
+
+                const match = first.textContent.trim().match(/^\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]/i);
+                if (!match) return;
+
+                const type = match[1].toLowerCase();
+                first.innerHTML = first.innerHTML.replace(/^\s*\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]\s*(?:<br\s*\/?>)?\s*/i, '');
+                if (!first.textContent.trim() && first.children.length === 0) first.remove();
+
+                const title = document.createElement('p');
+                title.className = 'gh-alert-title';
+                title.textContent = ALERTS[type];
+                blockquote.prepend(title);
+                blockquote.classList.add('gh-alert', `gh-alert-${type}`);
+            });
+        }
+
+        function enhanceTaskLists(root) {
+            root.querySelectorAll('li input[type="checkbox"]').forEach(input => {
+                input.disabled = true;
+                input.closest('li')?.classList.add('task-list-item');
+            });
+        }
+
+        function enhanceLinks(root) {
+            root.querySelectorAll('a[href]').forEach(link => {
+                const href = link.getAttribute('href') || '';
+                if (/^(https?:)?\/\//i.test(href)) {
+                    link.target = '_blank';
+                    link.rel = 'noopener noreferrer';
+                }
+            });
+        }
+
+        function isSupportedColorLiteral(value) {
+            if (value !== value.trim()) return false;
+            if (!/^(#[0-9a-f]{3}(?:[0-9a-f]{3})?|rgb\(\s*\d{1,3}%?\s*,\s*\d{1,3}%?\s*,\s*\d{1,3}%?\s*\)|hsl\(\s*\d{1,3}(?:deg|rad|turn)?\s*,\s*\d{1,3}%\s*,\s*\d{1,3}%\s*\))$/i.test(value)) return false;
+
+            const probe = new Option().style;
+            probe.color = value;
+            return Boolean(probe.color);
+        }
+
+        function enhanceColorCodes(root) {
+            root.querySelectorAll('code').forEach(code => {
+                if (code.closest('pre')) return;
+                const value = code.textContent;
+                if (!isSupportedColorLiteral(value)) return;
+
+                const swatch = document.createElement('span');
+                swatch.className = 'gh-color-swatch';
+                swatch.style.backgroundColor = value;
+                swatch.setAttribute('aria-hidden', 'true');
+                code.classList.add('gh-color-code');
+                code.prepend(swatch);
+            });
+        }
+
+        function transformTextNodes(root, transform) {
+            const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+                acceptNode(node) {
+                    const parent = node.parentElement;
+                    return parent && parent.closest('a, code, pre, kbd, samp, script, style, textarea') ?
+                        NodeFilter.FILTER_REJECT :
+                        NodeFilter.FILTER_ACCEPT;
+                }
+            });
+            const nodes = [];
+            while (walker.nextNode()) nodes.push(walker.currentNode);
+            nodes.forEach(node => {
+                const replacement = transform(node.nodeValue);
+                if (replacement) node.replaceWith(replacement);
+            });
+        }
+
+        function fragmentFromRegex(text, regex, renderMatch) {
+            regex.lastIndex = 0;
+            let match;
+            let lastIndex = 0;
+            let changed = false;
+            const fragment = document.createDocumentFragment();
+
+            while ((match = regex.exec(text))) {
+                if (match.index > lastIndex) fragment.append(document.createTextNode(text.slice(lastIndex, match.index)));
+                const rendered = renderMatch(match);
+                fragment.append(rendered || document.createTextNode(match[0]));
+                lastIndex = match.index + match[0].length;
+                changed = changed || Boolean(rendered);
+            }
+
+            if (!changed) return null;
+            if (lastIndex < text.length) fragment.append(document.createTextNode(text.slice(lastIndex)));
+            return fragment;
+        }
+
+        function enhanceEmoji(root) {
+            transformTextNodes(root, text => fragmentFromRegex(text, /:([a-z0-9_+\-]+):/gi, match => {
+                const emoji = EMOJI[match[1].toLowerCase()];
+                if (!emoji) return null;
+
+                const span = document.createElement('span');
+                span.className = 'emoji';
+                span.title = match[0];
+                span.textContent = emoji;
+                return span;
+            }));
+        }
+
+        function enhanceSingleTildeStrikethrough(root) {
+            transformTextNodes(root, text => fragmentFromRegex(text, /~([^~\s](?:[^~]*?[^~\s])?)~/g, match => {
+                const del = document.createElement('del');
+                del.textContent = match[1];
+                return del;
+            }));
+        }
+
+        function enhanceGitHubReferences(root) {
+            transformTextNodes(root, text => fragmentFromRegex(text, /(^|[^\w./-])(@[a-z0-9][a-z0-9-]{0,38}(?:\/[a-z0-9_.-]+)?|#[1-9]\d*)\b/gi, match => {
+                const fragment = document.createDocumentFragment();
+                if (match[1]) fragment.append(document.createTextNode(match[1]));
+
+                const span = document.createElement('span');
+                span.className = match[2].startsWith('@') ? 'gh-mention' : 'gh-issue-ref';
+                span.textContent = match[2];
+                fragment.append(span);
+                return fragment;
+            }));
+        }
+
+        function appendFootnotes(root, footnoteState, parser) {
+            if (!footnoteState.orderedIds.length) return;
+
+            const section = document.createElement('section');
+            section.className = 'footnotes';
+            section.setAttribute('aria-label', 'Fußnoten');
+
+            const heading = document.createElement('h2');
+            heading.id = 'footnotes';
+            heading.textContent = 'Fußnoten';
+            section.append(heading);
+
+            const list = document.createElement('ol');
+            footnoteState.orderedIds.forEach(id => {
+                const note = footnoteState.definitions.get(id);
+                const item = document.createElement('li');
+                const safeId = footnoteId(id);
+                const noteContent = note ? note.content.join('\n') : `Keine Definition für [^${id}] vorhanden.`;
+                const noteHtml = parser.parse(noteContent, MARKED_OPTIONS);
+                item.id = safeId;
+                item.innerHTML = window.DOMPurify.sanitize(noteHtml, SANITIZE_CONFIG);
+
+                const backref = document.createElement('a');
+                backref.href = `#${footnoteReferenceId(id)}`;
+                backref.className = 'footnote-backref';
+                backref.setAttribute('aria-label', 'Zurück zur Fußnote');
+                backref.textContent = '↩';
+                item.append(' ', backref);
+                list.append(item);
+            });
+
+            section.append(list);
+            root.append(section);
+        }
+
+        function parseMarkdown(src) {
+            const parser = getMarkedParser();
+            if (!parser || !window.DOMPurify) {
+                return `<p>Markdown-Vorschau konnte nicht geladen werden.</p><pre><code>${escapeHtml(src)}</code></pre>`;
+            }
+
+            const extracted = extractFootnotes(src);
+            const normalizedMarkdown = extracted.markdown.replace(/\r\n?/g, '\n');
+            const footnoteState = buildFootnoteState(normalizedMarkdown, extracted.footnotes);
+            const markdown = replaceFootnoteReferences(normalizedMarkdown, footnoteState);
+            const rawHtml = parser.parse(markdown, MARKED_OPTIONS);
+            const template = document.createElement('template');
+            template.innerHTML = window.DOMPurify.sanitize(rawHtml, SANITIZE_CONFIG);
+
+            addHeadingIds(template.content);
+            enhanceAlerts(template.content);
+            appendFootnotes(template.content, footnoteState, parser);
+            enhanceTaskLists(template.content);
+            enhanceSingleTildeStrikethrough(template.content);
+            enhanceEmoji(template.content);
+            enhanceGitHubReferences(template.content);
+            enhanceColorCodes(template.content);
+            enhanceLinks(template.content);
+
+            return template.innerHTML;
+        }
+
+        const editor = document.getElementById('editor');
+        const preview = document.getElementById('preview');
+
+        function normalizeEditorFootnotes() {
+            const normalized = renumberFootnotesInMarkdownSource(editor.value, editor.selectionStart, editor.selectionEnd);
+            if (!normalized.changed) return;
+
+            editor.value = normalized.value;
+            editor.setSelectionRange(normalized.selectionStart, normalized.selectionEnd);
+        }
+
+        function render() {
+            normalizeEditorFootnotes();
+            preview.innerHTML = parseMarkdown(editor.value.trim());
+        }
+        editor.addEventListener('input', render);
+
+        function wrapSelection(before, after, placeholder) {
+            const s = editor.selectionStart,
+                e = editor.selectionEnd;
+            const sel = e > s ? editor.value.slice(s, e) : (placeholder || 'Text');
+            editor.setRangeText(before + sel + (after || ''), s, e, 'end');
+            editor.focus();
+            render();
+        }
+
+        function insertLine(prefix, sample) {
+            const s = editor.selectionStart,
+                e = editor.selectionEnd,
+                v = editor.value;
+            const ls = v.lastIndexOf('\n', s - 1) + 1,
+                le = v.indexOf('\n', e),
+                endPos = le === -1 ? v.length : le;
+            const current = v.slice(ls, endPos).trim() || sample || '';
+            editor.setSelectionRange(ls, endPos);
+            editor.setRangeText(prefix + current, ls, endPos, 'end');
+            editor.focus();
+            render();
+        }
+
+        function getPreviousMeaningfulLine(value, lineStart) {
+            let end = lineStart - 1;
+
+            while (end >= 0) {
+                const start = value.lastIndexOf('\n', end - 1) + 1;
+                const line = value.slice(start, end).trimEnd();
+
+                if (line.trim()) return line;
+                end = start - 1;
+            }
+
+            return '';
+        }
+
+        function getNextOrderedListPrefix() {
+            const s = editor.selectionStart;
+            const lineStart = editor.value.lastIndexOf('\n', s - 1) + 1;
+            const previousLine = getPreviousMeaningfulLine(editor.value, lineStart);
+            const match = previousLine.match(/^(\s*)(\d+)([.)])\s+/);
+
+            if (!match) return '1. ';
+            return `${match[1]}${Number(match[2]) + 1}${match[3]} `;
+        }
+
+        function insertOrderedListLine() {
+            insertLine(getNextOrderedListPrefix(), 'Listeneintrag');
+        }
+
+        function insertAtCursor(text) {
+            const s = editor.selectionStart,
+                e = editor.selectionEnd;
+            editor.setRangeText(text, s, e, 'end');
+            editor.focus();
+            render();
+        }
+
+        function getNextFootnoteLabel() {
+            const labels = new Set([...editor.value.matchAll(/\[\^([^\]\s]+)\]/g)].map(match => match[1]));
+            let next = 1;
+            while (labels.has(String(next))) next++;
+            return String(next);
+        }
+
+        function insertFootnote() {
+            const id = getNextFootnoteLabel();
+            const s = editor.selectionStart;
+            const e = editor.selectionEnd;
+            const selectedText = e > s ? editor.value.slice(s, e) : 'Text mit Fußnote';
+
+            editor.setRangeText(`${selectedText}[^${id}]\n\n[^${id}]: Quellenhinweis.\n`, s, e, 'end');
+            editor.focus();
+            render();
+        }
+
+        function insertAlert(type) {
+            const normalizedType = ALERTS[type] ? type : 'note';
+            insertAtCursor(`\n\n> [!${normalizedType.toUpperCase()}]\n> ${ALERT_SNIPPETS[normalizedType]}\n\n`);
+        }
+
+        function getMarkdownHeadings(markdown) {
+            const slugFor = createSlugger();
+            const headings = [];
+            let inFence = false;
+
+            markdown.split(/\n/).forEach(line => {
+                if (/^\s*(```|~~~)/.test(line)) {
+                    inFence = !inFence;
+                    return;
+                }
+                if (inFence) return;
+
+                const match = line.match(/^(#{1,6})\s+(.+?)\s*#*\s*$/);
+                if (!match) return;
+
+                const text = plainHeadingText(match[2]);
+                headings.push({
+                    depth: match[1].length,
+                    text,
+                    slug: slugFor(text)
+                });
+            });
+
+            return headings;
+        }
+
+        function generateOutline() {
+            const headings = getMarkdownHeadings(editor.value);
+            let outline = '## Gliederung\n\n';
+            let h2Count = 0;
+            let h3Count = 0;
+
+            headings.forEach(heading => {
+                if (heading.depth === 2) {
+                    h2Count++;
+                    h3Count = 0;
+                    outline += `${h2Count}. [${heading.text}](#${heading.slug})\n`;
+                    return;
+                }
+
+                if (heading.depth === 3 && h2Count > 0) {
+                    h3Count++;
+                    outline += `   ${h2Count}.${h3Count}. [${heading.text}](#${heading.slug})\n`;
+                }
+            });
+
+            insertAtCursor(outline);
+        }
+
+        document.querySelectorAll('.toolbar .btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const a = btn.getAttribute('data-action');
+                switch (a) {
+                    case 'h1':
+                        insertLine('# ', 'Überschrift');
+                        break;
+                    case 'h2':
+                        insertLine('## ', 'Unterüberschrift');
+                        break;
+                    case 'h3':
+                        insertLine('### ', 'Abschnitt');
+                        break;
+                    case 'bold':
+                        wrapSelection('**', '**', 'fett');
+                        break;
+                    case 'italic':
+                        wrapSelection('*', '*', 'kursiv');
+                        break;
+                    case 'strike':
+                        wrapSelection('~~', '~~', 'durchgestrichen');
+                        break;
+                    case 'inline-code':
+                        wrapSelection('`', '`', 'git status');
+                        break;
+                    case 'link':
+                        wrapSelection('[', '](https://example.com)', 'Link');
+                        break;
+                    case 'image':
+                        wrapSelection('![', '](https://placehold.co/800x400)', 'Bild');
+                        break;
+                    case 'ul':
+                        insertLine('- ', 'Listeneintrag');
+                        break;
+                    case 'ol':
+                        insertOrderedListLine();
+                        break;
+                    case 'quote':
+                        insertLine('> ', 'Zitat');
+                        break;
+                    case 'br':
+                        insertAtCursor('<br />\n');
+                        break;
+                    case 'code':
+                        wrapSelection('```\n', '\n```', 'code');
+                        break;
+                    case 'task':
+                        insertAtCursor('- [ ] Aufgabe\n- [x] Erledigt\n');
+                        break;
+                    case 'table':
+                        insertAtCursor('\n| Spalte A | Spalte B |\n| --- | --- |\n| Wert | Wert |\n');
+                        break;
+                    case 'footnote':
+                        insertFootnote();
+                        break;
+                    case 'alert-note':
+                        insertAlert('note');
+                        break;
+                    case 'alert-tip':
+                        insertAlert('tip');
+                        break;
+                    case 'alert-important':
+                        insertAlert('important');
+                        break;
+                    case 'alert-warning':
+                        insertAlert('warning');
+                        break;
+                    case 'alert-caution':
+                        insertAlert('caution');
+                        break;
+                    case 'color':
+                        wrapSelection('`', '`', '#0969DA');
+                        break;
+                    case 'comment':
+                        wrapSelection('<!-- ', ' -->', 'Kommentar');
+                        break;
+                    case 'outline':
+                        generateOutline();
+                        break;
+                }
+            });
+        });
+
+        document.getElementById('downloadMd').addEventListener('click', () => {
+            const blob = new Blob([editor.value], {
+                type: 'text/markdown;charset=utf-8'
+            });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'README.md';
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        const today = new Date();
+        const d = today.toLocaleDateString('de-DE', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        });
+        editor.value = `# Artikel-Titel\n\n*von **Autor** ${d}*\n\n`;
+        render();
+    </script>
+    <script src="../../../feedback-widget.js" defer></script>
+</body>
+
+</html>

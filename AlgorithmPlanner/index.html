@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="de">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/png" href="../../../media/favicon.png">
+<meta name="description" content="AlgorithmPlanner: Struktogramme, Flussdiagramme und UML-Klassendiagramme modellieren und Quellcode generieren.">
+    <title>AlgorithmPlanner – Felix Staacke</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;600&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <header class="app-header">
+        <a class="brand" href="../../projekte.html" aria-label="Zurück zu den Projekten">
+            <span class="brand-mark">AP</span>
+            <span><strong>AlgorithmPlanner</strong><small>Visuell planen. Verständlich programmieren.</small></span>
+        </a>
+        <div class="header-actions">
+            <span class="storage-status" id="storageStatus" title="Automatisch im localStorage dieses Browsers gespeichert">Automatisch lokal</span>
+            <button class="btn btn-ghost" id="helpBtn" type="button">Kurzhilfe</button>
+            <button class="btn btn-primary" id="saveBtn" type="button">Jetzt speichern</button>
+        </div>
+    </header>
+
+    <main class="app-shell">
+        <section class="topbar" aria-label="Projektsteuerung">
+            <label class="project-name">
+                <span>Projekt</span>
+                <input id="projectName" value="Mein Programm" maxlength="80" aria-label="Projektname">
+            </label>
+
+            <div class="segmented" role="group" aria-label="Diagrammtyp">
+                <button class="segment active" data-view="structogram" type="button">Struktogramm</button>
+                <button class="segment" data-view="flowchart" type="button">Flussdiagramm</button>
+                <button class="segment" data-view="uml" type="button">UML-Klassen</button>
+            </div>
+
+            <div class="toolbar-group">
+                <button class="icon-btn" id="undoBtn" title="Rückgängig (Strg+Z)" type="button">↶</button>
+                <button class="icon-btn" id="redoBtn" title="Wiederholen (Strg+Y)" type="button">↷</button>
+                <button class="btn btn-ghost" id="exampleBtn" type="button">Beispiel</button>
+                <button class="btn btn-ghost" id="newBtn" type="button">Neu</button>
+                <button class="btn btn-ghost" id="importBtn" type="button">Import</button>
+                <button class="btn btn-ghost" id="exportBtn" type="button">Als .json herunterladen</button>
+                <input id="importFile" type="file" accept="application/json,.json" hidden>
+            </div>
+        </section>
+
+        <section class="workspace">
+            <aside class="panel palette-panel">
+                <div class="panel-heading">
+                    <div><span class="eyebrow">Baukasten</span><h2>Bausteine</h2></div>
+                </div>
+
+                <div id="algorithmPalette" class="palette-list">
+                    <button class="palette-item" data-add="process" type="button"><span class="shape process-shape"></span><span><strong>Verarbeitung</strong><small>Zuweisung oder Aufruf</small></span></button>
+                    <button class="palette-item" data-add="input" type="button"><span class="shape input-shape"></span><span><strong>Eingabe</strong><small>Wert einlesen</small></span></button>
+                    <button class="palette-item" data-add="output" type="button"><span class="shape output-shape"></span><span><strong>Ausgabe</strong><small>Wert ausgeben</small></span></button>
+                    <button class="palette-item" data-add="if" type="button"><span class="shape decision-shape"></span><span><strong>Verzweigung</strong><small>Wenn / Sonst</small></span></button>
+                    <button class="palette-item" data-add="while" type="button"><span class="shape loop-shape">↻</span><span><strong>Solange-Schleife</strong><small>While-Bedingung</small></span></button>
+                    <button class="palette-item" data-add="for" type="button"><span class="shape loop-shape">#</span><span><strong>Zählschleife</strong><small>Start, Ende, Schritt</small></span></button>
+                    <button class="palette-item" data-add="call" type="button"><span class="shape call-shape">⇢</span><span><strong>Unterroutine</strong><small>Algorithmus aufrufen</small></span></button>
+                    <button class="palette-item" data-add="return" type="button"><span class="shape return-shape">↩</span><span><strong>Rückgabe</strong><small>Ergebnis zurückgeben</small></span></button>
+                    <button class="palette-item" data-add="comment" type="button"><span class="shape comment-shape">//</span><span><strong>Kommentar</strong><small>Modell dokumentieren</small></span></button>
+                    <button class="palette-item flow-only hidden" id="addFlowCommentBtn" type="button"><span class="shape note-shape">✎</span><span><strong>Freier Kommentar</strong><small>Losgelöst platzieren</small></span></button>
+                </div>
+
+                <div id="umlPalette" class="palette-list hidden">
+                    <button class="palette-item" data-uml-add="class" type="button"><span class="shape class-shape">C</span><span><strong>Klasse</strong><small>Neue Klasse anlegen</small></span></button>
+                    <button class="palette-item" data-uml-add="attribute" type="button"><span class="shape class-shape">A</span><span><strong>Attribut</strong><small>Zur gewählten Klasse</small></span></button>
+                    <button class="palette-item" data-uml-add="method" type="button"><span class="shape class-shape">M</span><span><strong>Methode</strong><small>Zur gewählten Klasse</small></span></button>
+                    <button class="palette-item" data-uml-add="relation" type="button"><span class="shape relation-shape">→</span><span><strong>Beziehung</strong><small>Klassen verbinden</small></span></button>
+                </div>
+
+                <div class="palette-hint">
+                    <strong>Einfügeposition</strong>
+                    <p id="insertHint">Neue Bausteine werden nach der Auswahl eingefügt. Ohne Auswahl landen sie am Ende.</p>
+                </div>
+            </aside>
+
+            <section class="canvas-panel" aria-label="Modellierungsfläche">
+                <div class="canvas-toolbar">
+                    <div class="canvas-title">
+                        <span class="status-dot"></span>
+                        <span id="viewLabel">Struktogramm</span>
+                    </div>
+                    <div class="canvas-actions">
+                        <label class="compact-control algorithm-only"><span>Aktive Routine</span><select id="routineSelect"></select></label>
+                        <label class="compact-control algorithm-only"><span>Routinenname</span><input id="routineName" maxlength="40" value="algorithm"></label>
+                        <button class="icon-btn algorithm-only" id="addRoutineBtn" title="Unterroutine hinzufügen" type="button">+</button>
+                        <button class="icon-btn danger algorithm-only" id="deleteRoutineBtn" title="Aktive Routine löschen" type="button">−</button>
+                        <label class="compact-control"><span>Darstellung</span><select id="visualStyle"><option value="neon">Neon</option><option value="formal">Fachlich</option></select></label>
+                        <button class="icon-btn" id="moveUpBtn" title="Nach oben" type="button">↑</button>
+                        <button class="icon-btn" id="moveDownBtn" title="Nach unten" type="button">↓</button>
+                        <button class="icon-btn danger" id="deleteBtn" title="Auswahl löschen" type="button">×</button>
+                        <button class="btn btn-small btn-ghost" id="fitBtn" type="button">Einpassen</button>
+                        <span class="zoom-label" id="zoomLabel">100 %</span>
+                        <button class="btn btn-small btn-primary" id="pdfBtn" type="button">PDF / Drucken</button>
+                    </div>
+                </div>
+                <div class="canvas-scroll" id="canvasScroll">
+                    <div id="diagramCanvas" class="diagram-canvas" tabindex="0"></div>
+                </div>
+                <div class="canvas-legend" id="canvasLegend">
+                    Strg+Klick wählt mehrere Operationen. Ziehen verschiebt die Auswahl. Mausrad zoomt, rechte Maustaste verschiebt die Arbeitsfläche.
+                </div>
+            </section>
+
+            <aside class="panel inspector-panel">
+                <div class="tabs" role="tablist">
+                    <button class="tab active" data-tab="properties" type="button">Eigenschaften</button>
+                    <button class="tab" data-tab="code" type="button">Code</button>
+                </div>
+
+                <div class="tab-content active" id="propertiesTab">
+                    <div id="emptyInspector" class="empty-state compact">
+                        <span class="empty-icon">◇</span>
+                        <h3>Nichts ausgewählt</h3>
+                        <p>Wähle einen Baustein oder eine Klasse auf der Zeichenfläche.</p>
+                    </div>
+                    <form id="nodeInspector" class="inspector-form hidden"></form>
+                </div>
+
+                <div class="tab-content" id="codeTab">
+                    <div class="code-controls">
+                        <label><span>Zielsprache</span>
+                            <select id="languageSelect">
+                                <option value="java">Java</option>
+                                <option value="csharp">C#</option>
+                                <option value="cpp">C++</option>
+                                <option value="python">Python</option>
+                                <option value="prolog">Prolog</option>
+                                <option value="javascript">JavaScript</option>
+                            </select>
+                        </label>
+                        <div class="code-buttons">
+                            <button class="btn btn-small btn-ghost" id="copyCodeBtn" type="button">Kopieren</button>
+                            <button class="btn btn-small btn-primary" id="downloadCodeBtn" type="button">Herunterladen</button>
+                        </div>
+                    </div>
+                    <pre class="code-output"><code id="codeOutput"></code></pre>
+                    <div id="codeWarnings" class="code-warnings"></div>
+                </div>
+            </aside>
+        </section>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <dialog id="branchDialog" class="modal">
+        <form method="dialog">
+            <div class="modal-heading"><div><span class="eyebrow">Einfügen</span><h2>Zweig auswählen</h2></div><button class="icon-btn" value="cancel" aria-label="Schließen">×</button></div>
+            <p>In welchen Bereich der ausgewählten Verzweigung soll der neue Baustein eingefügt werden?</p>
+            <div class="modal-actions split">
+                <button class="btn btn-primary" value="then">Dann-Zweig</button>
+                <button class="btn btn-ghost" value="else">Sonst-Zweig</button>
+                <button class="btn btn-ghost" value="after">Nach der Verzweigung</button>
+            </div>
+        </form>
+    </dialog>
+
+    <dialog id="relationDialog" class="modal">
+        <form method="dialog" id="relationForm">
+            <div class="modal-heading"><div><span class="eyebrow">UML</span><h2>Beziehung anlegen</h2></div><button class="icon-btn" value="cancel" aria-label="Schließen">×</button></div>
+            <label><span>Von</span><select id="relationFrom"></select></label>
+            <label><span>Nach</span><select id="relationTo"></select></label>
+            <label><span>Beziehung</span><select id="relationType"><option value="association">Assoziation</option><option value="inheritance">Vererbung</option><option value="aggregation">Aggregation</option><option value="composition">Komposition</option><option value="dependency">Abhängigkeit</option></select></label>
+            <label><span>Beschriftung</span><input id="relationLabel" placeholder="z. B. besitzt"></label>
+            <div class="modal-actions"><button class="btn btn-ghost" value="cancel">Abbrechen</button><button class="btn btn-primary" id="createRelationBtn" value="default">Anlegen</button></div>
+        </form>
+    </dialog>
+
+    <dialog id="helpDialog" class="modal help-modal">
+        <form method="dialog">
+            <div class="modal-heading"><div><span class="eyebrow">Kurzhilfe</span><h2>So funktioniert der Planner</h2></div><button class="icon-btn" value="cancel" aria-label="Schließen">×</button></div>
+            <ol>
+                <li>Wähle oben Struktogramm, Flussdiagramm oder UML-Klassen.</li>
+                <li>Füge links Bausteine hinzu und bearbeite sie rechts im Eigenschaften-Tab.</li>
+                <li>Struktogramm und Flussdiagramm zeigen dasselbe Algorithmusmodell in zwei Darstellungen.</li>
+                <li>Mit „Unterroutine“ legst du standardmäßig eine neue private Zielroutine an. Über „In Unterroutine einfügen“ baust du deren Ablauf auf; Ziel, Argumente und Ergebnisvariable bleiben editierbar.</li>
+                <li>Über „Hier verschachteln“ beziehungsweise die kleinen Ziele im Flussdiagramm legst du Schleifen und Unterroutinenaufrufe beliebig tief in Schleifen oder Zweigen ab.</li>
+                <li>Im Flussdiagramm kannst du freie Kommentare ohne Kontrollflusskante anlegen und beliebig verschieben.</li>
+                <li>Wechsle zum Code-Tab und wähle eine der sechs Zielsprachen.</li>
+                <li>Speichere lokal oder exportiere dein vollständiges Projekt als JSON.</li>
+            </ol>
+            <p><strong>Auswahl:</strong> Mit <kbd>Strg</kbd>+Klick wählst du mehrere Operationen. Ziehe eine ausgewählte Operation, um die ganze Auswahl zu verschieben.</p>
+            <p><strong>Navigation:</strong> Das Mausrad zoomt. Mit gedrückter rechter Maustaste verschiebst du den Planungsbereich.</p>
+            <p><strong>Speicherung:</strong> Änderungen werden automatisch im <code>localStorage</code> dieses Browsers gespeichert. Für Gerätewechsel und Backups dient „Als .json herunterladen“.</p>
+            <p><strong>Tastatur:</strong> <kbd>Entf</kbd> löscht die Auswahl, <kbd>Strg</kbd>+<kbd>Z</kbd> macht Änderungen rückgängig.</p>
+            <div class="modal-actions"><button class="btn btn-primary" value="default">Verstanden</button></div>
+        </form>
+    </dialog>
+
+    <script src="app.js"></script>
+    <script src="../../../feedback-widget.js" defer></script>
+</body>
+
+</html>

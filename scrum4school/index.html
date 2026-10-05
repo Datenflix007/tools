@@ -1,0 +1,1833 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="../../../media/favicon.png">
+    <title>Scrum 4 School</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+         :root {
+            --bg: #0b0f17;
+            --card: #0f1624;
+            --text: #d4d9e3;
+            --muted: #93a0b4;
+            --accent1: #7aa8ff;
+            --accent2: #a78bfa;
+            --radius: 18px;
+            --shadow: 0 6px 30px rgba(0, 0, 0, .32), inset 0 1px 0 rgba(255, 255, 255, .03);
+            --ok: #38d39f;
+            --warn: #ffd166;
+            --danger: #ff7a7a;
+        }
+        
+        * {
+            box-sizing: border-box
+        }
+        
+        html,
+        body {
+            height: 100%
+        }
+        
+        body {
+            margin: 0;
+            font-family: 'Inter', system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+            color: var(--text);
+            background: radial-gradient(80% 120% at 10% 0%, #111b2d 0%, var(--bg) 40%) no-repeat fixed;
+            line-height: 1.55;
+        }
+        
+        header {
+            width: 100%;
+            padding: 24px 20px;
+            text-align: center;
+            font-size: 28px;
+            font-weight: 900;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            background: linear-gradient(180deg, #1a1d23 0%, #111318 100%);
+            color: #e4e7ed;
+            border-bottom: 2px solid rgba(255, 255, 255, .08);
+            box-shadow: 0 4px 18px rgba(0, 0, 0, .6);
+            text-shadow: 0 2px 8px rgba(0, 0, 0, .6);
+        }
+        
+        .wrap {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px 20px 60px;
+        }
+        
+        .section {
+            margin: 20px 0;
+            padding: 18px;
+            background: rgba(255, 255, 255, .04);
+            border: 1px solid rgba(255, 255, 255, .08);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+        
+        details {
+            border-radius: 14px;
+        }
+        
+        summary {
+            list-style: none;
+            cursor: pointer;
+            padding: 8px 0 14px;
+            color: #e7ebf4;
+            border-bottom: 1px dashed rgba(255, 255, 255, .12);
+            user-select: none;
+        }
+        
+        details[open]>summary {
+            border-bottom-style: solid;
+        }
+        
+        summary::-webkit-details-marker {
+            display: none
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 12px 12px;
+        }
+        
+        label {
+            font-size: 13px;
+            color: #a6b1c2;
+            font-weight: 600;
+        }
+        
+        input[type="text"],
+        input[type="date"],
+        textarea,
+        select {
+            width: 100%;
+            appearance: none;
+            background: rgba(255, 255, 255, .04);
+            border: 1px solid rgba(255, 255, 255, .12);
+            color: var(--text);
+            padding: 10px 12px;
+            border-radius: 12px;
+            outline: none;
+            transition: border-color .15s, box-shadow .15s;
+        }
+        
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        input[type="text"]:focus,
+        input[type="date"]:focus,
+        textarea:focus,
+        select:focus {
+            border-color: rgba(122, 168, 255, .6);
+            box-shadow: 0 0 0 3px rgba(122, 168, 255, .15);
+        }
+        
+        .button,
+        button {
+            background: linear-gradient(135deg, var(--accent1), var(--accent2));
+            color: #0b0f17;
+            font-weight: 800;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: transform .06s, filter .2s;
+        }
+        
+        .button:hover,
+        button:hover {
+            filter: brightness(1.06)
+        }
+        
+        .button:active,
+        button:active {
+            transform: translateY(1px)
+        }
+        
+        .button.outline {
+            background: transparent;
+            color: var(--text);
+            border: 1px solid rgba(255, 255, 255, .16);
+        }
+        
+        .todo-list,
+        .sprint-list {
+            padding: 0;
+            list-style: none;
+        }
+        
+        .todo-item,
+        .sprint {
+            margin: 10px 0;
+            padding: 12px;
+            background: rgba(255, 255, 255, .03);
+            border: 1px solid rgba(255, 255, 255, .08);
+            border-radius: 12px;
+        }
+        
+        .todo-head {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+        }
+        
+        .todo-desc {
+            opacity: .9;
+            margin-top: 4px;
+        }
+        
+        .comment-section {
+            margin-top: 10px;
+        }
+        
+        .comment {
+            margin: 6px 0;
+            padding: 8px 10px;
+            background: rgba(255, 255, 255, .06);
+            border: 1px solid rgba(255, 255, 255, .1);
+            border-radius: 10px;
+            color: #dfe4ee;
+        }
+        
+        .status-circle {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            box-shadow: 0 0 0 2px rgba(0, 0, 0, .25), 0 0 10px rgba(0, 0, 0, .15) inset;
+        }
+        
+        .status-red {
+            background-color: var(--danger);
+        }
+        
+        .status-yellow {
+            background-color: var(--warn);
+        }
+        
+        .status-green {
+            background-color: var(--ok);
+        }
+        
+        .status-inactive {
+            opacity: .35;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .team-member {
+            margin: 6px 0;
+        }
+        
+        .hint {
+            color: var(--muted);
+            font-size: 12px;
+        }
+        
+        .inline-form {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            background: rgba(255, 255, 255, .03);
+            border: 1px dashed rgba(255, 255, 255, .15);
+            padding: 12px;
+            border-radius: 12px;
+        }
+        
+        .inline-form .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .inline-form .row-full {
+            display: block;
+        }
+        
+        .toolbar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        /* Team pro Unterrichtsstunde */
+
+        .lesson-team-box {
+            margin-top: 12px;
+            padding: 10px;
+            border: 1px solid rgba(255, 255, 255, .12);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, .02);
+        }
+
+        .lesson-team-grid {
+            display: grid;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .lesson-team-row {
+            display: grid;
+            grid-template-columns: minmax(140px, 1fr) auto minmax(160px, 1fr);
+            align-items: center;
+            gap: 10px;
+            padding: 8px 10px;
+            border: 1px solid rgba(255, 255, 255, .1);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, .02);
+        }
+
+        .lesson-team-row.is-absent {
+            opacity: .75;
+            border-color: rgba(255, 122, 122, .35);
+        }
+
+        .lesson-team-name {
+            font-weight: 700;
+            color: #e7ebf4;
+        }
+
+        .attend-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--text);
+            white-space: nowrap;
+        }
+
+        .attend-toggle input {
+            width: auto;
+            transform: translateY(1px);
+        }
+
+        /* Issues innerhalb der Unterrichtsstunden */
+        
+        .issue-head {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 8px 10px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, .04);
+        }
+        
+        .issue-title {
+            font-weight: 600;
+        }
+        
+        .issue-body {
+            margin: 8px 0 0 0;
+            padding: 8px 10px;
+            border: 1px solid rgba(255, 255, 255, .1);
+            border-radius: 10px;
+            display: block;
+        }
+
+        .issue-controls {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(220px, 1fr));
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .issue-control {
+            background: rgba(255, 255, 255, .03);
+            border: 1px solid rgba(255, 255, 255, .09);
+            border-radius: 10px;
+            padding: 8px;
+        }
+
+        .issue-control label {
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .issue-add-box {
+            display: grid;
+            grid-template-columns: minmax(240px, 1fr) minmax(200px, 1fr) auto;
+            align-items: end;
+            gap: 10px;
+            margin: 12px 0;
+            padding: 10px;
+            border: 1px solid rgba(255, 255, 255, .1);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, .02);
+        }
+        /* Ziele (Chips) */
+        
+        .goals-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 6px;
+        }
+        
+        .goal-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, .06);
+            border: 1px solid rgba(255, 255, 255, .12);
+            font-size: 13px;
+        }
+        
+        .goal-chip .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        
+        .goal-open .dot {
+            background: var(--danger);
+        }
+        
+        .goal-done .dot {
+            background: var(--ok);
+        }
+        /* Logbuch */
+        
+        .log-entry {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+        
+        .log-time {
+            font-family: ui-monospace, Menlo, Consolas, monospace;
+            color: var(--muted);
+            font-size: 12px;
+            white-space: nowrap;
+            padding-top: 2px;
+        }
+        
+        .log-msg {
+            flex: 1;
+        }
+
+        /* Code-Versionen */
+
+        .version-toolbar {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+
+        .version-meta {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(180px, 1fr));
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .version-tag {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, .16);
+            background: rgba(255, 255, 255, .05);
+            font-size: 12px;
+            color: #dfe4ee;
+        }
+        
+        footer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 36px 0 60px;
+            color: #a6b1c2;
+        }
+        
+        footer a {
+            color: #a6b1c2;
+            text-decoration: none;
+        }
+        
+        @media (max-width:720px) {
+            table {
+                border-spacing: 8px 10px;
+            }
+            .wrap {
+                padding: 18px 14px 48px;
+            }
+            header {
+                font-size: 24px;
+            }
+            .inline-form .row {
+                grid-template-columns: 1fr;
+            }
+            .lesson-team-row {
+                grid-template-columns: 1fr;
+                align-items: start;
+            }
+            .issue-controls {
+                grid-template-columns: 1fr;
+            }
+            .issue-add-box {
+                grid-template-columns: 1fr;
+                align-items: stretch;
+            }
+            .version-meta {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+</head>
+
+<body>
+    <header>Scrum 4 School</header>
+
+    <div class="wrap">
+
+        <div class="section" id="backlog">
+            <details open>
+                <summary><label style="font-size: 20px;"><b>Backlog-Informationen</b></label></summary>
+
+                <form id="backlogForm">
+                    <table>
+                        <tr>
+                            <td><label for="projectTitle">Projekttitel:</label></td>
+                            <td colspan="3"><input type="text" id="projectTitle" required></td>
+                        </tr>
+                        <tr>
+                            <td><label for="projectDescription">Projektbeschreibung:</label></td>
+                            <td colspan="3"><textarea id="projectDescription" placeholder="Projektbeschreibung hier eingeben..."></textarea></td>
+                        </tr>
+                        <tr>
+                            <td><label for="startDate">Projektstart:</label></td>
+                            <td><input type="date" id="startDate" required></td>
+                            <td><label for="endDate">Projektende:</label></td>
+                            <td><input type="date" id="endDate" required onchange="calculateDaysLeft()"></td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td colspan="3">
+                                <div id="daysLeft" class="hint"></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><label>Teammitglieder:</label></td>
+                            <td colspan="3">
+                                <div id="teamMembersContainer">
+                                    <div class="team-member"><input type="text" class="team-member-input" id="team-member-input" placeholder="Mitgliedsname"></div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td colspan="3" class="actions">
+                                <button type="button" class="button outline" onclick="addTeamMember()">Teammitglied hinzufügen</button>
+                            </td>
+                        </tr>
+
+                        <!-- TODOs (globales Backlog) -->
+                        <tr>
+                            <td><label>TODO's:</label></td>
+                            <td colspan="3">
+                                <div class="toolbar">
+                                    <span class="hint">Ansicht:</span>
+                                    <select id="todoFilter">
+                    <option value="status-red" selected>Offen</option>
+                    <option value="status-yellow">In Bearbeitung</option>
+                    <option value="status-green">Beendet</option>
+                  </select>
+                                </div>
+
+                                <ul id="todoList" class="todo-list"></ul>
+
+                                <!-- Inline-Form für neue TODOs -->
+                                <div id="newTodoForm" class="inline-form" style="display:none;">
+                                    <div class="row">
+                                        <div>
+                                            <label for="newTodoTitle">Titel</label>
+                                            <input type="text" id="newTodoTitle" placeholder="Kurzer Titel" />
+                                        </div>
+                                        <div>
+                                            <label for="newTodoStatus">Start-Status</label>
+                                            <select id="newTodoStatus">
+                        <option value="status-red" selected>Offen</option>
+                        <option value="status-yellow">In Bearbeitung</option>
+                        <option value="status-green">Beendet</option>
+                      </select>
+                                        </div>
+                                    </div>
+                                    <div class="row-full">
+                                        <label for="newTodoDesc">Beschreibung</label>
+                                        <textarea id="newTodoDesc" placeholder="Beschreibung"></textarea>
+                                    </div>
+                                    <div class="row-full">
+                                        <label for="newTodoMember">Teammitglied</label>
+                                        <select id="newTodoMember"></select>
+                                    </div>
+                                    <div class="actions">
+                                        <button type="button" class="button" id="createTodoBtn">Hinzufügen</button>
+                                        <button type="button" class="button outline" id="cancelTodoBtn">Abbrechen</button>
+                                    </div>
+                                </div>
+
+                                <div class="actions" style="margin-top:10px;">
+                                    <button type="button" class="button outline" id="toggleNewTodo">TODO hinzufügen</button>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <div class="actions" style="margin-top:6px;">
+                        <button type="button" class="button" onclick="saveProject()">Projekt speichern</button>
+                        <button type="button" class="button" onclick="loadProject()">Projekt öffnen</button>
+                        <button type="button" class="button" onclick="exportToPDF()">PDF-Report-Export</button>
+                        <a class="button outline" href="./teacher.html" target="_blank" rel="noopener">Teacher-Ansicht</a>
+                        <button type="button" class="button outline" id="chooseWorkspaceBtn" onclick="chooseWorkspaceFolder()">Coding-Workspace wählen</button>
+                        <button type="button" class="button outline" id="createSnapshotBtn" onclick="createCodeSnapshot()" disabled>Code-Stand speichern</button>
+                        <input type="file" id="fileInput" style="display:none" accept=".json">
+                    </div>
+                </form>
+            </details>
+        </div>
+
+        <div class="section" id="sprints">
+            <details open>
+                <summary><label style="font-size:20px;"><b>Unterrichtsstunden</b></label></summary>
+            </details>
+
+            <!-- Formular zum Anlegen einer Stunde -->
+            <div id="lessonForm" class="inline-form" style="display:none;">
+                <div class="row">
+                    <div>
+                        <label for="lessonDate">Datum der Stunde</label>
+                        <input type="date" id="lessonDate">
+                    </div>
+                    <div>
+                        <label for="lessonGoalInput">Neues Ziel</label>
+                        <div style="display:flex; gap:8px;">
+                            <input type="text" id="lessonGoalInput" placeholder="z. B. Template Repository weiter aufbereiten">
+                            <button class="button outline" id="addLessonGoalBtn" type="button">Ziel hinzufügen</button>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="hint">Ziele (nicht bearbeitbar, Status später per Issue):</div>
+                    <div id="lessonGoalsPreview" class="goals-list"></div>
+                </div>
+                <div class="actions">
+                    <button class="button" id="createLessonBtn" type="button">Stunde anlegen</button>
+                    <button class="button outline" id="cancelLessonBtn" type="button">Abbrechen</button>
+                </div>
+            </div>
+
+            <div id="sprintContainer"></div>
+            <div class="actions" style="margin-top:8px;">
+                <button class="button outline" id="toggleLessonForm">Unterrichtsstunde hinzufügen</button>
+            </div>
+        </div>
+
+        <!-- Logbuch -->
+        <div class="section" id="logbook">
+            <details open>
+                <summary><label style="font-size:20px;"><b>Logbuch</b></label></summary>
+            </details>
+            <ul id="logList" class="todo-list"></ul>
+        </div>
+
+        <div class="section" id="codeVersions">
+            <details open>
+                <summary><label style="font-size:20px;"><b>Versionübersicht (Code)</b></label></summary>
+            </details>
+            <div id="workspaceStatus" class="hint">Kein Coding-Workspace ausgewählt.</div>
+            <div class="version-toolbar" style="margin-top:8px;">
+                <button type="button" class="button outline" onclick="downloadAllSnapshots()">Alle Versionen als ZIP herunterladen</button>
+            </div>
+            <ul id="snapshotList" class="todo-list"></ul>
+        </div>
+
+        <footer>
+            <a id="footerLink" href="https://datenflix007.github.io/" target="_blank" rel="noopener">© <span id="year"></span> Felix Staacke</a>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+    <script>
+        let todos = [];
+        // Stunde: { date:'YYYY-MM-DD', goals:[{text, done, carry?:true}], todos:[{title,addedBy}], notes:[{time,text,by}], participants:[{name,present,role}] }
+        let sprints = [];
+        let logbook = [];
+        let sourceSnapshots = [];
+        let workspaceDirectoryHandle = null;
+        let snapshotBusy = false;
+
+        const SNAPSHOT_SKIP_DIRS = new Set(['.git', 'node_modules', '.next', 'dist', 'build', 'venv', '.venv', '__pycache__']);
+        const TEXT_LIKE_EXTENSIONS = new Set([
+            '.txt', '.md', '.markdown', '.json', '.yaml', '.yml', '.toml', '.xml', '.csv',
+            '.html', '.css', '.js', '.mjs', '.cjs', '.ts', '.tsx', '.jsx',
+            '.py', '.java', '.cs', '.cpp', '.c', '.h', '.hpp', '.go', '.rs',
+            '.sh', '.ps1', '.bat', '.ini', '.cfg', '.conf', '.env', '.sql', '.php'
+        ]);
+        const MAX_SNAPSHOT_FILE_BYTES = 750000;
+
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        // ===== Utilities =====
+        const esc = s => String(s).replace(/[&<>"']/g, m => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+        }[m]));
+        const statusLabel = s => ({
+            'status-red': 'Offen',
+            'status-yellow': 'In Bearbeitung',
+            'status-green': 'Beendet'
+        })[s] || s;
+        const fmt = iso => new Date(iso).toLocaleString();
+        const todoNum = idx => (idx >= 0 ? idx + 1 : '?'); // globale TODO-Nummer
+        const getTeamMembers = () => Array.from(document.querySelectorAll('.team-member-input'))
+            .map(input => input.value.trim())
+            .filter(Boolean);
+        const formatBytes = bytes => {
+            const num = Number(bytes) || 0;
+            if (num < 1024) return `${num} B`;
+            if (num < 1024 * 1024) return `${(num / 1024).toFixed(1)} KB`;
+            return `${(num / (1024 * 1024)).toFixed(1)} MB`;
+        };
+        const safeFilePart = val => String(val || 'projekt').replace(/[^\w.-]+/g, '_').replace(/^_+|_+$/g, '') || 'projekt';
+
+        function teamMemberOptionsHtml(preferred = '') {
+            const members = getTeamMembers();
+            if (!members.length) {
+                return '<option value="">Bitte Teammitglied anlegen</option>';
+            }
+            const selected = members.includes(preferred) ? preferred : members[0];
+            return members.map(member => `<option value="${esc(member)}" ${member===selected?'selected':''}>${esc(member)}</option>`).join('');
+        }
+
+        function updateNewTodoMemberSelect(preferred = '') {
+            const select = document.getElementById('newTodoMember');
+            if (!select) return;
+            const members = getTeamMembers();
+            select.innerHTML = teamMemberOptionsHtml(preferred || select.value || '');
+            select.disabled = members.length === 0;
+        }
+
+        function resolveActionMember(selectId, fallback = '') {
+            const selected = (document.getElementById(selectId)?.value || '').trim();
+            if (selected) return selected;
+            const firstMember = getTeamMembers()[0] || '';
+            return firstMember || fallback || 'Unbekannt';
+        }
+
+        function downloadBlobFile(filename, blob) {
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = filename;
+            a.click();
+            setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+        }
+
+        function downloadJsonFile(filename, data) {
+            const blob = new Blob([JSON.stringify(data, null, 2)], {
+                type: 'application/json'
+            });
+            downloadBlobFile(filename, blob);
+        }
+
+        async function ensureZipSupport() {
+            if (window.JSZip) return window.JSZip;
+            alert('ZIP-Export ist nicht verfuegbar (JSZip konnte nicht geladen werden).');
+            return null;
+        }
+
+        function sanitizeZipPath(path) {
+            const normalized = String(path || '').replace(/\\/g, '/');
+            const parts = normalized.split('/').filter(Boolean);
+            const safeParts = [];
+            parts.forEach(part => {
+                if (part === '.' || part === '..') return;
+                safeParts.push(part.replace(/[\x00-\x1f:*?"<>|]/g, '_'));
+            });
+            return safeParts.join('/');
+        }
+
+        function addSnapshotToZip(zip, snapshot, rootFolder, includeMeta = false) {
+            const files = Array.isArray(snapshot.files) ? snapshot.files : [];
+            files.forEach(file => {
+                const safePath = sanitizeZipPath(file.path);
+                if (!safePath) return;
+                const zipPath = `${rootFolder}/${safePath}`;
+                if (file.omitted) {
+                    const reason = file.reason || 'Datei wurde im Snapshot ohne Inhalt gespeichert.';
+                    const note = [
+                        'Hinweis zu ausgelassener Datei',
+                        `Pfad: ${file.path || safePath}`,
+                        `Grund: ${reason}`,
+                        `Groesse: ${formatBytes(file.size || 0)}`,
+                        `Zeit: ${file.lastModified ? new Date(file.lastModified).toISOString() : '-'}`
+                    ].join('\n');
+                    zip.file(`${zipPath}.omitted.txt`, note);
+                    return;
+                }
+                zip.file(zipPath, typeof file.content === 'string' ? file.content : '');
+            });
+
+            if (includeMeta) {
+                const meta = {
+                    id: snapshot.id,
+                    time: snapshot.time,
+                    workspaceName: snapshot.workspaceName,
+                    fileCount: snapshot.fileCount,
+                    totalBytes: snapshot.totalBytes
+                };
+                zip.file(`${rootFolder}/snapshot_meta.json`, JSON.stringify(meta, null, 2));
+            }
+        }
+
+        function snapshotStamp(iso) {
+            const d = new Date(iso || Date.now());
+            return `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}_${String(d.getHours()).padStart(2,'0')}${String(d.getMinutes()).padStart(2,'0')}${String(d.getSeconds()).padStart(2,'0')}`;
+        }
+
+        function setSnapshotBusy(isBusy) {
+            snapshotBusy = isBusy;
+            const btn = document.getElementById('createSnapshotBtn');
+            if (!btn) return;
+            btn.textContent = isBusy ? 'Code-Stand wird gelesen ...' : 'Code-Stand speichern';
+            btn.disabled = isBusy || !workspaceDirectoryHandle;
+        }
+
+        function updateWorkspaceUI() {
+            const status = document.getElementById('workspaceStatus');
+            const chooseBtn = document.getElementById('chooseWorkspaceBtn');
+            const snapshotBtn = document.getElementById('createSnapshotBtn');
+            if (status) {
+                status.textContent = workspaceDirectoryHandle ?
+                    `Workspace: ${workspaceDirectoryHandle.name}` :
+                    'Kein Coding-Workspace ausgewählt.';
+            }
+            if (chooseBtn) {
+                chooseBtn.disabled = !('showDirectoryPicker' in window);
+                if (!('showDirectoryPicker' in window)) {
+                    chooseBtn.title = 'Nicht unterstützt: bitte aktuellen Chromium/Edge verwenden.';
+                }
+            }
+            if (snapshotBtn && !snapshotBusy) {
+                snapshotBtn.disabled = !workspaceDirectoryHandle;
+            }
+        }
+
+        function isProbablyBinary(bytes, filePath) {
+            const lower = filePath.toLowerCase();
+            const dot = lower.lastIndexOf('.');
+            const ext = dot >= 0 ? lower.slice(dot) : '';
+            if (TEXT_LIKE_EXTENSIONS.has(ext)) return false;
+            const sample = bytes.subarray(0, Math.min(bytes.length, 8192));
+            let suspicious = 0;
+            for (let i = 0; i < sample.length; i++) {
+                const b = sample[i];
+                if (b === 0) return true;
+                if (b < 7 || (b > 14 && b < 32)) suspicious++;
+            }
+            return sample.length > 0 && (suspicious / sample.length) > 0.3;
+        }
+
+        async function readSnapshotFile(fileHandle, relativePath) {
+            const file = await fileHandle.getFile();
+            if (file.size > MAX_SNAPSHOT_FILE_BYTES) {
+                return {
+                    path: relativePath,
+                    size: file.size,
+                    lastModified: file.lastModified,
+                    omitted: true,
+                    reason: `Datei größer als ${formatBytes(MAX_SNAPSHOT_FILE_BYTES)}`
+                };
+            }
+            const buffer = await file.arrayBuffer();
+            const bytes = new Uint8Array(buffer);
+            if (isProbablyBinary(bytes, relativePath)) {
+                return {
+                    path: relativePath,
+                    size: file.size,
+                    lastModified: file.lastModified,
+                    omitted: true,
+                    reason: 'Binary-Datei'
+                };
+            }
+            const content = new TextDecoder('utf-8', {
+                fatal: false
+            }).decode(bytes);
+            return {
+                path: relativePath,
+                size: file.size,
+                lastModified: file.lastModified,
+                content
+            };
+        }
+
+        async function collectWorkspaceFiles(dirHandle, prefix = '') {
+            const files = [];
+            for await (const [name, handle] of dirHandle.entries()) {
+                if (handle.kind === 'directory') {
+                    if (SNAPSHOT_SKIP_DIRS.has(name)) continue;
+                    const nested = await collectWorkspaceFiles(handle, `${prefix}${name}/`);
+                    files.push(...nested);
+                    continue;
+                }
+                const fileEntry = await readSnapshotFile(handle, `${prefix}${name}`);
+                files.push(fileEntry);
+            }
+            return files;
+        }
+
+        function normalizeSnapshot(raw, index) {
+            if (!raw || typeof raw !== 'object') return null;
+            const rawFiles = Array.isArray(raw.files) ? raw.files : [];
+            const files = rawFiles.map(file => ({
+                path: String(file.path || ''),
+                size: Number(file.size) || 0,
+                lastModified: Number(file.lastModified) || 0,
+                content: typeof file.content === 'string' ? file.content : '',
+                omitted: !!file.omitted,
+                reason: String(file.reason || '')
+            })).filter(file => file.path);
+            const totalBytes = files.reduce((sum, file) => sum + (file.size || 0), 0);
+            return {
+                id: String(raw.id || `v${index + 1}`),
+                time: raw.time || new Date().toISOString(),
+                workspaceName: String(raw.workspaceName || ''),
+                fileCount: Number(raw.fileCount) || files.length,
+                totalBytes: Number(raw.totalBytes) || totalBytes,
+                files
+            };
+        }
+
+        function renderSnapshots() {
+            const list = document.getElementById('snapshotList');
+            if (!list) return;
+            if (!sourceSnapshots.length) {
+                list.innerHTML = '<li class="todo-item"><span class="hint">Noch keine Code-Stände gespeichert.</span></li>';
+                return;
+            }
+            const items = sourceSnapshots
+                .map((snap, index) => ({
+                    snap,
+                    index
+                }))
+                .slice()
+                .reverse()
+                .map(({
+                    snap,
+                    index
+                }) => `
+          <li class="todo-item">
+            <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;">
+              <div>
+                <span class="version-tag">${esc(snap.id)}</span>
+                <span class="hint" style="margin-left:8px;">${fmt(snap.time)}</span>
+              </div>
+              <button type="button" class="button outline" onclick="downloadSnapshot(${index})">Version als ZIP herunterladen</button>
+            </div>
+            <div class="version-meta">
+              <div class="hint">Ordner: ${esc(snap.workspaceName || '-')}</div>
+              <div class="hint">Dateien: ${snap.fileCount} • Größe: ${formatBytes(snap.totalBytes)}</div>
+            </div>
+          </li>`).join('');
+            list.innerHTML = items;
+        }
+
+        async function chooseWorkspaceFolder() {
+            if (!('showDirectoryPicker' in window)) {
+                alert('Diese Browser-Version unterstützt keinen Ordnerzugriff. Bitte Chromium/Edge verwenden.');
+                return;
+            }
+            try {
+                workspaceDirectoryHandle = await window.showDirectoryPicker({
+                    mode: 'read'
+                });
+                updateWorkspaceUI();
+                logEvent('Workspace gewählt', workspaceDirectoryHandle?.name || 'Unbekannt');
+            } catch (err) {
+                if (err && err.name === 'AbortError') return;
+                console.error(err);
+                alert('Workspace konnte nicht ausgewählt werden.');
+            }
+        }
+
+        async function createCodeSnapshot() {
+            if (!workspaceDirectoryHandle) {
+                alert('Bitte zuerst einen Coding-Workspace auswählen.');
+                return;
+            }
+            if (snapshotBusy) return;
+            try {
+                setSnapshotBusy(true);
+                const files = await collectWorkspaceFiles(workspaceDirectoryHandle);
+                files.sort((a, b) => a.path.localeCompare(b.path));
+                const now = new Date().toISOString();
+                const versionNumber = sourceSnapshots.length + 1;
+                const snapshot = {
+                    id: `v${versionNumber}`,
+                    time: now,
+                    workspaceName: workspaceDirectoryHandle.name || '',
+                    fileCount: files.length,
+                    totalBytes: files.reduce((sum, f) => sum + (f.size || 0), 0),
+                    files
+                };
+                sourceSnapshots.push(snapshot);
+                renderSnapshots();
+                logEvent('Code-Stand gespeichert', `${snapshot.id} • ${snapshot.fileCount} Dateien aus ${snapshot.workspaceName}`);
+            } catch (err) {
+                console.error(err);
+                alert('Code-Stand konnte nicht erstellt werden.');
+            } finally {
+                setSnapshotBusy(false);
+            }
+        }
+
+        async function downloadSnapshot(index) {
+            const snapshot = sourceSnapshots[index];
+            if (!snapshot) return;
+            const JSZipCtor = await ensureZipSupport();
+            if (!JSZipCtor) return;
+            const title = document.getElementById("projectTitle").value.trim();
+            const nowStamp = snapshotStamp(snapshot.time || new Date().toISOString());
+            const projectPart = safeFilePart(title || snapshot.workspaceName || 'projekt');
+            const versionPart = safeFilePart(snapshot.id || 'version');
+            const rootFolder = `${projectPart}_${versionPart}`;
+            const filename = `${projectPart}_${versionPart}_${nowStamp}.zip`;
+            try {
+                const zip = new JSZipCtor();
+                addSnapshotToZip(zip, snapshot, rootFolder, true);
+                const blob = await zip.generateAsync({
+                    type: 'blob',
+                    compression: 'DEFLATE',
+                    compressionOptions: {
+                        level: 6
+                    }
+                });
+                downloadBlobFile(filename, blob);
+                logEvent('Code-Version exportiert', `${snapshot.id} als ${filename}`);
+            } catch (err) {
+                console.error(err);
+                alert('ZIP-Datei fuer diese Version konnte nicht erstellt werden.');
+            }
+        }
+
+        async function downloadAllSnapshots() {
+            if (!sourceSnapshots.length) {
+                alert('Es sind noch keine Code-Versionen vorhanden.');
+                return;
+            }
+            const JSZipCtor = await ensureZipSupport();
+            if (!JSZipCtor) return;
+            const title = document.getElementById("projectTitle").value.trim();
+            const exportTime = new Date().toISOString();
+            const stamp = snapshotStamp(exportTime);
+            const projectPart = safeFilePart(title || 'projekt');
+            const exportRoot = `${projectPart}_code_versionen_${stamp}`;
+            const filename = `${exportRoot}.zip`;
+            try {
+                const zip = new JSZipCtor();
+                const summary = {
+                    projectTitle: title || 'Ohne Titel',
+                    exportedAt: exportTime,
+                    versionCount: sourceSnapshots.length,
+                    versions: sourceSnapshots.map(snap => ({
+                        id: snap.id,
+                        time: snap.time,
+                        workspaceName: snap.workspaceName,
+                        fileCount: snap.fileCount,
+                        totalBytes: snap.totalBytes
+                    }))
+                };
+                zip.file(`${exportRoot}/_export_info.json`, JSON.stringify(summary, null, 2));
+                sourceSnapshots.forEach((snap, idx) => {
+                    const versionPart = safeFilePart(snap.id || `v${idx + 1}`);
+                    const folder = `${exportRoot}/${versionPart}_${snapshotStamp(snap.time || exportTime)}`;
+                    addSnapshotToZip(zip, snap, folder, true);
+                });
+                const blob = await zip.generateAsync({
+                    type: 'blob',
+                    compression: 'DEFLATE',
+                    compressionOptions: {
+                        level: 6
+                    }
+                });
+                downloadBlobFile(filename, blob);
+                logEvent('Code-Versionen exportiert', filename);
+            } catch (err) {
+                console.error(err);
+                alert('ZIP-Datei mit allen Versionen konnte nicht erstellt werden.');
+            }
+        }
+
+        function normalizeComment(comment) {
+            if (typeof comment === 'string') {
+                return {
+                    text: comment,
+                    by: '',
+                    time: ''
+                };
+            }
+            if (!comment || typeof comment !== 'object') {
+                return {
+                    text: '',
+                    by: '',
+                    time: ''
+                };
+            }
+            return {
+                text: String(comment.text || '').trim(),
+                by: String(comment.by || '').trim(),
+                time: String(comment.time || '')
+            };
+        }
+
+        function renderComments(comments) {
+            const list = (Array.isArray(comments) ? comments : [])
+                .map(normalizeComment)
+                .filter(c => c.text);
+            if (!list.length) {
+                return '<li class="comment"><span class="hint">Noch keine Kommentare.</span></li>';
+            }
+            return list.map(c => `<li class="comment">${c.by ? `<b>${esc(c.by)}:</b> ` : ''}${esc(c.text)}</li>`).join('');
+        }
+
+        function normalizeNote(note) {
+            if (typeof note === 'string') {
+                return {
+                    time: new Date().toISOString(),
+                    text: note,
+                    by: ''
+                };
+            }
+            if (!note || typeof note !== 'object') {
+                return {
+                    time: new Date().toISOString(),
+                    text: '',
+                    by: ''
+                };
+            }
+            return {
+                time: note.time || new Date().toISOString(),
+                text: String(note.text || '').trim(),
+                by: String(note.by || '').trim()
+            };
+        }
+
+        const roleLabel = role => ({
+            coding: 'Coding',
+            doku: 'Doku'
+        })[role] || 'Keine Aufgabe';
+
+        function buildLessonParticipants() {
+            return getTeamMembers().map(name => ({
+                name,
+                present: false,
+                role: ''
+            }));
+        }
+
+        function normalizeLessonParticipants(sprint) {
+            const members = getTeamMembers();
+            const old = Array.isArray(sprint.participants) ? sprint.participants : [];
+            const oldByName = new Map(old
+                .filter(p => p && typeof p.name === 'string')
+                .map(p => [p.name, {
+                    name: p.name,
+                    present: !!p.present,
+                    role: p.role === 'coding' || p.role === 'doku' ? p.role : ''
+                }]));
+            sprint.participants = members.map(name => oldByName.get(name) || {
+                name,
+                present: false,
+                role: ''
+            });
+        }
+
+        function lessonPeopleSummary(sprint) {
+            const participants = Array.isArray(sprint.participants) ? sprint.participants : [];
+            const total = participants.length;
+            const present = participants.filter(p => p.present).length;
+            const coding = participants.filter(p => p.present && p.role === 'coding').length;
+            const doku = participants.filter(p => p.present && p.role === 'doku').length;
+            return `Anwesend: ${present}/${total} • Coding: ${coding} • Doku: ${doku}`;
+        }
+
+        function setLessonParticipant(sprintIndex, participantIndex) {
+            const sprint = sprints[sprintIndex];
+            if (!sprint) return;
+            normalizeLessonParticipants(sprint);
+            const participant = sprint.participants[participantIndex];
+            if (!participant) return;
+
+            const presentEl = document.getElementById(`lessonPresent-${sprintIndex}-${participantIndex}`);
+            const roleEl = document.getElementById(`lessonRole-${sprintIndex}-${participantIndex}`);
+            if (!presentEl || !roleEl) return;
+
+            const prevPresent = !!participant.present;
+            const prevRole = participant.role || '';
+            const nextPresent = !!presentEl.checked;
+            const nextRole = nextPresent ? (roleEl.value || '') : '';
+
+            participant.present = nextPresent;
+            participant.role = nextRole;
+
+            roleEl.disabled = !nextPresent;
+            if (!nextPresent) roleEl.value = '';
+
+            const row = document.getElementById(`lessonParticipantRow-${sprintIndex}-${participantIndex}`);
+            if (row) row.classList.toggle('is-absent', !nextPresent);
+
+            const stat = document.getElementById(`lessonPeopleStat-${sprintIndex}`);
+            if (stat) stat.textContent = lessonPeopleSummary(sprint);
+
+            if (prevPresent !== nextPresent || prevRole !== nextRole) {
+                const suffix = nextPresent ? `, Aufgabe: ${roleLabel(nextRole)}` : '';
+                logEvent('Stunden-Team', `Stunde ${sprintIndex + 1}: ${participant.name} ${nextPresent ? 'anwesend' : 'abwesend'}${suffix}`);
+            }
+        }
+
+        function logEvent(type, info) {
+            const entry = {
+                time: new Date().toISOString(),
+                type,
+                info: String(info == null ? '' : info)
+            };
+            logbook.push(entry);
+            renderLogbook();
+        }
+
+
+        function renderLogbook() {
+            const list = document.getElementById('logList');
+            list.innerHTML = logbook.slice().reverse().map(e => `
+        <li class="todo-item">
+          <div class="log-entry">
+            <span class="log-time">${fmt(e.time)}</span>
+            <div class="log-msg"><b>${esc(e.type)}:</b> ${esc(e.info)}</div>
+          </div>
+        </li>`).join('');
+        }
+
+        // ===== Termine / Projektkopf =====
+        function calculateDaysLeft() {
+            const endVal = document.getElementById("endDate").value;
+            const endDate = new Date(endVal);
+            const today = new Date();
+            const el = document.getElementById("daysLeft");
+            if (isNaN(endDate.getTime())) {
+                el.textContent = "Bitte ein gültiges Enddatum auswählen.";
+                el.style.color = 'var(--muted)';
+                return;
+            }
+            const timeDiff = endDate - today;
+            const daysLeft = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+            el.textContent = daysLeft > 0 ? `Noch ${daysLeft} Tag(e) bis zum Projektende.` :
+                (daysLeft === 0 ? "Das Projekt endet heute." : `Das Projekt ist bereits vor ${-daysLeft} Tag(en) beendet.`);
+            el.style.color = (daysLeft <= 7) ? 'var(--danger)' : 'var(--muted)';
+        }
+
+        document.getElementById('projectTitle').addEventListener('change', e => logEvent('Projekttitel gesetzt', e.target.value));
+        document.getElementById('projectDescription').addEventListener('change', e => logEvent('Projektbeschreibung geändert', e.target.value));
+        document.getElementById('startDate').addEventListener('change', e => logEvent('Projektstart gesetzt', e.target.value));
+        document.getElementById('endDate').addEventListener('change', e => logEvent('Projektende gesetzt', e.target.value));
+
+        // ===== Team =====
+        function attachTeamMemberLogging(inputEl) {
+            inputEl.addEventListener('change', () => {
+                logEvent('Teammitglied', inputEl.value);
+                updateNewTodoMemberSelect();
+                updateTodoList();
+                renderSprints();
+            });
+        }
+        attachTeamMemberLogging(document.getElementById("team-member-input"));
+        updateNewTodoMemberSelect();
+
+        function addTeamMember() {
+            const container = document.getElementById("teamMembersContainer");
+            const div = document.createElement("div");
+            div.classList.add("team-member");
+            div.innerHTML = '<input type="text" class="team-member-input" placeholder="Mitgliedsname">';
+            container.appendChild(div);
+            attachTeamMemberLogging(div.querySelector('input'));
+            updateNewTodoMemberSelect();
+            updateTodoList();
+            renderSprints();
+            logEvent('Teammitglied-Feld hinzugefügt', 'Neuer Eintrag');
+        }
+
+        // ===== TODOs (Backlog) =====
+        const toggleNewTodoBtn = document.getElementById('toggleNewTodo');
+        const newTodoForm = document.getElementById('newTodoForm');
+        const createTodoBtn = document.getElementById('createTodoBtn');
+        const cancelTodoBtn = document.getElementById('cancelTodoBtn');
+        const todoFilter = document.getElementById('todoFilter');
+
+        toggleNewTodoBtn.addEventListener('click', () => {
+            newTodoForm.style.display = newTodoForm.style.display === 'none' ? 'grid' : 'none';
+            if (newTodoForm.style.display !== 'none') {
+                document.getElementById('newTodoTitle').focus();
+            }
+        });
+        cancelTodoBtn.addEventListener('click', () => {
+            newTodoForm.style.display = 'none';
+            document.getElementById('newTodoTitle').value = '';
+            document.getElementById('newTodoDesc').value = '';
+            document.getElementById('newTodoStatus').value = 'status-red';
+            updateNewTodoMemberSelect();
+        });
+        createTodoBtn.addEventListener('click', () => {
+            const title = document.getElementById('newTodoTitle').value.trim();
+            const description = document.getElementById('newTodoDesc').value.trim();
+            const status = document.getElementById('newTodoStatus').value;
+            const member = document.getElementById('newTodoMember').value.trim();
+            if (!title || !description) {
+                alert('Bitte Titel und Beschreibung angeben.');
+                return;
+            }
+            if (!member) {
+                alert('Bitte ein Teammitglied auswaehlen.');
+                return;
+            }
+            todos.push({
+                title,
+                description,
+                status,
+                assignee: member,
+                comments: []
+            });
+            logEvent('TODO hinzugefügt', `TODO #${todoNum(todos.length-1)} "${title}" von ${member} erstellt`);
+            cancelTodoBtn.click();
+            updateTodoList();
+            renderSprints();
+        });
+        todoFilter.addEventListener('change', updateTodoList);
+
+        function updateTodoList() {
+            const list = document.getElementById("todoList");
+            list.innerHTML = '';
+            const filter = todoFilter.value;
+
+            const items = todos
+                .map((t, i) => ({
+                    t,
+                    i
+                }))
+                .filter(({
+                    t
+                }) => t.status === filter);
+
+            items.forEach(({
+                        t,
+                        i
+                    }) => {
+                        const num = todoNum(i);
+                        const li = document.createElement('li');
+                        li.className = 'todo-item';
+                        li.innerHTML = `
+          <div class="todo-head">
+            <span class="status-circle ${t.status}"></span>
+            <span>#${num} ${esc(t.title)}</span>
+          </div>
+          <div class="todo-desc">${esc(t.description)}</div>
+          <div class="hint">Verantwortlich: ${esc(t.assignee || 'Nicht zugewiesen')}</div>
+
+          <div class="comment-section">
+            <label><b>Kommentare:</b></label>
+            <ul class="todo-list">${renderComments(t.comments)}</ul>
+            <textarea id="todoComment-${i}" placeholder="Kommentar schreiben …"></textarea>
+            <div class="actions" style="margin-top:6px;">
+              <select id="todoActor-${i}">
+                ${teamMemberOptionsHtml(t.assignee || '')}
+              </select>
+              <select id="todoStatus-${i}">
+                <option value="status-red" ${t.status==='status-red'?'selected':''}>Offen</option>
+                <option value="status-yellow" ${t.status==='status-yellow'?'selected':''}>In Bearbeitung</option>
+                <option value="status-green" ${t.status==='status-green'?'selected':''}>Beendet</option>
+              </select>
+              <button class="button" type="button" onclick="saveTodoMeta(${i})">Speichern</button>
+              <button class="button outline" type="button" onclick="removeTodo(${i}, 'todoActor-${i}')">Entfernen</button>
+            </div>
+          </div>`;
+        list.appendChild(li);
+      });
+    }
+
+    function saveTodoMeta(index){
+      if(index<0 || index>=todos.length) return;
+      const cta = document.getElementById(`todoComment-${index}`);
+      const sel = document.getElementById(`todoStatus-${index}`);
+      const actor = resolveActionMember(`todoActor-${index}`, todos[index].assignee || '');
+      const txt = (cta?.value || '').trim();
+      const oldStatus = todos[index].status;
+      if (actor) {
+        todos[index].assignee = actor;
+      }
+      if(txt){ todos[index].comments.push({ text: txt, by: actor, time: new Date().toISOString() }); logEvent('Kommentar', `TODO #${todoNum(index)} "${todos[index].title}" von ${actor}: ${txt}`); }
+      if(sel && sel.value !== oldStatus){ todos[index].status = sel.value; logEvent('Status geändert', `TODO #${todoNum(index)} "${todos[index].title}" von ${actor}: ${statusLabel(oldStatus)} -> ${statusLabel(sel.value)}`); }
+      if(cta) cta.value='';
+      updateTodoList(); renderSprints();
+    }
+    function removeTodo(index, actorSelectId = ''){
+      const title=todos[index]?.title || 'Unbekannt';
+      const actor = resolveActionMember(actorSelectId, todos[index]?.assignee || '');
+      logEvent('TODO entfernt', `#${todoNum(index)} ${title} von ${actor}`);
+      todos.splice(index,1);
+      updateTodoList(); renderSprints();
+    }
+
+    // ===== Unterrichtsstunden (Stunden) =====
+    const sprintContainer = document.getElementById("sprintContainer");
+
+    // Formular interaktiv
+    const lessonForm = document.getElementById('lessonForm');
+    const toggleLessonFormBtn = document.getElementById('toggleLessonForm');
+    const createLessonBtn = document.getElementById('createLessonBtn');
+    const cancelLessonBtn = document.getElementById('cancelLessonBtn');
+    const addLessonGoalBtn = document.getElementById('addLessonGoalBtn');
+    const lessonGoalsPreview = document.getElementById('lessonGoalsPreview');
+    let draftGoals = [];
+
+    toggleLessonFormBtn.addEventListener('click', ()=>{
+      lessonForm.style.display = lessonForm.style.display === 'none' ? 'grid' : 'none';
+      if(lessonForm.style.display !== 'none'){
+        document.getElementById('lessonDate').focus();
+        draftGoals = [];
+        renderDraftGoals();
+      }
+    });
+    cancelLessonBtn.addEventListener('click', ()=>{
+      lessonForm.style.display = 'none';
+      draftGoals = []; renderDraftGoals();
+      document.getElementById('lessonDate').value = '';
+      document.getElementById('lessonGoalInput').value = '';
+    });
+    addLessonGoalBtn.addEventListener('click', ()=>{
+      const val = document.getElementById('lessonGoalInput').value.trim();
+      if(!val) return;
+      draftGoals.push({ text: val, done: false });
+      document.getElementById('lessonGoalInput').value = '';
+      renderDraftGoals();
+    });
+    function renderDraftGoals(){
+      lessonGoalsPreview.innerHTML = draftGoals.map((g,idx)=>`
+        <span class="goal-chip goal-open" title="Unerledigt">
+          <span class="dot"></span><span>!${idx+1} ${esc(g.text)}</span>
+        </span>`).join('') || '<span class="hint">Noch keine Ziele hinzugefügt.</span>';
+    }
+
+    createLessonBtn.addEventListener('click', ()=>{
+      const date = document.getElementById('lessonDate').value;
+      if(!date){ alert('Bitte ein Datum für die Stunde wählen.'); return; }
+
+      // neue Stunde
+      const sprint = { date, goals: draftGoals.slice(), todos: [], notes: [], participants: buildLessonParticipants() };
+
+      // carry-over: unerledigte Ziele der letzten Stunde übernehmen
+      if(sprints.length){
+        const prev = sprints[sprints.length-1];
+        const carry = (prev.goals || []).filter(g => !g.done).map(g => ({ text: g.text, done:false, carry:true }));
+        sprint.goals = [...carry, ...sprint.goals];
+      }
+
+      sprints.push(sprint);
+      logEvent('Unterrichtsstunde angelegt', `${date} • Ziele: ${sprint.goals.length}`);
+
+      // aufräumen
+      cancelLessonBtn.click();
+
+      renderSprints();
+      // letzten Eintrag öffnen
+      const all = sprintContainer.querySelectorAll('details.lesson');
+      all.forEach((d,idx)=> d.open = (idx === all.length-1));
+    });
+
+    function addTodoToSprint(sprintIndex){
+      const dropdown = document.getElementById(`todoDropdown-${sprintIndex}`);
+      const memberSelect = document.getElementById(`todoActionMember-${sprintIndex}`);
+      const actor = resolveActionMember(`todoActionMember-${sprintIndex}`);
+      const selectedTitle = dropdown.value;
+      const todo = todos.find(t => t.title === selectedTitle);
+      if(todo && actor){
+        sprints[sprintIndex].todos.push({ title: todo.title, addedBy: actor });
+        const idx = todos.indexOf(todo);
+        if (memberSelect && !memberSelect.value && getTeamMembers().length) {
+          memberSelect.value = actor;
+        }
+        logEvent('TODO der Stunde zugeordnet', `Stunde ${sprintIndex+1}: TODO #${todoNum(idx)} ${selectedTitle} von ${actor}`);
+        renderSprints();
+        const det = sprintContainer.querySelector(`details.lesson[data-index="${sprintIndex}"]`);
+        if(det) det.open = true;
+      }
+    }
+
+    // immer nur eine Stunde geöffnet
+    sprintContainer.addEventListener('toggle', (e)=>{
+      const d = e.target;
+      if(d.tagName.toLowerCase() === 'details' && d.classList.contains('lesson') && d.open){
+        sprintContainer.querySelectorAll('details.lesson').forEach(x => { if(x !== d) x.open = false; });
+      }
+    }, true);
+
+    function renderSprints(){
+      sprintContainer.innerHTML = '';
+      sprints.forEach((sprint, sprintIndex) => {
+        normalizeLessonParticipants(sprint);
+        const totalGoals = (sprint.goals || []).length;
+        const doneGoals  = (sprint.goals || []).filter(g=>g.done).length;
+        const peopleSummary = lessonPeopleSummary(sprint);
+
+        // wählbare TODOs (noch nicht in dieser Stunde) – mit globaler Nummer
+        const options = todos
+          .map((todo, idx)=>({todo, idx}))
+          .filter(({todo}) => !sprint.todos.some(st => st.title === todo.title))
+          .map(({todo, idx}) => `<option value="${esc(todo.title)}">#${idx+1} ${esc(todo.title)}</option>`)
+          .join('');
+        const hasOpenTodos = !!options;
+        const todoOptionsHtml = options || '<option value="">Keine offenen TODOs verfügbar</option>';
+
+        // Ziele-Liste visualisieren – mit Nummern der Stunde
+        const goalsHtml = (sprint.goals || []).map((g,gi)=>`
+            <span class="goal-chip ${g.done?'goal-done':'goal-open'}" title="${g.done?'Erledigt':'Unerledigt'}${g.carry?' • übernommen':''}">
+              <span class="dot"></span><span>#${gi+1} ${esc(g.text)}</span>
+            </span>`).join('') || '<span class="hint">Noch keine Ziele.</span>';
+
+        const participantsHtml = (sprint.participants || []).length
+          ? sprint.participants.map((p,pi)=>`
+              <div class="lesson-team-row ${p.present?'':'is-absent'}" id="lessonParticipantRow-${sprintIndex}-${pi}">
+                <div class="lesson-team-name">${esc(p.name)}</div>
+                <label class="attend-toggle">
+                  <input type="checkbox" id="lessonPresent-${sprintIndex}-${pi}" ${p.present?'checked':''} onchange="setLessonParticipant(${sprintIndex}, ${pi})">
+                  Anwesend
+                </label>
+                <select id="lessonRole-${sprintIndex}-${pi}" onchange="setLessonParticipant(${sprintIndex}, ${pi})" ${p.present?'':'disabled'}>
+                  <option value="" ${!p.role?'selected':''}>Keine Aufgabe</option>
+                  <option value="coding" ${p.role==='coding'?'selected':''}>Coding</option>
+                  <option value="doku" ${p.role==='doku'?'selected':''}>Doku</option>
+                </select>
+              </div>`).join('')
+          : '<div class="hint">Keine Teammitglieder angelegt.</div>';
+
+        // Issue-Liste
+        const issues = sprint.todos.map(stTodo => {
+          const mainTodo = todos.find(t => t.title === stTodo.title) || {title: stTodo.title, description:'', status:'status-red', comments:[]};
+          const todoIndex = todos.indexOf(mainTodo);
+          const bodyId = `issue-body-${sprintIndex}-${todoIndex}`;
+          const num = todoNum(todoIndex);
+
+          // Dropdown der noch offenen Ziele dieser Stunde – mit Zielnummern
+          const openGoals = (sprint.goals || []).map((g,idx)=>({g,idx})).filter(x=>!x.g.done);
+          const goalSelect = openGoals.length
+            ? `<div class="actions">
+                 <select id="goalSelect-${sprintIndex}-${todoIndex}">
+                   ${openGoals.map(({g,idx})=>`<option value="${idx}">#${idx+1} ${esc(g.text)}</option>`).join('')}
+                 </select>
+                 <button class="button" type="button" onclick="markGoalDone(${sprintIndex}, ${todoIndex})">Ziel abhaken</button>
+               </div>`
+            : `<span class="hint">Alle Ziele dieser Stunde sind erledigt.</span>`;
+
+          return `
+            <li class="todo-item">
+              <div class="issue-head">
+                <span class="status-circle ${mainTodo.status}"></span>
+                <span class="issue-title">#${num} ${esc(mainTodo.title)}</span>
+              </div>
+              <div class="issue-body" id="${bodyId}">
+                <div class="todo-desc">${esc(mainTodo.description)}</div>
+                <div class="issue-controls">
+                  <div class="issue-control">
+                    <label for="issueActor-${sprintIndex}-${todoIndex}">Schüler</label>
+                    <select id="issueActor-${sprintIndex}-${todoIndex}">
+                      ${teamMemberOptionsHtml(stTodo.addedBy || mainTodo.assignee || '')}
+                    </select>
+                  </div>
+                  <div class="issue-control">
+                    <label>Stundenziel</label>
+                    ${goalSelect}
+                  </div>
+                </div>
+                <div class="comment-section" style="margin-top:10px;">
+                  <label><b>Kommentare:</b></label>
+                  <ul class="todo-list">
+                    ${renderComments(mainTodo.comments || [])}
+                  </ul>
+                  <textarea placeholder="Neuen Kommentar hinzufügen" id="comment-${sprintIndex}-${todoIndex}"></textarea>
+                  <div class="actions" style="margin-top:6px;">
+                    <select id="status-${sprintIndex}-${todoIndex}">
+                      <option value="status-red" ${mainTodo.status === "status-red" ? "selected" : ""}>Offen</option>
+                      <option value="status-yellow" ${mainTodo.status === "status-yellow" ? "selected" : ""}>In Bearbeitung</option>
+                      <option value="status-green" ${mainTodo.status === "status-green" ? "selected" : ""}>Beendet</option>
+                    </select>
+                    <button class="button" type="button" onclick="saveSprintTodo(${sprintIndex}, ${todoIndex})">Speichern</button>
+                  </div>
+                </div>
+              </div>
+            </li>`;
+        }).join('');
+
+        // Anmerkungen HTML
+        const notesHtml = (sprint.notes || []).map(raw => {
+          const n = normalizeNote(raw);
+          if (!n.text) return '';
+          const by = n.by ? ` • ${esc(n.by)}` : '';
+          return `<li class="comment"><b>${fmt(n.time)}${by}:</b> ${esc(n.text)}</li>`;
+        }).join('') || '<span class="hint">Noch keine Anmerkungen.</span>';
+
+        const det = document.createElement('details');
+        det.className = 'lesson';
+        det.setAttribute('data-index', String(sprintIndex));
+        det.innerHTML = `
+          <summary>
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
+              <div><b>Unterrichtsstunde ${sprintIndex + 1}</b> • <span>${esc(sprint.date || '')}</span></div>
+              <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;">
+                <div class="hint">Ziele erledigt: ${doneGoals}/${totalGoals}</div>
+                <div class="hint" id="lessonPeopleStat-${sprintIndex}">${peopleSummary}</div>
+              </div>
+            </div>
+          </summary>
+          <div class="lesson-body" style="padding-top:12px;">
+            <div class="hint" style="margin-bottom:6px;">Datum: ${esc(sprint.date || '')}</div>
+            <div>
+              <div class="hint">Ziele dieser Stunde:</div>
+              <div class="goals-list">${goalsHtml}</div>
+            </div>
+
+            <div class="lesson-team-box">
+              <div class="hint">Anwesenheit und Aufgabe pro Schüler:</div>
+              <div class="lesson-team-grid">${participantsHtml}</div>
+            </div>
+
+            <div class="issue-add-box">
+              <div>
+                <label for="todoDropdown-${sprintIndex}">TODO auswählen</label>
+                <select id="todoDropdown-${sprintIndex}">
+                  ${todoOptionsHtml}
+                </select>
+              </div>
+              <div>
+                <label for="todoActionMember-${sprintIndex}">Schüler</label>
+                <select id="todoActionMember-${sprintIndex}">
+                  ${teamMemberOptionsHtml('')}
+                </select>
+              </div>
+              <button class="button outline" onclick="addTodoToSprint(${sprintIndex})" ${hasOpenTodos?'':'disabled'}>Issue hinzufügen</button>
+            </div>
+
+            <ul id="sprintTodos-${sprintIndex}" class="todo-list">
+              ${issues}
+            </ul>
+
+            <div style="margin-top:16px;">
+              <div class="hint" style="margin-bottom:6px;">Anmerkungen:</div>
+              <ul class="todo-list" id="notesList-${sprintIndex}">${notesHtml}</ul>
+              <textarea id="noteText-${sprintIndex}" placeholder="Anmerkung eingeben …"></textarea>
+              <div class="actions" style="margin-top:6px;">
+                <select id="noteActor-${sprintIndex}">
+                  ${teamMemberOptionsHtml('')}
+                </select>
+                <button class="button outline" type="button" onclick="addLessonNote(${sprintIndex})">Anmerkung hinzufügen</button>
+              </div>
+            </div>
+          </div>
+        `;
+        sprintContainer.appendChild(det);
+      });
+    }
+
+    // Issue-Aktion: Ziel als erledigt markieren
+    function markGoalDone(sprintIndex, todoIndex){
+      const sel = document.getElementById(`goalSelect-${sprintIndex}-${todoIndex}`);
+      const actor = resolveActionMember(`issueActor-${sprintIndex}-${todoIndex}`);
+      if(!sel) return;
+      const gi = parseInt(sel.value,10);
+      const sprint = sprints[sprintIndex];
+      if(!sprint || !sprint.goals || sprint.goals[gi]==null) return;
+      sprint.goals[gi].done = true;
+
+      const issue = todos[todoIndex];
+      logEvent('Stundenziel erledigt', `Stunde ${sprintIndex+1}: Ziel #${gi+1} "${sprint.goals[gi].text}" via TODO #${todoNum(todoIndex)} "${issue?.title||'-'}" von ${actor}`);
+      renderSprints();
+      updateTodoList();
+
+      const det = sprintContainer.querySelector(`details.lesson[data-index="${sprintIndex}"]`);
+      if(det) det.open = true;
+    }
+
+    function saveSprintTodo(sprintIndex, todoIndex){
+      const commentInput = document.getElementById(`comment-${sprintIndex}-${todoIndex}`);
+      const statusSelect = document.getElementById(`status-${sprintIndex}-${todoIndex}`);
+      const actor = resolveActionMember(`issueActor-${sprintIndex}-${todoIndex}`, todos[todoIndex]?.assignee || '');
+      const newComment = (commentInput?.value || '').trim();
+      const oldStatus = todos[todoIndex]?.status || 'status-red';
+      const newStatus = statusSelect?.value || oldStatus;
+      if (todoIndex < 0 || todoIndex >= todos.length) return;
+      if (actor) {
+        todos[todoIndex].assignee = actor;
+      }
+
+      if (newComment) {
+        todos[todoIndex].comments.push({ text: newComment, by: actor, time: new Date().toISOString() });
+        logEvent('Sprint-Kommentar', `Stunde ${sprintIndex + 1} • TODO #${todoNum(todoIndex)} "${todos[todoIndex].title}" von ${actor}: ${newComment}`);
+      }
+      if (newStatus !== oldStatus) {
+        todos[todoIndex].status = newStatus;
+        logEvent('Status geändert (Stunde)', `TODO #${todoNum(todoIndex)} "${todos[todoIndex].title}" von ${actor}: ${statusLabel(oldStatus)} -> ${statusLabel(newStatus)}`);
+      }
+      if(commentInput) commentInput.value = "";
+      updateTodoList();
+      renderSprints();
+      const det = sprintContainer.querySelector(`details.lesson[data-index="${sprintIndex}"]`);
+      if(det) det.open = true;
+    }
+
+    // Manuelle Notizen pro Stunde
+    function addLessonNote(sprintIndex){
+      const ta = document.getElementById(`noteText-${sprintIndex}`);
+      const actor = resolveActionMember(`noteActor-${sprintIndex}`);
+      const text = (ta?.value || '').trim();
+      if(!text) return;
+      const s = sprints[sprintIndex];
+      if(!s.notes) s.notes = [];
+      s.notes.push({ time:new Date().toISOString(), text, by: actor });
+      logEvent('Stunden-Notiz', `Stunde ${sprintIndex+1} von ${actor}: ${text}`);
+      if(ta) ta.value = '';
+      renderSprints();
+      const det = sprintContainer.querySelector(`details.lesson[data-index="${sprintIndex}"]`);
+      if(det) det.open = true;
+    }
+
+    // ===== Projekt speichern / laden =====
+    function saveProject(){
+      try{
+        const title = document.getElementById("projectTitle").value.trim();
+        const desc  = document.getElementById("projectDescription").value.trim();
+        const start = document.getElementById("startDate").value;
+        const end   = document.getElementById("endDate").value;
+        const members = Array.from(document.querySelectorAll(".team-member-input")).map(i=>i.value.trim()).filter(Boolean);
+
+        if(!title){ alert("Bitte einen Projekttitel angeben."); return; }
+        if(!start || !end){ alert("Bitte Start- und Enddatum angeben."); return; }
+        if(new Date(start) > new Date(end)){ alert("Das Startdatum darf nicht nach dem Enddatum liegen."); return; }
+
+        const project = { title, description:desc, startDate:start, endDate:end, teamMembers:members, todos, sprints, logbook, sourceSnapshots };
+        const json = JSON.stringify(project, null, 2);
+        const d = new Date();
+        const fname = `${title.replace(/\s+/g,'_')}_${d.getFullYear()}${(d.getMonth()+1+'').padStart(2,'0')}${(d.getDate()+'').padStart(2,'0')}_${(d.getHours()+'' ).padStart(2,'0')}${(d.getMinutes()+'' ).padStart(2,'0')}.json`;
+        const blob = new Blob([json], {type:"application/json"});
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob); a.download = fname; a.click();
+        logEvent('Projekt gespeichert', fname);
+        alert("Das Projekt wurde erfolgreich gespeichert!");
+      }catch(err){
+        console.error(err); alert("Fehler beim Speichern.");
+      }
+    }
+
+    function loadProject(){
+      const input = document.getElementById("fileInput");
+      input.click();
+      input.onchange = (event)=>{
+        const file = event.target.files[0]; if(!file) return;
+        const reader = new FileReader();
+        reader.onload = (e)=> loadProjectData(JSON.parse(e.target.result));
+        reader.readAsText(file);
+      };
+    }
+
+    function loadProjectData(data){
+      document.getElementById("projectTitle").value = data.title || '';
+      document.getElementById("projectDescription").value = data.description || '';
+      document.getElementById("startDate").value = data.startDate || '';
+      document.getElementById("endDate").value = data.endDate || '';
+      calculateDaysLeft();
+
+      const teamContainer = document.getElementById("teamMembersContainer");
+      teamContainer.innerHTML = '';
+      (data.teamMembers || []).forEach(member=>{
+        const div=document.createElement("div");
+        div.classList.add("team-member");
+        div.innerHTML = `<input type="text" class="team-member-input" value="${esc(member)}">`;
+        teamContainer.appendChild(div);
+        attachTeamMemberLogging(div.querySelector('input'));
+      });
+
+      todos = (data.todos || []).map(t => ({
+        title: t.title, description: t.description, status: t.status||'status-red',
+        assignee: t.assignee || '',
+        comments: Array.isArray(t.comments) ? t.comments : []
+      }));
+
+      // Stunden laden (kompatibel)
+      sprints = (data.sprints || []).map(s => {
+        let goalsArr;
+        if (Array.isArray(s.goals)) {
+          goalsArr = s.goals.map(g => ({ text:g.text || String(g), done: !!g.done, carry: !!g.carry }));
+        } else if (typeof s.goals === 'string' && s.goals.trim()) {
+          goalsArr = [{ text: s.goals.trim(), done:false }];
+        } else if (typeof s.description === 'string' && s.description.trim()) {
+          goalsArr = [{ text: s.description.trim(), done:false }];
+        } else {
+          goalsArr = [];
+        }
+        const sprintTodos = Array.isArray(s.todos) ? s.todos.map(st => {
+          if (typeof st === 'string') return { title: st, addedBy: '' };
+          return { title: st.title || '', addedBy: st.addedBy || '' };
+        }) : [];
+        const sprintParticipants = Array.isArray(s.participants) ? s.participants.map(p => ({
+          name: p.name || '',
+          present: !!p.present,
+          role: p.role === 'coding' || p.role === 'doku' ? p.role : ''
+        })).filter(p => p.name) : [];
+        const sprintNotes = Array.isArray(s.notes) ? s.notes.map(normalizeNote).filter(n => n.text) : [];
+        return { date: s.date || '', goals: goalsArr, todos: sprintTodos, notes: sprintNotes, participants: sprintParticipants };
+      });
+
+      logbook = Array.isArray(data.logbook) ? data.logbook : [];
+      sourceSnapshots = Array.isArray(data.sourceSnapshots) ? data.sourceSnapshots.map(normalizeSnapshot).filter(Boolean) : [];
+      updateNewTodoMemberSelect();
+      renderLogbook();
+      renderSnapshots();
+      updateWorkspaceUI();
+      updateTodoList();
+      renderSprints();
+      logEvent('Projekt geladen', data.title || 'Ohne Titel');
+    }
+
+    // ===== PDF-Export =====
+    function exportToPDF(){
+      const element = document.body;
+      const options = { margin:1, filename:'Projekt-Report.pdf', image:{type:'jpeg',quality:0.98}, html2canvas:{scale:2}, jsPDF:{unit:'cm',format:'a4',orientation:'portrait'} };
+      html2pdf().from(element).set(options).save();
+      logEvent('PDF exportiert', 'Projekt-Report.pdf');
+    }
+
+    // Initial
+    updateTodoList(); renderLogbook(); renderSnapshots(); updateWorkspaceUI(); calculateDaysLeft();
+    </script>
+    <script src="../../../feedback-widget.js" defer></script>
+</body>
+
+</html>

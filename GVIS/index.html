@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="de">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/png" href="../../../media/favicon.png">
+    <title>GVIS - Geo Visual Intelligence Studio</title>
+    <meta name="description" content="Statische GIS-Analyse fuer OSM-Daten, GeoGuessr-Hinweise, POIs, Vegetation, Gebaeude und importierte Geo-Daten." />
+    <meta name="theme-color" content="#0f172a" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@10.6.1/ol.css" />
+    <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <header class="app-header">
+                <a class="home-link" href="../../projekte.html" aria-label="Zur Projektuebersicht">←</a>
+                <div>
+                    <p class="eyebrow">Geo Visual Intelligence Studio</p>
+                    <h1>GVIS</h1>
+                </div>
+            </header>
+
+            <section class="panel">
+                <div class="panel-head">
+                    <h2>Suchraum</h2>
+                    <button id="locateBtn" class="icon-btn" type="button" title="Auf aktuellen Standort zoomen">⌖</button>
+                </div>
+                <label for="placeInput">Ort oder Koordinaten</label>
+                <div class="input-row">
+                    <input id="placeInput" type="search" placeholder="z. B. Paris, Tokyo, 50.9271, 11.5892" />
+                    <button id="searchPlaceBtn" class="btn compact" type="button">Suchen</button>
+                </div>
+                <div class="metric-grid">
+                    <label>
+                        Radius
+                        <select id="radiusSelect">
+                            <option value="800" selected>800 m</option>
+                            <option value="1500">1,5 km</option>
+                            <option value="3000">3 km</option>
+                            <option value="6000">6 km</option>
+                        </select>
+                    </label>
+                    <label>
+                        Treffer
+                        <select id="limitSelect">
+                            <option value="80" selected>80</option>
+                            <option value="150">150</option>
+                            <option value="300">300</option>
+                        </select>
+                    </label>
+                </div>
+            </section>
+
+            <section class="panel">
+                <h2>Intuitive Query</h2>
+                <label for="queryInput">Hinweise aus Bild, GeoGuessr-Runde oder Beobachtung</label>
+                <textarea id="queryInput" rows="5" placeholder="z. B. viele Einfamilienhaeuser, Waldnaehe, Spielplatz, Bushaltestelle, Kirche, Wasser, Supermarkt"></textarea>
+                <div class="preset-row" aria-label="Query-Beispiele">
+                    <button class="chip-btn" data-query="Waldnaehe, lockere Haeuser, Wege, Aussichtspunkt">Wald + Haeuser</button>
+                    <button class="chip-btn" data-query="Spielplatz, Schule, Wohngebiet, Bushaltestelle">Wohngebiet</button>
+                    <button class="chip-btn" data-query="Kirche, Restaurant, Parkplatz, historische Gebaeude">Altstadt</button>
+                    <button class="chip-btn" data-query="Wasser, Bruecke, Radweg, Vegetation">Flussnaehe</button>
+                </div>
+            </section>
+
+            <section class="panel">
+                <div class="panel-head">
+                    <h2>Entitaeten</h2>
+                    <button id="clearEntitiesBtn" class="icon-btn" type="button" title="Auswahl leeren">x</button>
+                </div>
+                <label for="entitySearch">Baumart, Hausart, POI, Kueche oder Landschaft</label>
+                <input id="entitySearch" type="search" placeholder="z. B. Eiche, Fachwerk, Pizza, Spielplatz" />
+                <div class="custom-entity-row">
+                    <input id="customKeyInput" type="text" placeholder="OSM-Key" />
+                    <input id="customValueInput" type="text" placeholder="Wert/Regex" />
+                    <button id="addCustomEntityBtn" class="btn compact" type="button">Add</button>
+                </div>
+                <div id="selectedEntities" class="selected-entities"></div>
+                <div id="entityCatalog" class="entity-catalog" aria-label="Entitaeten-Auswahl"></div>
+            </section>
+
+            <section class="panel">
+                <div class="panel-head">
+                    <h2>Bildanalyse</h2>
+                    <button id="applyImageHintsBtn" class="icon-btn" type="button" title="Bildhinweise in Query uebernehmen">+</button>
+                </div>
+                <label class="file-drop image-drop" for="imageInput">
+                    <input id="imageInput" type="file" accept="image/*" />
+                    <span>Bild hochladen</span>
+                </label>
+                <div class="input-row image-text-row">
+                    <input id="imageTextInput" type="text" placeholder="optional: Schrift, Ort oder Landmarke aus dem Bild" />
+                    <button id="resolveImageTextBtn" class="btn compact" type="button">Finden</button>
+                </div>
+                <img id="imagePreview" class="image-preview" alt="Bildvorschau" hidden />
+                <div id="imageSignals" class="signal-list"></div>
+            </section>
+
+            <section class="panel">
+                <h2>Datenquellen</h2>
+                <div class="check-list">
+                    <label><input type="checkbox" class="source-check" value="building" checked /> Gebaeude und Haeuser</label>
+                    <label><input type="checkbox" class="source-check" value="vegetation" checked /> Vegetation, Wald, Parks</label>
+                    <label><input type="checkbox" class="source-check" value="poi" checked /> POIs</label>
+                    <label><input type="checkbox" class="source-check" value="transport" checked /> Verkehr, Haltestellen, Wege</label>
+                    <label><input type="checkbox" class="source-check" value="water" /> Wasser, Bruecken, Ufer</label>
+                </div>
+                <label class="file-drop" for="fileInput">
+                    <input id="fileInput" type="file" accept=".geojson,.json,.csv" />
+                    <span>GeoJSON/CSV aus OSM, Google Takeout oder eigenen Tabellen importieren</span>
+                </label>
+            </section>
+
+            <section class="panel">
+                <h2>Gewichtung</h2>
+                <label for="poiWeight">POI-Hinweise <span id="poiWeightValue">40</span>%</label>
+                <input id="poiWeight" type="range" min="0" max="100" value="40" />
+                <label for="contextWeight">Umgebungsfaktoren <span id="contextWeightValue">35</span>%</label>
+                <input id="contextWeight" type="range" min="0" max="100" value="35" />
+                <label for="densityWeight">Dichte/Struktur <span id="densityWeightValue">25</span>%</label>
+                <input id="densityWeight" type="range" min="0" max="100" value="25" />
+                <button id="runBtn" class="btn primary" type="button">Analyse starten</button>
+                <button id="clearBtn" class="btn ghost" type="button">Karte leeren</button>
+            </section>
+        </aside>
+
+        <main class="map-area">
+            <div class="toolbar">
+                <div class="status-card">
+                    <span id="statusText">Bereit. Suchraum setzen oder Bild mit GPS/Text hochladen.</span>
+                </div>
+                <div class="legend" aria-label="Legende">
+                    <span><i class="dot high"></i> hoch</span>
+                    <span><i class="dot mid"></i> mittel</span>
+                    <span><i class="dot low"></i> niedrig</span>
+                </div>
+                <select id="basemapSelect" class="basemap-select" aria-label="Basiskarte">
+                    <option value="voyager" selected>Carto Voyager</option>
+                    <option value="light">Carto Light</option>
+                    <option value="dark">Carto Dark</option>
+                    <option value="satellite">Esri Satellit</option>
+                </select>
+            </div>
+            <div id="map"></div>
+            <div class="map-scroll-note">Karte per Ziehen bewegen, Zoom ueber +/-. Die Seitenleisten scrollen separat.</div>
+        </main>
+
+        <aside class="results">
+            <section class="panel stats-panel">
+                <h2>Analyse</h2>
+                <div class="score-summary">
+                    <div>
+                        <span id="resultCount">0</span>
+                        <small>Treffer</small>
+                    </div>
+                    <div>
+                        <span id="bestScore">0%</span>
+                        <small>Top-Wert</small>
+                    </div>
+                </div>
+                <div id="factorList" class="factor-list"></div>
+            </section>
+
+            <section class="panel">
+                <h2>Reviews</h2>
+                <label class="file-drop" for="reviewInput">
+                    <input id="reviewInput" type="file" accept=".csv,.json,.geojson" />
+                    <span>Bewertungen importieren</span>
+                </label>
+                <div id="reviewSummary" class="review-summary">CSV/JSON: name, source, rating, count, url, lat, lon</div>
+            </section>
+
+            <section class="panel result-panel">
+                <div class="panel-head">
+                    <h2>Wahrscheinliche Punkte</h2>
+                    <button id="exportBtn" class="icon-btn" type="button" title="Ergebnisse als GeoJSON herunterladen">⇩</button>
+                </div>
+                <ol id="resultList" class="result-list"></ol>
+            </section>
+        </aside>
+    </div>
+
+    <template id="resultTemplate">
+        <li>
+            <button class="result-item" type="button">
+                <span class="rank"></span>
+                <span class="result-main">
+                    <strong></strong>
+                    <small></small>
+                </span>
+                <span class="probability"></span>
+            </button>
+        </li>
+    </template>
+
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ol@10.6.1/dist/ol.js"></script>
+    <script src="app.js"></script>
+    <script src="../../../feedback-widget.js" defer></script>
+</body>
+
+</html>

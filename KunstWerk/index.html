@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>KunstWerk</title>
+    <meta
+      name="description"
+      content="Statische Webversion von KunstWerk mit Auswahl, Verpixelung, Magic Pen und Canvas-Filtern."
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">K</span>
+          <div>
+            <h1>KunstWerk</h1>
+            <p id="documentStatus">Kein Bild geladen</p>
+          </div>
+        </div>
+        <div class="top-actions">
+          <button id="openButton" class="primary" type="button">Öffnen</button>
+          <input id="fileInput" type="file" accept="image/*" hidden />
+          <button id="saveButton" type="button" disabled>PNG speichern</button>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <aside class="toolbar" aria-label="Werkzeuge">
+          <button class="tool-button active" type="button" data-tool="pan" title="Handwerkzeug">Hand</button>
+          <button class="tool-button" type="button" data-tool="select" title="Auswahlrechteck">Auswahl</button>
+          <button class="tool-button" type="button" data-tool="crop" title="Zuschneiden">Crop</button>
+          <button class="tool-button" type="button" data-tool="pixelate" title="Verpixelungspinsel">Pixel</button>
+          <button class="tool-button" type="button" data-tool="magic" title="Magic Pen">Magic</button>
+          <span class="toolbar-rule" aria-hidden="true"></span>
+          <button id="undoButton" type="button" title="Rückgängig" disabled>↶</button>
+          <button id="redoButton" type="button" title="Wiederholen" disabled>↷</button>
+          <button id="fitButton" type="button" title="Einpassen" disabled>Fit</button>
+          <button id="actualSizeButton" type="button" title="100 Prozent" disabled>1:1</button>
+        </aside>
+
+        <section class="canvas-panel" aria-label="Arbeitsfläche">
+          <canvas id="editorCanvas"></canvas>
+          <div id="dropOverlay" class="drop-overlay">
+            <div>
+              <strong>Bild öffnen</strong>
+              <span>oder hier ablegen</span>
+            </div>
+          </div>
+        </section>
+
+        <aside class="side-panel" aria-label="Bearbeitung">
+          <section class="panel-section">
+            <h2>Auswahl</h2>
+            <div class="button-grid">
+              <button id="pixelateSelectionButton" type="button" disabled>Verpixeln</button>
+              <button id="clearSelectionButton" type="button" disabled>Leeren</button>
+              <button id="cropSelectionButton" type="button" disabled>Zuschneiden</button>
+              <button id="dismissSelectionButton" type="button" disabled>Aufheben</button>
+            </div>
+          </section>
+
+          <section class="panel-section">
+            <h2>Freistellen</h2>
+            <div class="button-grid">
+              <button id="edgeBackgroundButton" class="primary span-two" type="button" disabled>
+                Hintergrund entfernen
+              </button>
+              <button id="magicCutoutButton" type="button" disabled>Magic anwenden</button>
+              <button id="clearMagicButton" type="button" disabled>Maske löschen</button>
+            </div>
+            <label class="control-row">
+              <span>Magic-Größe</span>
+              <input id="magicSize" type="range" min="10" max="120" value="44" />
+            </label>
+            <label class="control-row">
+              <span>Toleranz</span>
+              <input id="magicTolerance" type="range" min="12" max="110" value="48" />
+            </label>
+          </section>
+
+          <section class="panel-section">
+            <h2>Pixel</h2>
+            <label class="control-row">
+              <span>Pinsel</span>
+              <input id="brushSize" type="range" min="12" max="240" value="80" />
+            </label>
+            <label class="control-row">
+              <span>Raster</span>
+              <input id="blockSize" type="range" min="4" max="36" value="12" />
+            </label>
+          </section>
+
+          <section class="panel-section">
+            <h2>Korrekturen</h2>
+            <div id="adjustmentControls" class="controls-stack">
+              <label class="control-row">
+                <span>Helligkeit</span>
+                <input data-adjustment="brightness" type="range" min="-100" max="100" value="0" />
+              </label>
+              <label class="control-row">
+                <span>Kontrast</span>
+                <input data-adjustment="contrast" type="range" min="-100" max="100" value="0" />
+              </label>
+              <label class="control-row">
+                <span>Sättigung</span>
+                <input data-adjustment="saturation" type="range" min="-100" max="100" value="0" />
+              </label>
+              <label class="control-row">
+                <span>Wärme</span>
+                <input data-adjustment="warmth" type="range" min="-100" max="100" value="0" />
+              </label>
+              <label class="control-row">
+                <span>Schärfe</span>
+                <input data-adjustment="sharpness" type="range" min="0" max="100" value="0" />
+              </label>
+              <label class="control-row">
+                <span>Weichzeichnen</span>
+                <input data-adjustment="blur" type="range" min="0" max="32" value="0" />
+              </label>
+            </div>
+            <div class="button-grid">
+              <button id="applyAdjustmentsButton" class="primary" type="button" disabled>Anwenden</button>
+              <button id="resetAdjustmentsButton" type="button" disabled>Verwerfen</button>
+            </div>
+          </section>
+
+          <section class="panel-section">
+            <h2>Filter</h2>
+            <div class="button-grid filters">
+              <button type="button" data-filter="grayscale" disabled>Schwarzweiß</button>
+              <button type="button" data-filter="sepia" disabled>Sepia</button>
+              <button type="button" data-filter="invert" disabled>Invertieren</button>
+              <button type="button" data-filter="autocontrast" disabled>Autokontrast</button>
+              <button type="button" data-filter="equalize" disabled>Tonwerte</button>
+              <button type="button" data-filter="posterize" disabled>Posterize</button>
+              <button type="button" data-filter="edge" disabled>Kanten</button>
+              <button type="button" data-filter="vignette" disabled>Vignette</button>
+            </div>
+          </section>
+        </aside>
+      </main>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>

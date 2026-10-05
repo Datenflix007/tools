@@ -1,0 +1,2465 @@
+<!doctype html>
+<html lang="de">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" type="image/png" href="../../../media/favicon.png">
+  <title>Paper-Maker</title>
+  <script defer src="https://cdn.jsdelivr.net/npm/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <style>
+    :root {
+      --bg: #f1eee8;
+      --surface: #fffdf8;
+      --surface-2: #f8f5ef;
+      --surface-3: #ebe6dc;
+      --ink: #1f2933;
+      --muted: #667085;
+      --border: #d8d0c4;
+      --accent: #0f766e;
+      --accent-strong: #0b5c55;
+      --danger: #b42318;
+      --ok: #137333;
+      --warn: #a15c07;
+      --shadow: 0 18px 45px rgba(31, 41, 51, .12);
+      --radius: 8px;
+      --paper-font: "Times New Roman", Times, serif;
+      --paper-size: 12pt;
+      --paper-line: 1.5;
+      --paper-align: justify;
+      --paper-top: 2.5cm;
+      --paper-right: 4cm;
+      --paper-bottom: 2.5cm;
+      --paper-left: 2cm;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      height: 100%;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font: 14px/1.45 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      overflow: hidden;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    button,
+    select,
+    input,
+    textarea {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--ink);
+    }
+
+    button {
+      min-height: 34px;
+      padding: 7px 10px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+    }
+
+    button:hover {
+      border-color: var(--accent);
+    }
+
+    button.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+    }
+
+    button.ghost {
+      background: transparent;
+    }
+
+    button.danger {
+      color: var(--danger);
+      border-color: rgba(180, 35, 24, .35);
+    }
+
+    button.icon {
+      width: 36px;
+      padding: 0;
+    }
+
+    button.active {
+      border-color: var(--accent);
+      color: var(--accent-strong);
+      background: #e4f3f0;
+    }
+
+    input,
+    select,
+    textarea {
+      min-height: 34px;
+      padding: 7px 9px;
+      width: 100%;
+    }
+
+    textarea {
+      min-height: 74px;
+      resize: vertical;
+    }
+
+    label {
+      display: grid;
+      gap: 5px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .02em;
+    }
+
+    .app {
+      height: 100%;
+      display: grid;
+      grid-template-rows: 58px minmax(0, 1fr);
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      box-shadow: 0 1px 0 rgba(31, 41, 51, .04);
+      min-width: 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      width: 38px;
+      height: 38px;
+      border-radius: var(--radius);
+      display: grid;
+      place-items: center;
+      background: #e4f3f0;
+      color: var(--accent-strong);
+      font-weight: 900;
+      border: 1px solid #b8d9d3;
+      flex: 0 0 auto;
+    }
+
+    .brand h1,
+    .brand p {
+      margin: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .brand h1 {
+      font-size: 17px;
+      line-height: 1.1;
+    }
+
+    .brand p {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 2px;
+      max-width: 44vw;
+    }
+
+    .top-actions,
+    .toolbar-group,
+    .tabs,
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .top-actions {
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .workspace {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 300px minmax(420px, 1fr) 370px;
+      gap: 12px;
+      padding: 12px;
+    }
+
+    .left-panel,
+    .right-panel {
+      min-height: 0;
+      overflow: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px;
+      box-shadow: 0 8px 22px rgba(31, 41, 51, .06);
+    }
+
+    .panel h2,
+    .panel h3 {
+      margin: 0 0 10px;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      color: #344054;
+    }
+
+    .field-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 9px;
+    }
+
+    .field-grid .wide,
+    label.wide {
+      grid-column: 1 / -1;
+    }
+
+    .settings-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 9px;
+    }
+
+    .toolbar {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      box-shadow: 0 8px 22px rgba(31, 41, 51, .06);
+    }
+
+    .toolbar select {
+      width: auto;
+      min-width: 96px;
+      max-width: 180px;
+    }
+
+    .editor-shell {
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) 26px;
+      gap: 10px;
+    }
+
+    .canvas {
+      min-height: 0;
+      overflow: auto;
+      background: var(--surface-3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+    }
+
+    .editor-page {
+      width: min(100%, 210mm);
+      min-height: 297mm;
+      margin: 0 auto 24px;
+      background: white;
+      color: #111827;
+      box-shadow: var(--shadow);
+      border: 1px solid #e6e0d7;
+      outline: none;
+      padding: var(--paper-top) var(--paper-right) var(--paper-bottom) var(--paper-left);
+      font-family: var(--paper-font);
+      font-size: var(--paper-size);
+      line-height: var(--paper-line);
+      text-align: var(--paper-align);
+      hyphens: auto;
+      overflow-wrap: break-word;
+    }
+
+    .editor-page:focus {
+      box-shadow: 0 0 0 3px rgba(15, 118, 110, .16), var(--shadow);
+    }
+
+    .editor-page h1,
+    .editor-page h2,
+    .editor-page h3 {
+      text-align: left;
+      line-height: 1.25;
+      margin: 1.2em 0 .45em;
+      font-weight: 700;
+    }
+
+    .editor-page h1 {
+      font-size: 1.24em;
+    }
+
+    .editor-page h2 {
+      font-size: 1.08em;
+    }
+
+    .editor-page h3 {
+      font-size: 1em;
+    }
+
+    .editor-page p {
+      margin: 0 0 .75em;
+    }
+
+    .editor-page blockquote {
+      margin: 1em 0 1em 1.2cm;
+      padding-left: .6cm;
+      border-left: 2px solid #b8b0a3;
+      line-height: 1.2;
+    }
+
+    .pm-footnote-ref {
+      color: var(--accent-strong);
+      font-size: .72em;
+      vertical-align: super;
+      margin-left: 1px;
+      cursor: default;
+    }
+
+    .statusbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      padding: 0 4px;
+      min-width: 0;
+    }
+
+    .tabs {
+      padding: 5px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      border-radius: var(--radius);
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+
+    .tabs button {
+      flex: 1;
+      min-height: 32px;
+      padding: 6px 8px;
+      font-size: 12px;
+      background: transparent;
+    }
+
+    .tab-panel {
+      display: none;
+    }
+
+    .tab-panel.active {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .metric {
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      border-radius: var(--radius);
+      padding: 9px;
+      min-width: 0;
+    }
+
+    .metric span {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .02em;
+      margin-bottom: 3px;
+    }
+
+    .metric strong {
+      font-size: 18px;
+      line-height: 1.1;
+    }
+
+    .toc-list,
+    .check-list,
+    .reference-list,
+    .footnote-list {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .toc-item,
+    .check-item,
+    .reference-item,
+    .footnote-item {
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      border-radius: var(--radius);
+      padding: 8px;
+      min-width: 0;
+    }
+
+    .toc-item {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+    }
+
+    .toc-item[data-level="2"] {
+      margin-left: 18px;
+    }
+
+    .toc-item[data-level="3"] {
+      margin-left: 34px;
+    }
+
+    .toc-title,
+    .reference-title {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .reference-item {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .reference-item p,
+    .footnote-item p {
+      margin: 2px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .reference-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .check-item {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 8px;
+      align-items: start;
+      font-size: 13px;
+    }
+
+    .check-dot {
+      width: 10px;
+      height: 10px;
+      margin-top: 5px;
+      border-radius: 999px;
+      background: var(--muted);
+    }
+
+    .check-item.ok .check-dot {
+      background: var(--ok);
+    }
+
+    .check-item.warn .check-dot {
+      background: var(--warn);
+    }
+
+    .check-item.bad .check-dot {
+      background: var(--danger);
+    }
+
+    .separator {
+      width: 1px;
+      height: 30px;
+      background: var(--border);
+    }
+
+    .compact-help {
+      color: var(--muted);
+      font-size: 12px;
+      margin: 0;
+    }
+
+    .import-drop {
+      border: 1px dashed var(--border);
+      background: var(--surface-2);
+      border-radius: var(--radius);
+      padding: 12px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .print-root {
+      display: none;
+    }
+
+    .print-title-page h1 {
+      font-size: 19pt;
+      line-height: 1.25;
+      margin: 4cm 0 .4cm;
+      text-align: center;
+    }
+
+    .print-title-page h2 {
+      font-size: 15pt;
+      font-weight: 400;
+      text-align: center;
+      margin: 0 0 2cm;
+    }
+
+    .title-meta {
+      display: grid;
+      grid-template-columns: 4cm minmax(0, 1fr);
+      gap: .25cm .5cm;
+      margin-top: 1.2cm;
+    }
+
+    .print-root h1,
+    .print-root h2,
+    .print-root h3 {
+      text-align: left;
+      break-after: avoid;
+    }
+
+    .print-root p,
+    .print-root li {
+      orphans: 3;
+      widows: 3;
+    }
+
+    .print-toc-entry {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      gap: .18cm;
+      align-items: end;
+      margin: .18cm 0;
+    }
+
+    .print-toc-entry.level-2 {
+      margin-left: .6cm;
+    }
+
+    .print-toc-entry.level-3 {
+      margin-left: 1.05cm;
+    }
+
+    .toc-leader {
+      border-bottom: 1px dotted #555;
+      transform: translateY(-.08cm);
+    }
+
+    .print-footnotes,
+    .print-bibliography {
+      break-before: page;
+    }
+
+    .print-footnotes ol {
+      padding-left: .5cm;
+    }
+
+    .print-footnotes li,
+    .print-bibliography li {
+      font-size: var(--footnote-size, 10pt);
+      margin-bottom: .18cm;
+    }
+
+    .print-bibliography ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .print-bibliography h2 {
+      margin-top: .5cm;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 1180px) {
+      body {
+        overflow: auto;
+      }
+
+      .app {
+        height: auto;
+        min-height: 100%;
+      }
+
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+
+      .left-panel,
+      .right-panel {
+        overflow: visible;
+      }
+
+      .canvas {
+        padding: 12px;
+      }
+
+      .editor-page {
+        width: min(100%, 210mm);
+      }
+    }
+
+    @media (max-width: 720px) {
+      .app {
+        grid-template-rows: auto minmax(0, 1fr);
+      }
+
+      .topbar {
+        align-items: stretch;
+        flex-direction: column;
+        width: 100%;
+        max-width: 100vw;
+      }
+
+      .top-actions {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .top-actions button {
+        min-width: 0;
+        width: 100%;
+      }
+
+      .brand p {
+        max-width: 100%;
+      }
+
+      .field-grid,
+      .settings-grid,
+      .metric-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .toolbar select {
+        width: 100%;
+        max-width: none;
+      }
+
+      .workspace,
+      .panel,
+      .toolbar,
+      .canvas,
+      .editor-shell {
+        min-width: 0;
+        max-width: 100vw;
+      }
+
+      body {
+        overflow-x: hidden;
+      }
+
+      .separator {
+        display: none;
+      }
+    }
+
+    @media print {
+      body {
+        background: white;
+        overflow: visible;
+      }
+
+      .app {
+        display: none;
+      }
+
+      .print-root {
+        display: block;
+        color: #111;
+        font-family: var(--paper-font);
+        font-size: var(--paper-size);
+        line-height: var(--paper-line);
+        text-align: var(--paper-align);
+        hyphens: auto;
+      }
+
+      .print-title-page,
+      .print-toc-page {
+        min-height: 100vh;
+        break-after: page;
+      }
+
+      .print-body h1,
+      .print-body h2,
+      .print-body h3 {
+        line-height: 1.25;
+      }
+
+      .print-body h1 {
+        font-size: 1.24em;
+      }
+
+      .print-body h2 {
+        font-size: 1.08em;
+      }
+
+      .print-body h3 {
+        font-size: 1em;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+    }
+  </style>
+  <style id="dynamicPrintStyle"></style>
+</head>
+
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <a class="brand-mark" href="../../projekte.html" title="Zur Projektuebersicht">PM</a>
+        <div>
+          <h1>Paper-Maker</h1>
+          <p id="projectSubtitle">Neue Hausarbeit</p>
+        </div>
+      </div>
+      <div class="top-actions">
+        <button type="button" id="openProject" title="Lokales LaTeX-Projekt oeffnen"><i data-lucide="folder-open"></i>Projekt oeffnen</button>
+        <button type="button" id="newProject" title="Neue Arbeit anlegen"><i data-lucide="file-plus-2"></i>Neu</button>
+        <button type="button" id="printPdf" class="primary" title="Als PDF drucken"><i data-lucide="file-down"></i>PDF</button>
+        <button type="button" id="downloadZip" title="LaTeX-Projekt herunterladen"><i data-lucide="archive"></i>ZIP</button>
+      </div>
+      <input id="projectFiles" type="file" accept=".tex,.bib,.json" multiple hidden>
+      <input id="projectDirectory" type="file" webkitdirectory multiple hidden>
+    </header>
+
+    <div class="workspace">
+      <aside class="left-panel" aria-label="Dokumenteinstellungen">
+        <section class="panel">
+          <h2>Titelblatt</h2>
+          <div class="field-grid">
+            <label class="wide">Titel<input id="metaTitle" data-meta="title" type="text"></label>
+            <label class="wide">Untertitel<input id="metaSubtitle" data-meta="subtitle" type="text"></label>
+            <label class="wide">Universitaet<input id="metaUniversity" data-meta="university" type="text"></label>
+            <label class="wide">Institut<input id="metaInstitute" data-meta="institute" type="text"></label>
+            <label class="wide">Lehrveranstaltung<input id="metaCourse" data-meta="course" type="text"></label>
+            <label>Semester<input id="metaSemester" data-meta="semester" type="text"></label>
+            <label>Dozent<input id="metaLecturer" data-meta="lecturer" type="text"></label>
+            <label>Name<input id="metaAuthor" data-meta="author" type="text"></label>
+            <label>Matrikel<input id="metaMatriculation" data-meta="matriculation" type="text"></label>
+            <label class="wide">Studiengang<input id="metaStudy" data-meta="study" type="text"></label>
+            <label>Fachsemester<input id="metaStudySemester" data-meta="studySemester" type="text"></label>
+            <label>Abgabe<input id="metaSubmission" data-meta="submission" type="date"></label>
+            <label class="wide">E-Mail<input id="metaEmail" data-meta="email" type="email"></label>
+            <label class="wide">Adresse<input id="metaAddress" data-meta="address" type="text"></label>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>Seite</h2>
+          <div class="settings-grid">
+            <label>Schrift
+              <select id="fontFamily">
+                <option value="&quot;Times New Roman&quot;, Times, serif">Times New Roman</option>
+                <option value="Garamond, &quot;EB Garamond&quot;, serif">Garamond</option>
+                <option value="Georgia, serif">Georgia</option>
+                <option value="Arial, Helvetica, sans-serif">Arial</option>
+                <option value="Calibri, Candara, Segoe, sans-serif">Calibri</option>
+              </select>
+            </label>
+            <label>Groesse
+              <select id="fontSize">
+                <option value="10">10 pt</option>
+                <option value="11">11 pt</option>
+                <option value="12">12 pt</option>
+                <option value="13">13 pt</option>
+                <option value="14">14 pt</option>
+              </select>
+            </label>
+            <label>Zeilenabstand
+              <select id="lineHeight">
+                <option value="1.0">1,0</option>
+                <option value="1.15">1,15</option>
+                <option value="1.5">1,5</option>
+                <option value="2.0">2,0</option>
+              </select>
+            </label>
+            <label>Ausrichtung
+              <select id="textAlign">
+                <option value="justify">Blocksatz</option>
+                <option value="left">Links</option>
+                <option value="center">Zentriert</option>
+                <option value="right">Rechts</option>
+              </select>
+            </label>
+            <label>Rand oben<input id="marginTop" type="number" min="1" max="6" step="0.1"></label>
+            <label>Rand unten<input id="marginBottom" type="number" min="1" max="6" step="0.1"></label>
+            <label>Rand links<input id="marginLeft" type="number" min="1" max="6" step="0.1"></label>
+            <label>Rand rechts<input id="marginRight" type="number" min="1" max="7" step="0.1"></label>
+            <label>Fussnoten<input id="footnoteSize" type="number" min="8" max="12" step="1"></label>
+            <label>Textseite ab<input id="textPageStart" type="number" min="1" max="10" step="1"></label>
+            <label>Zeichenlimit<input id="charLimit" type="number" min="0" step="1000"></label>
+            <label>TOC-Tiefe
+              <select id="tocDepth">
+                <option value="1">Kapitel</option>
+                <option value="2">Kapitel + Unterkapitel</option>
+                <option value="3">Bis Ebene 3</option>
+              </select>
+            </label>
+            <label class="wide">Nummerierung
+              <select id="numberingStyle">
+                <option value="decimal">1 / 1.1 / 1.1.1</option>
+                <option value="roman">I / I.1 / I.1.1</option>
+                <option value="alpha">A / A.1 / A.1.1</option>
+                <option value="none">Ohne Nummern</option>
+              </select>
+            </label>
+            <label class="wide row" style="justify-content:space-between; text-transform:none; letter-spacing:0;">
+              <span>Silbentrennung</span><input id="hyphenation" type="checkbox" style="width:auto; min-height:0;">
+            </label>
+          </div>
+          <div class="row" style="margin-top:10px;">
+            <button type="button" id="applyNggPreset"><i data-lucide="badge-check"></i>NGG</button>
+            <button type="button" id="clearFormatting"><i data-lucide="eraser"></i>Bereinigen</button>
+          </div>
+        </section>
+      </aside>
+
+      <main class="editor-shell" aria-label="Schreibflaeche">
+        <div class="toolbar" role="toolbar" aria-label="Formatierung">
+          <div class="toolbar-group">
+            <select id="blockFormat" title="Absatzformat">
+              <option value="p">Absatz</option>
+              <option value="h1">Kapitel</option>
+              <option value="h2">Unterkapitel</option>
+              <option value="h3">Ebene 3</option>
+              <option value="blockquote">Zitatblock</option>
+            </select>
+          </div>
+          <div class="separator"></div>
+          <div class="toolbar-group">
+            <button type="button" class="icon" data-command="bold" title="Fett"><i data-lucide="bold"></i></button>
+            <button type="button" class="icon" data-command="italic" title="Kursiv"><i data-lucide="italic"></i></button>
+            <button type="button" class="icon" data-command="underline" title="Unterstrichen"><i data-lucide="underline"></i></button>
+          </div>
+          <div class="separator"></div>
+          <div class="toolbar-group">
+            <button type="button" class="icon" data-align="left" title="Linksbündig"><i data-lucide="align-left"></i></button>
+            <button type="button" class="icon" data-align="center" title="Zentriert"><i data-lucide="align-center"></i></button>
+            <button type="button" class="icon" data-align="right" title="Rechtsbündig"><i data-lucide="align-right"></i></button>
+            <button type="button" class="icon" data-align="justify" title="Blocksatz"><i data-lucide="align-justify"></i></button>
+          </div>
+          <div class="separator"></div>
+          <div class="toolbar-group">
+            <button type="button" id="insertFootnote" title="Fussnote"><i data-lucide="pilcrow"></i>Fussnote</button>
+            <button type="button" id="insertCitation" title="Literatur-Fussnote"><i data-lucide="quote"></i>Zitat</button>
+            <button type="button" id="insertHeadingSet" title="Gliederung anlegen"><i data-lucide="list-tree"></i>Gliederung</button>
+          </div>
+        </div>
+
+        <div class="canvas">
+          <article id="editor" class="editor-page" contenteditable="true" spellcheck="true" aria-label="Paper-Editor"></article>
+        </div>
+
+        <div class="statusbar">
+          <span id="statusLine">Bereit</span>
+          <span id="autosaveLine">Autosave aktiv</span>
+        </div>
+      </main>
+
+      <aside class="right-panel" aria-label="Analyse und Literatur">
+        <div class="tabs" role="tablist">
+          <button type="button" class="active" data-tab="outline">Inhalt</button>
+          <button type="button" data-tab="literature">Literatur</button>
+          <button type="button" data-tab="export">Export</button>
+        </div>
+
+        <div id="tab-outline" class="tab-panel active">
+          <section class="panel">
+            <h2>Zeichen</h2>
+            <div class="metric-grid">
+              <div class="metric"><span>Text mit Leerz.</span><strong id="countBodySpaces">0</strong></div>
+              <div class="metric"><span>Text ohne Leerz.</span><strong id="countBodyNoSpaces">0</strong></div>
+              <div class="metric"><span>Mit Fussnoten</span><strong id="countTotalSpaces">0</strong></div>
+              <div class="metric"><span>Ohne Leerz. ges.</span><strong id="countTotalNoSpaces">0</strong></div>
+            </div>
+          </section>
+
+          <section class="panel">
+            <h2>Inhaltsverzeichnis</h2>
+            <ul id="tocList" class="toc-list"></ul>
+          </section>
+
+          <section class="panel">
+            <h2>Leitfaden</h2>
+            <ul id="guideChecks" class="check-list"></ul>
+          </section>
+
+          <section class="panel">
+            <h2>Fussnoten</h2>
+            <ul id="footnoteList" class="footnote-list"></ul>
+          </section>
+        </div>
+
+        <div id="tab-literature" class="tab-panel">
+          <section class="panel">
+            <h2>Zitieren</h2>
+            <div class="field-grid">
+              <label class="wide">Stil
+                <select id="citationStyle">
+                  <option value="germania">Germania Sacra / Geschichte</option>
+                  <option value="apa">APA</option>
+                  <option value="chicago">Chicago Notes</option>
+                  <option value="manual">Manuell</option>
+                </select>
+              </label>
+              <label class="wide">Kurztitel
+                <select id="shortTitleMode">
+                  <option value="author-short">Nachname, Kurztitel</option>
+                  <option value="author-year">Nachname Jahr</option>
+                  <option value="short">Kurztitel</option>
+                  <option value="manual">Manueller Kurztitel</option>
+                </select>
+              </label>
+              <label class="wide">Literatur
+                <select id="citationReference"></select>
+              </label>
+              <label>Seite/Spalte<input id="citationLocator" type="text" placeholder="S. 47"></label>
+              <label>Praefix<input id="citationPrefix" type="text" placeholder="Vgl."></label>
+              <label class="wide">Zusatz<input id="citationSuffix" type="text" placeholder="hier S. 43"></label>
+              <label class="wide row" style="justify-content:space-between; text-transform:none; letter-spacing:0;">
+                <span>Erstnennung vollstaendig</span><input id="firstCitationFull" type="checkbox" style="width:auto; min-height:0;">
+              </label>
+              <label class="wide row" style="justify-content:space-between; text-transform:none; letter-spacing:0;">
+                <span>Ebenda bei direkter Wiederholung</span><input id="useIbid" type="checkbox" style="width:auto; min-height:0;">
+              </label>
+            </div>
+            <button type="button" id="insertSelectedCitation" class="primary" style="width:100%; margin-top:10px;"><i data-lucide="corner-down-left"></i>In Fussnote einfuegen</button>
+          </section>
+
+          <section class="panel">
+            <h2>Eintrag</h2>
+            <div class="field-grid">
+              <label>Gruppe
+                <select id="refKind">
+                  <option value="literature">Literatur</option>
+                  <option value="source">Quelle</option>
+                </select>
+              </label>
+              <label>Typ
+                <select id="refType">
+                  <option value="book">Monographie</option>
+                  <option value="collection">Sammelbandbeitrag</option>
+                  <option value="article">Aufsatz</option>
+                  <option value="thesis">Hochschulschrift</option>
+                  <option value="web">Internet</option>
+                </select>
+              </label>
+              <label>Key<input id="refKey" type="text"></label>
+              <label>Jahr<input id="refYear" type="text"></label>
+              <label class="wide">Autor(en)<input id="refAuthor" type="text"></label>
+              <label class="wide">Titel<input id="refTitle" type="text"></label>
+              <label class="wide">Untertitel<input id="refSubtitle" type="text"></label>
+              <label>Ort<input id="refPlace" type="text"></label>
+              <label>Verlag<input id="refPublisher" type="text"></label>
+              <label class="wide">Herausgeber / Container<input id="refContainer" type="text"></label>
+              <label>Band/Jg.<input id="refVolume" type="text"></label>
+              <label>Seiten<input id="refPages" type="text"></label>
+              <label class="wide">URL<input id="refUrl" type="url"></label>
+              <label>Zugriff<input id="refAccessed" type="date"></label>
+              <label>Kurztitel<input id="refShortTitle" type="text"></label>
+              <label class="wide">Manuelles Format<textarea id="refManual"></textarea></label>
+            </div>
+            <div class="row" style="margin-top:10px;">
+              <button type="button" id="saveReference" class="primary"><i data-lucide="save"></i>Speichern</button>
+              <button type="button" id="resetReference"><i data-lucide="rotate-ccw"></i>Neu</button>
+            </div>
+          </section>
+
+          <section class="panel">
+            <h2>Verzeichnis</h2>
+            <ul id="referenceList" class="reference-list"></ul>
+          </section>
+        </div>
+
+        <div id="tab-export" class="tab-panel">
+          <section class="panel">
+            <h2>LaTeX</h2>
+            <div class="row">
+              <button type="button" id="downloadTex"><i data-lucide="file-code-2"></i>main.tex</button>
+              <button type="button" id="downloadBib"><i data-lucide="book-marked"></i>references.bib</button>
+              <button type="button" id="downloadJson"><i data-lucide="database"></i>Projektdatei</button>
+            </div>
+          </section>
+
+          <section class="panel">
+            <h2>BibTeX Import</h2>
+            <div class="import-drop">
+              <textarea id="bibtexImport" placeholder="@book{key, author={...}, title={...}, year={...}}"></textarea>
+              <button type="button" id="importBibtex"><i data-lucide="upload"></i>Eintraege uebernehmen</button>
+            </div>
+          </section>
+
+          <section class="panel">
+            <h2>Manuelles Zitatformat</h2>
+            <textarea id="manualPattern"></textarea>
+            <p class="compact-help">{author}, {title}, {shortTitle}, {place}, {year}, {publisher}, {container}, {pages}, {locator}</p>
+          </section>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <div id="printRoot" class="print-root"></div>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const STORAGE_KEY = "paper-maker-state-v1";
+      const editor = document.getElementById("editor");
+      const printRoot = document.getElementById("printRoot");
+      const statusLine = document.getElementById("statusLine");
+      const autosaveLine = document.getElementById("autosaveLine");
+      const dynamicPrintStyle = document.getElementById("dynamicPrintStyle");
+      const qs = (selector, root = document) => root.querySelector(selector);
+      const qsa = (selector, root = document) => Array.from(root.querySelectorAll(selector));
+      let selectedReferenceId = null;
+      let saveTimer = null;
+
+      const defaultState = () => ({
+        metadata: {
+          title: "Neue Hausarbeit",
+          subtitle: "Untertitel",
+          university: "Friedrich-Schiller-Universitaet Jena",
+          institute: "Historisches Institut",
+          course: "Seminartitel",
+          semester: "Sommersemester 2026",
+          lecturer: "",
+          author: "Felix Staacke",
+          matriculation: "",
+          study: "Lehramt Geschichte + Informatik",
+          studySemester: "",
+          submission: "",
+          email: "",
+          address: ""
+        },
+        settings: {
+          fontFamily: "\"Times New Roman\", Times, serif",
+          fontSize: 12,
+          lineHeight: 1.5,
+          align: "justify",
+          marginTop: 2.5,
+          marginRight: 4,
+          marginBottom: 2.5,
+          marginLeft: 2,
+          footnoteSize: 10,
+          textPageStart: 1,
+          charLimit: 30000,
+          tocDepth: 2,
+          numberingStyle: "decimal",
+          hyphenation: true,
+          citationStyle: "germania",
+          shortTitleMode: "author-short",
+          firstCitationFull: true,
+          useIbid: true,
+          manualPattern: "{author}: {title}, {place} {year}, {locator}."
+        },
+        content: [
+          "<h1>Einleitung</h1>",
+          "<p>Diese Vorlage ist auf eine geschichtswissenschaftliche Hausarbeit ausgelegt. Formuliere hier Gegenstand, Fragestellung, Forschungsstand und Vorgehen.</p>",
+          "<h1>Quellenkapitel</h1>",
+          "<p>Ordne hier die verwendeten Quellen ein und erklaere Auswahl, Ueberlieferung und Aussagekraft.</p>",
+          "<h1>Analyse</h1>",
+          "<h2>Erster Untersuchungsschritt</h2>",
+          "<p>Entwickle die Argumentation entlang deiner Leitfrage.</p>",
+          "<h2>Zweiter Untersuchungsschritt</h2>",
+          "<p>Setze Forschung, Quellen und eigene Beobachtungen zueinander in Beziehung.</p>",
+          "<h1>Fazit</h1>",
+          "<p>Beantworte die Fragestellung und benenne knapp weiterfuehrende Perspektiven.</p>"
+        ].join(""),
+        references: [
+          {
+            id: "ref-hockerts-1988",
+            kind: "literature",
+            type: "collection",
+            key: "Hockerts1988",
+            author: "Hockerts, Hans Guenter",
+            title: "Integration der Gesellschaft",
+            subtitle: "Gruendungskrise und Sozialpolitik in der fruehen Bundesrepublik",
+            year: "1988",
+            place: "Bonn",
+            publisher: "",
+            container: "Funke, Manfred (Hrsg.): Entscheidung fuer den Westen. Vom Besatzungsstatut zur Souveraenitaet der Bundesrepublik 1949-1955",
+            volume: "",
+            pages: "39-57",
+            url: "",
+            accessed: "",
+            shortTitle: "Integration",
+            manual: ""
+          }
+        ],
+        footnotes: []
+      });
+
+      let state = loadState();
+
+      function loadState() {
+        try {
+          const saved = localStorage.getItem(STORAGE_KEY);
+          if (!saved) return defaultState();
+          return normalizeState(JSON.parse(saved));
+        } catch (error) {
+          return defaultState();
+        }
+      }
+
+      function normalizeState(input) {
+        const base = defaultState();
+        const merged = {
+          metadata: { ...base.metadata, ...(input.metadata || {}) },
+          settings: { ...base.settings, ...(input.settings || {}) },
+          content: input.content || base.content,
+          references: Array.isArray(input.references) ? input.references : base.references,
+          footnotes: Array.isArray(input.footnotes) ? input.footnotes : []
+        };
+        return merged;
+      }
+
+      function setStatus(message) {
+        statusLine.textContent = message;
+      }
+
+      function persistNow() {
+        syncContentFromEditor();
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        autosaveLine.textContent = `Gespeichert ${new Date().toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}`;
+      }
+
+      function scheduleSave(message = "Bearbeitung gespeichert") {
+        clearTimeout(saveTimer);
+        saveTimer = setTimeout(() => {
+          persistNow();
+          setStatus(message);
+        }, 350);
+      }
+
+      function escapeHtml(value) {
+        return String(value ?? "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      function textOnly(html) {
+        const div = document.createElement("div");
+        div.innerHTML = html || "";
+        return div.textContent || "";
+      }
+
+      function uid(prefix) {
+        return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+      }
+
+      function init() {
+        editor.innerHTML = state.content;
+        bindEvents();
+        hydrateControls();
+        renderAll();
+        if (window.lucide) window.lucide.createIcons();
+        window.addEventListener("load", () => {
+          if (window.lucide) window.lucide.createIcons();
+        });
+        setStatus("Bereit");
+      }
+
+      function bindEvents() {
+        qsa("[data-meta]").forEach((input) => {
+          input.addEventListener("input", () => {
+            state.metadata[input.dataset.meta] = input.value;
+            renderAll();
+            scheduleSave("Titelblatt aktualisiert");
+          });
+        });
+
+        const settingBindings = {
+          fontFamily: "fontFamily",
+          fontSize: "fontSize",
+          lineHeight: "lineHeight",
+          textAlign: "align",
+          marginTop: "marginTop",
+          marginRight: "marginRight",
+          marginBottom: "marginBottom",
+          marginLeft: "marginLeft",
+          footnoteSize: "footnoteSize",
+          textPageStart: "textPageStart",
+          charLimit: "charLimit",
+          tocDepth: "tocDepth",
+          numberingStyle: "numberingStyle"
+        };
+
+        Object.entries(settingBindings).forEach(([id, key]) => {
+          const control = document.getElementById(id);
+          control.addEventListener("change", () => {
+            const numeric = ["fontSize", "lineHeight", "marginTop", "marginRight", "marginBottom", "marginLeft", "footnoteSize", "textPageStart", "charLimit", "tocDepth"].includes(id);
+            state.settings[key] = numeric ? Number(control.value) : control.value;
+            if (id === "fontFamily" && applyInlineStyle("fontFamily", control.value)) {
+              syncContentFromEditor();
+            }
+            if (id === "fontSize" && applyInlineStyle("fontSize", `${control.value}pt`)) {
+              syncContentFromEditor();
+            }
+            renderAll();
+            scheduleSave("Format aktualisiert");
+          });
+        });
+
+        qs("#hyphenation").addEventListener("change", (event) => {
+          state.settings.hyphenation = event.target.checked;
+          renderAll();
+          scheduleSave("Silbentrennung aktualisiert");
+        });
+
+        ["citationStyle", "shortTitleMode", "firstCitationFull", "useIbid"].forEach((id) => {
+          qs(`#${id}`).addEventListener("change", (event) => {
+            const key = id;
+            state.settings[key] = event.target.type === "checkbox" ? event.target.checked : event.target.value;
+            renderAll();
+            scheduleSave("Zitierstil aktualisiert");
+          });
+        });
+
+        qs("#manualPattern").addEventListener("input", (event) => {
+          state.settings.manualPattern = event.target.value;
+          renderAll();
+          scheduleSave("Manuelles Format aktualisiert");
+        });
+
+        editor.addEventListener("input", () => {
+          renumberFootnotes();
+          renderAll();
+          scheduleSave();
+        });
+
+        editor.addEventListener("paste", (event) => {
+          event.preventDefault();
+          const text = event.clipboardData.getData("text/plain");
+          document.execCommand("insertText", false, text);
+        });
+
+        qsa("[data-command]").forEach((button) => {
+          button.addEventListener("click", () => {
+            editor.focus();
+            document.execCommand(button.dataset.command, false);
+            syncContentFromEditor();
+            renderAll();
+            scheduleSave("Format angewendet");
+          });
+        });
+
+        qsa("[data-align]").forEach((button) => {
+          button.addEventListener("click", () => {
+            editor.focus();
+            const command = button.dataset.align === "justify" ? "justifyFull" : `justify${capitalize(button.dataset.align)}`;
+            document.execCommand(command, false);
+            state.settings.align = button.dataset.align;
+            qs("#textAlign").value = button.dataset.align;
+            syncContentFromEditor();
+            renderAll();
+            scheduleSave("Ausrichtung aktualisiert");
+          });
+        });
+
+        qs("#blockFormat").addEventListener("change", (event) => {
+          editor.focus();
+          document.execCommand("formatBlock", false, event.target.value);
+          syncContentFromEditor();
+          renderAll();
+          scheduleSave("Absatzformat aktualisiert");
+        });
+
+        qs("#insertFootnote").addEventListener("click", () => insertFreeFootnote());
+        qs("#insertCitation").addEventListener("click", () => activateTab("literature"));
+        qs("#insertSelectedCitation").addEventListener("click", () => insertReferenceFootnote());
+        qs("#insertHeadingSet").addEventListener("click", insertHeadingSet);
+
+        qs("#applyNggPreset").addEventListener("click", applyNggPreset);
+        qs("#clearFormatting").addEventListener("click", clearEditorFormatting);
+
+        qsa("[data-tab]").forEach((button) => {
+          button.addEventListener("click", () => activateTab(button.dataset.tab));
+        });
+
+        qs("#saveReference").addEventListener("click", saveReferenceFromForm);
+        qs("#resetReference").addEventListener("click", resetReferenceForm);
+        qs("#importBibtex").addEventListener("click", importBibtexFromTextarea);
+
+        qs("#openProject").addEventListener("click", openProject);
+        qs("#projectFiles").addEventListener("change", (event) => loadSelectedFiles(event.target.files));
+        qs("#projectDirectory").addEventListener("change", (event) => loadSelectedFiles(event.target.files));
+        qs("#newProject").addEventListener("click", () => {
+          if (!confirm("Aktuelles Browser-Projekt verwerfen und neu starten?")) return;
+          state = defaultState();
+          selectedReferenceId = null;
+          editor.innerHTML = state.content;
+          hydrateControls();
+          renderAll();
+          persistNow();
+          setStatus("Neues Projekt angelegt");
+        });
+
+        qs("#printPdf").addEventListener("click", () => {
+          syncContentFromEditor();
+          renderAll();
+          window.print();
+        });
+
+        qs("#downloadZip").addEventListener("click", downloadZipProject);
+        qs("#downloadTex").addEventListener("click", () => downloadText("main.tex", generateLatexDocument(), "application/x-tex"));
+        qs("#downloadBib").addEventListener("click", () => downloadText("references.bib", generateBibtex(), "application/x-bibtex"));
+        qs("#downloadJson").addEventListener("click", () => {
+          syncContentFromEditor();
+          downloadText("paper-maker.json", JSON.stringify(state, null, 2), "application/json");
+        });
+      }
+
+      function hydrateControls() {
+        qsa("[data-meta]").forEach((input) => {
+          input.value = state.metadata[input.dataset.meta] || "";
+        });
+
+        qs("#fontFamily").value = state.settings.fontFamily;
+        qs("#fontSize").value = String(state.settings.fontSize);
+        qs("#lineHeight").value = String(state.settings.lineHeight);
+        qs("#textAlign").value = state.settings.align;
+        qs("#marginTop").value = state.settings.marginTop;
+        qs("#marginRight").value = state.settings.marginRight;
+        qs("#marginBottom").value = state.settings.marginBottom;
+        qs("#marginLeft").value = state.settings.marginLeft;
+        qs("#footnoteSize").value = state.settings.footnoteSize;
+        qs("#textPageStart").value = state.settings.textPageStart;
+        qs("#charLimit").value = state.settings.charLimit;
+        qs("#tocDepth").value = String(state.settings.tocDepth);
+        qs("#numberingStyle").value = state.settings.numberingStyle;
+        qs("#hyphenation").checked = !!state.settings.hyphenation;
+        qs("#citationStyle").value = state.settings.citationStyle;
+        qs("#shortTitleMode").value = state.settings.shortTitleMode;
+        qs("#firstCitationFull").checked = !!state.settings.firstCitationFull;
+        qs("#useIbid").checked = !!state.settings.useIbid;
+        qs("#manualPattern").value = state.settings.manualPattern || "";
+        resetReferenceForm();
+      }
+
+      function renderAll() {
+        applyEditorStyles();
+        renumberFootnotes();
+        renderProjectSubtitle();
+        renderToc();
+        renderCounts();
+        renderGuideChecks();
+        renderReferences();
+        renderFootnoteList();
+        renderPrintDocument();
+        if (window.lucide) window.lucide.createIcons();
+      }
+
+      function syncContentFromEditor() {
+        state.content = editor.innerHTML;
+      }
+
+      function applyEditorStyles() {
+        const s = state.settings;
+        document.documentElement.style.setProperty("--paper-font", s.fontFamily);
+        document.documentElement.style.setProperty("--paper-size", `${s.fontSize}pt`);
+        document.documentElement.style.setProperty("--paper-line", s.lineHeight);
+        document.documentElement.style.setProperty("--paper-align", s.align);
+        document.documentElement.style.setProperty("--paper-top", `${s.marginTop}cm`);
+        document.documentElement.style.setProperty("--paper-right", `${s.marginRight}cm`);
+        document.documentElement.style.setProperty("--paper-bottom", `${s.marginBottom}cm`);
+        document.documentElement.style.setProperty("--paper-left", `${s.marginLeft}cm`);
+        document.documentElement.style.setProperty("--footnote-size", `${s.footnoteSize}pt`);
+        editor.style.hyphens = s.hyphenation ? "auto" : "manual";
+        qsa("[data-align]").forEach((button) => button.classList.toggle("active", button.dataset.align === s.align));
+        dynamicPrintStyle.textContent = `
+          @page {
+            size: A4;
+            margin: ${s.marginTop}cm ${s.marginRight}cm ${s.marginBottom}cm ${s.marginLeft}cm;
+          }
+        `;
+      }
+
+      function renderProjectSubtitle() {
+        qs("#projectSubtitle").textContent = state.metadata.title || "Neue Hausarbeit";
+      }
+
+      function capitalize(value) {
+        return value.charAt(0).toUpperCase() + value.slice(1);
+      }
+
+      function applyInlineStyle(property, value) {
+        const selection = window.getSelection();
+        if (!selection || !selection.rangeCount || selection.isCollapsed) return false;
+        if (!editor.contains(selection.anchorNode) || !editor.contains(selection.focusNode)) return false;
+        const range = selection.getRangeAt(0);
+        const span = document.createElement("span");
+        span.style[property] = value;
+        try {
+          range.surroundContents(span);
+        } catch (error) {
+          const fragment = range.extractContents();
+          span.appendChild(fragment);
+          range.insertNode(span);
+        }
+        selection.removeAllRanges();
+        const after = document.createRange();
+        after.selectNodeContents(span);
+        after.collapse(false);
+        selection.addRange(after);
+        return true;
+      }
+
+      function applyNggPreset() {
+        Object.assign(state.settings, {
+          fontFamily: "\"Times New Roman\", Times, serif",
+          fontSize: 12,
+          lineHeight: 1.5,
+          align: "justify",
+          marginTop: 2.5,
+          marginRight: 4,
+          marginBottom: 2.5,
+          marginLeft: 2,
+          footnoteSize: 10,
+          tocDepth: 2,
+          numberingStyle: "decimal",
+          hyphenation: true,
+          charLimit: 30000
+        });
+        hydrateControls();
+        renderAll();
+        scheduleSave("NGG-Format angewendet");
+      }
+
+      function clearEditorFormatting() {
+        editor.focus();
+        document.execCommand("removeFormat", false);
+        syncContentFromEditor();
+        renderAll();
+        scheduleSave("Direktformatierung bereinigt");
+      }
+
+      function activateTab(name) {
+        qsa("[data-tab]").forEach((button) => button.classList.toggle("active", button.dataset.tab === name));
+        qsa(".tab-panel").forEach((panel) => panel.classList.toggle("active", panel.id === `tab-${name}`));
+      }
+
+      function insertHeadingSet() {
+        editor.focus();
+        const html = [
+          "<h1>Einleitung</h1><p></p>",
+          "<h1>Quellenkapitel</h1><p></p>",
+          "<h1>Analyse</h1><h2>Erster Untersuchungsschritt</h2><p></p><h2>Zweiter Untersuchungsschritt</h2><p></p>",
+          "<h1>Fazit</h1><p></p>"
+        ].join("");
+        document.execCommand("insertHTML", false, html);
+        syncContentFromEditor();
+        renderAll();
+        scheduleSave("Gliederung eingefuegt");
+      }
+
+      function placeCaretAtEnd() {
+        editor.focus();
+        const range = document.createRange();
+        range.selectNodeContents(editor);
+        range.collapse(false);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }
+
+      function insertFootnoteNode(id) {
+        const selection = window.getSelection();
+        if (!selection.rangeCount || !editor.contains(selection.anchorNode)) placeCaretAtEnd();
+        const range = window.getSelection().getRangeAt(0);
+        const sup = document.createElement("sup");
+        sup.className = "pm-footnote-ref";
+        sup.dataset.footnoteId = id;
+        sup.contentEditable = "false";
+        sup.textContent = "[?]";
+        range.insertNode(sup);
+        range.setStartAfter(sup);
+        range.setEndAfter(sup);
+        window.getSelection().removeAllRanges();
+        window.getSelection().addRange(range);
+      }
+
+      function insertFreeFootnote() {
+        const text = prompt("Fussnotentext");
+        if (!text) return;
+        const fn = {
+          id: uid("fn"),
+          refId: "",
+          locator: "",
+          prefix: "",
+          suffix: "",
+          custom: text
+        };
+        state.footnotes.push(fn);
+        insertFootnoteNode(fn.id);
+        syncContentFromEditor();
+        renderAll();
+        scheduleSave("Fussnote eingefuegt");
+      }
+
+      function insertReferenceFootnote() {
+        const refId = qs("#citationReference").value;
+        if (!refId) {
+          setStatus("Kein Literatureintrag ausgewaehlt");
+          return;
+        }
+        const fn = {
+          id: uid("fn"),
+          refId,
+          locator: qs("#citationLocator").value.trim(),
+          prefix: qs("#citationPrefix").value.trim(),
+          suffix: qs("#citationSuffix").value.trim(),
+          custom: ""
+        };
+        state.footnotes.push(fn);
+        insertFootnoteNode(fn.id);
+        syncContentFromEditor();
+        renderAll();
+        scheduleSave("Literatur-Fussnote eingefuegt");
+      }
+
+      function renumberFootnotes() {
+        const refs = qsa("sup.pm-footnote-ref[data-footnote-id]", editor);
+        refs.forEach((node, index) => {
+          node.textContent = String(index + 1);
+          const fn = state.footnotes.find((item) => item.id === node.dataset.footnoteId);
+          if (fn) fn.order = index + 1;
+        });
+      }
+
+      function getOrderedFootnotes() {
+        return qsa("sup.pm-footnote-ref[data-footnote-id]", editor)
+          .map((node, index) => {
+            const fn = state.footnotes.find((item) => item.id === node.dataset.footnoteId);
+            return fn ? { ...fn, order: index + 1 } : null;
+          })
+          .filter(Boolean);
+      }
+
+      function getHeadings() {
+        const counters = [0, 0, 0];
+        return qsa("h1,h2,h3", editor).map((heading) => {
+          const level = Number(heading.tagName.slice(1));
+          counters[level - 1] += 1;
+          for (let i = level; i < counters.length; i += 1) counters[i] = 0;
+          const range = document.createRange();
+          range.setStart(editor, 0);
+          range.setEndBefore(heading);
+          const charsBefore = range.toString().length;
+          const number = formatHeadingNumber(counters, level);
+          const title = heading.textContent.trim().replace(/^\d+(\.\d+)*\s+/, "");
+          return {
+            level,
+            title,
+            number,
+            charsBefore,
+            page: estimatePage(charsBefore)
+          };
+        });
+      }
+
+      function formatHeadingNumber(counters, level) {
+        if (state.settings.numberingStyle === "none") return "";
+        const values = counters.slice(0, level);
+        if (state.settings.numberingStyle === "roman") {
+          values[0] = toRoman(values[0]);
+        }
+        if (state.settings.numberingStyle === "alpha") {
+          values[0] = toAlpha(values[0]);
+        }
+        return values.join(".");
+      }
+
+      function toRoman(number) {
+        const map = [
+          [1000, "M"], [900, "CM"], [500, "D"], [400, "CD"],
+          [100, "C"], [90, "XC"], [50, "L"], [40, "XL"],
+          [10, "X"], [9, "IX"], [5, "V"], [4, "IV"], [1, "I"]
+        ];
+        let value = Number(number) || 0;
+        let result = "";
+        map.forEach(([arabic, roman]) => {
+          while (value >= arabic) {
+            result += roman;
+            value -= arabic;
+          }
+        });
+        return result || "I";
+      }
+
+      function toAlpha(number) {
+        let value = Number(number) || 1;
+        let result = "";
+        while (value > 0) {
+          value -= 1;
+          result = String.fromCharCode(65 + (value % 26)) + result;
+          value = Math.floor(value / 26);
+        }
+        return result;
+      }
+
+      function estimatePage(charsBefore) {
+        const s = state.settings;
+        const usableWidth = Math.max(8, 21 - s.marginLeft - s.marginRight);
+        const usableHeight = Math.max(12, 29.7 - s.marginTop - s.marginBottom);
+        const lineHeightCm = (s.fontSize * 0.0352778) * s.lineHeight;
+        const lines = Math.max(20, Math.floor(usableHeight / lineHeightCm));
+        const charsPerLine = Math.max(45, Math.floor(usableWidth / 0.215));
+        const charsPerPage = Math.max(1200, lines * charsPerLine);
+        return Number(s.textPageStart) + Math.floor(charsBefore / charsPerPage);
+      }
+
+      function renderToc() {
+        const list = qs("#tocList");
+        const headings = getHeadings().filter((heading) => heading.level <= state.settings.tocDepth);
+        if (!headings.length) {
+          list.innerHTML = `<li class="toc-item"><span></span><span class="toc-title">Keine Ueberschriften</span><span></span></li>`;
+          return;
+        }
+        list.innerHTML = headings.map((heading) => `
+          <li class="toc-item" data-level="${heading.level}">
+            <span>${escapeHtml(heading.number)}</span>
+            <span class="toc-title">${escapeHtml(heading.title)}</span>
+            <span>${heading.page}</span>
+          </li>
+        `).join("");
+      }
+
+      function getCounts() {
+        const clone = editor.cloneNode(true);
+        qsa("sup.pm-footnote-ref", clone).forEach((node) => node.remove());
+        const body = (clone.textContent || "").replace(/\s+/g, " ").trim();
+        const footnotes = getOrderedFootnotes().map((fn) => textOnly(formatFootnote(fn))).join(" ");
+        return {
+          bodySpaces: body.length,
+          bodyNoSpaces: body.replace(/\s/g, "").length,
+          footnoteSpaces: footnotes.length,
+          footnoteNoSpaces: footnotes.replace(/\s/g, "").length,
+          totalSpaces: body.length + footnotes.length,
+          totalNoSpaces: body.replace(/\s/g, "").length + footnotes.replace(/\s/g, "").length
+        };
+      }
+
+      function renderCounts() {
+        const counts = getCounts();
+        qs("#countBodySpaces").textContent = formatNumber(counts.bodySpaces);
+        qs("#countBodyNoSpaces").textContent = formatNumber(counts.bodyNoSpaces);
+        qs("#countTotalSpaces").textContent = formatNumber(counts.totalSpaces);
+        qs("#countTotalNoSpaces").textContent = formatNumber(counts.totalNoSpaces);
+      }
+
+      function formatNumber(value) {
+        return new Intl.NumberFormat("de-DE").format(value || 0);
+      }
+
+      function renderGuideChecks() {
+        const s = state.settings;
+        const counts = getCounts();
+        const headings = getHeadings();
+        const hasThirdLevel = headings.some((heading) => heading.level > 2);
+        const fontOk = /Times New Roman|Garamond/.test(s.fontFamily) && [11, 12].includes(Number(s.fontSize));
+        const checks = [
+          {
+            state: fontOk && Number(s.lineHeight) === 1.5 ? "ok" : "warn",
+            text: `Schrift ${fontOk ? "passt" : "pruefen"}; Zeilenabstand ${s.lineHeight}.`
+          },
+          {
+            state: Number(s.marginLeft) >= 2 && Number(s.marginRight) >= 4 ? "ok" : "bad",
+            text: `Korrekturrand links ${s.marginLeft} cm, rechts ${s.marginRight} cm.`
+          },
+          {
+            state: Number(s.footnoteSize) === 10 ? "ok" : "warn",
+            text: `Fussnoten ${s.footnoteSize} pt.`
+          },
+          {
+            state: Number(s.charLimit) <= 0 || counts.bodySpaces <= Number(s.charLimit) ? "ok" : "bad",
+            text: `Textkorpus ${formatNumber(counts.bodySpaces)} / ${formatNumber(s.charLimit)} Zeichen.`
+          },
+          {
+            state: !hasThirdLevel && Number(s.tocDepth) <= 2 ? "ok" : "warn",
+            text: "Gliederung bis Ebene 2 empfohlen."
+          }
+        ];
+        qs("#guideChecks").innerHTML = checks.map((check) => `
+          <li class="check-item ${check.state}">
+            <span class="check-dot"></span>
+            <span>${escapeHtml(check.text)}</span>
+          </li>
+        `).join("");
+      }
+
+      function renderFootnoteList() {
+        const footnotes = getOrderedFootnotes();
+        qs("#footnoteList").innerHTML = footnotes.length ? footnotes.map((fn) => `
+          <li class="footnote-item">
+            <strong>${fn.order}.</strong>
+            <p>${formatFootnote(fn)}</p>
+          </li>
+        `).join("") : `<li class="footnote-item"><p>Keine Fussnoten</p></li>`;
+      }
+
+      function referenceById(id) {
+        return state.references.find((ref) => ref.id === id);
+      }
+
+      function authorLast(ref) {
+        const author = (ref.author || "").split(/\s*(?:\/|;|\band\b| und )\s*/i)[0].trim();
+        if (!author) return "";
+        if (author.includes(",")) return author.split(",")[0].trim();
+        const parts = author.split(/\s+/);
+        return parts[parts.length - 1] || author;
+      }
+
+      function cleanJoin(parts, separator = ", ") {
+        return parts.filter((part) => String(part || "").trim()).join(separator);
+      }
+
+      function fullTitle(ref) {
+        return cleanJoin([ref.title, ref.subtitle], ". ");
+      }
+
+      function formatShortCitation(ref, locator = "") {
+        const last = authorLast(ref);
+        let core;
+        if (state.settings.shortTitleMode === "author-year") {
+          core = cleanJoin([last, ref.year], " ");
+        } else if (state.settings.shortTitleMode === "short") {
+          core = ref.shortTitle || ref.title || ref.key;
+        } else if (state.settings.shortTitleMode === "manual") {
+          core = ref.shortTitle || cleanJoin([last, ref.year], " ");
+        } else {
+          core = cleanJoin([last, ref.shortTitle || ref.title || ref.year], ", ");
+        }
+        return cleanJoin([core, locator], ", ");
+      }
+
+      function formatBibliography(ref, includeLocator = "") {
+        if (!ref) return "";
+        if (state.settings.citationStyle === "manual" || ref.manual) {
+          return applyPattern(ref.manual || state.settings.manualPattern, ref, includeLocator);
+        }
+        if (state.settings.citationStyle === "apa") {
+          const title = fullTitle(ref);
+          if (ref.type === "article") return `${ref.author} (${ref.year}). ${title}. ${ref.container}, ${cleanJoin([ref.volume, ref.pages], ", ")}.`;
+          if (ref.type === "web") return `${ref.author} (${ref.year}). ${title}. ${ref.url}${ref.accessed ? ` (Zugriff: ${ref.accessed})` : ""}.`;
+          return `${ref.author} (${ref.year}). ${title}. ${ref.publisher || ref.place}.`;
+        }
+        if (state.settings.citationStyle === "chicago") {
+          const placePublisher = cleanJoin([ref.place, ref.publisher], ": ");
+          if (ref.type === "article") return `${ref.author}. "${fullTitle(ref)}." ${ref.container} ${ref.volume} (${ref.year}): ${ref.pages}.`;
+          if (ref.type === "collection") return `${ref.author}. "${fullTitle(ref)}." In ${ref.container}, ${ref.pages}. ${ref.place} ${ref.year}.`;
+          return `${ref.author}. ${fullTitle(ref)}. ${placePublisher}, ${ref.year}.`;
+        }
+        if (ref.type === "article") {
+          return `${ref.author}: ${fullTitle(ref)}, in: ${ref.container} ${ref.volume ? `${ref.volume} ` : ""}(${ref.year}), S. ${ref.pages}.`;
+        }
+        if (ref.type === "collection") {
+          return `${ref.author}: ${fullTitle(ref)}, in: ${ref.container}, ${ref.place} ${ref.year}, S. ${ref.pages}.`;
+        }
+        if (ref.type === "thesis") {
+          return `${ref.author}: ${fullTitle(ref)}, Diss. ${ref.place} ${ref.year}.`;
+        }
+        if (ref.type === "web") {
+          return `${ref.author}: ${fullTitle(ref)}, ${ref.url}${ref.accessed ? ` (${ref.accessed})` : ""}.`;
+        }
+        return `${ref.author}: ${fullTitle(ref)}, ${ref.place} ${ref.year}.`;
+      }
+
+      function formatFootnote(fn) {
+        if (fn.custom) return escapeHtml(ensurePeriod(fn.custom));
+        const ref = referenceById(fn.refId);
+        if (!ref) return "";
+        const ordered = getOrderedFootnotes();
+        const currentIndex = ordered.findIndex((item) => item.id === fn.id);
+        const previous = currentIndex > 0 ? ordered[currentIndex - 1] : null;
+        const previousSame = previous && previous.refId === fn.refId;
+        const earlierSame = ordered.some((item, index) => index < currentIndex && item.refId === fn.refId);
+        let citation;
+        if (state.settings.useIbid && previousSame) {
+          citation = cleanJoin(["Ebenda", fn.locator], ", ");
+        } else if (state.settings.firstCitationFull && !earlierSame) {
+          citation = formatBibliography(ref).replace(/\.$/, "");
+          if (fn.locator) citation = `${citation}, ${fn.locator}`;
+        } else {
+          citation = formatShortCitation(ref, fn.locator);
+        }
+        citation = cleanJoin([fn.prefix, citation, fn.suffix], " ");
+        return escapeHtml(ensurePeriod(citation));
+      }
+
+      function ensurePeriod(value) {
+        const text = String(value || "").trim();
+        return /[.!?]$/.test(text) ? text : `${text}.`;
+      }
+
+      function applyPattern(pattern, ref, locator) {
+        const values = {
+          author: ref.author || "",
+          title: fullTitle(ref),
+          shortTitle: ref.shortTitle || "",
+          place: ref.place || "",
+          year: ref.year || "",
+          publisher: ref.publisher || "",
+          container: ref.container || "",
+          pages: ref.pages || "",
+          locator: locator || ""
+        };
+        return String(pattern || "").replace(/\{(\w+)\}/g, (_, key) => values[key] ?? "").replace(/\s+,/g, ",").replace(/\s+\./g, ".").trim();
+      }
+
+      function renderReferences() {
+        const select = qs("#citationReference");
+        const sorted = [...state.references].sort((a, b) => (a.author || "").localeCompare(b.author || "", "de"));
+        select.innerHTML = sorted.map((ref) => `<option value="${ref.id}">${escapeHtml(ref.key || ref.shortTitle || ref.title)}</option>`).join("");
+        qs("#referenceList").innerHTML = sorted.length ? sorted.map((ref) => `
+          <li class="reference-item">
+            <div>
+              <strong class="reference-title">${escapeHtml(ref.author || "Ohne Autor")}: ${escapeHtml(ref.title || ref.key)}</strong>
+              <p>${escapeHtml(formatBibliography(ref))}</p>
+            </div>
+            <div class="reference-actions">
+              <button type="button" class="icon" data-edit-ref="${ref.id}" title="Bearbeiten"><i data-lucide="pencil"></i></button>
+              <button type="button" class="icon danger" data-delete-ref="${ref.id}" title="Loeschen"><i data-lucide="trash-2"></i></button>
+            </div>
+          </li>
+        `).join("") : `<li class="reference-item"><p>Keine Literatur</p></li>`;
+        qsa("[data-edit-ref]").forEach((button) => button.addEventListener("click", () => editReference(button.dataset.editRef)));
+        qsa("[data-delete-ref]").forEach((button) => button.addEventListener("click", () => deleteReference(button.dataset.deleteRef)));
+      }
+
+      function referenceFormValue(id) {
+        return qs(`#${id}`).value.trim();
+      }
+
+      function saveReferenceFromForm() {
+        const ref = {
+          id: selectedReferenceId || uid("ref"),
+          kind: referenceFormValue("refKind") || "literature",
+          type: referenceFormValue("refType") || "book",
+          key: referenceFormValue("refKey"),
+          author: referenceFormValue("refAuthor"),
+          title: referenceFormValue("refTitle"),
+          subtitle: referenceFormValue("refSubtitle"),
+          year: referenceFormValue("refYear"),
+          place: referenceFormValue("refPlace"),
+          publisher: referenceFormValue("refPublisher"),
+          container: referenceFormValue("refContainer"),
+          volume: referenceFormValue("refVolume"),
+          pages: referenceFormValue("refPages"),
+          url: referenceFormValue("refUrl"),
+          accessed: referenceFormValue("refAccessed"),
+          shortTitle: referenceFormValue("refShortTitle"),
+          manual: referenceFormValue("refManual")
+        };
+        if (!ref.key) ref.key = createBibKey(ref);
+        if (!ref.title && !ref.author) {
+          setStatus("Autor oder Titel fehlt");
+          return;
+        }
+        const index = state.references.findIndex((item) => item.id === ref.id);
+        if (index >= 0) state.references[index] = ref;
+        else state.references.push(ref);
+        selectedReferenceId = ref.id;
+        renderAll();
+        scheduleSave("Literatur gespeichert");
+      }
+
+      function editReference(id) {
+        const ref = referenceById(id);
+        if (!ref) return;
+        selectedReferenceId = id;
+        const fields = {
+          refKind: ref.kind,
+          refType: ref.type,
+          refKey: ref.key,
+          refAuthor: ref.author,
+          refTitle: ref.title,
+          refSubtitle: ref.subtitle,
+          refYear: ref.year,
+          refPlace: ref.place,
+          refPublisher: ref.publisher,
+          refContainer: ref.container,
+          refVolume: ref.volume,
+          refPages: ref.pages,
+          refUrl: ref.url,
+          refAccessed: ref.accessed,
+          refShortTitle: ref.shortTitle,
+          refManual: ref.manual
+        };
+        Object.entries(fields).forEach(([id, value]) => {
+          qs(`#${id}`).value = value || "";
+        });
+        setStatus("Literatureintrag geladen");
+      }
+
+      function deleteReference(id) {
+        const ref = referenceById(id);
+        if (!ref || !confirm(`Literatureintrag "${ref.title || ref.key}" loeschen?`)) return;
+        state.references = state.references.filter((item) => item.id !== id);
+        state.footnotes.forEach((fn) => {
+          if (fn.refId === id) fn.refId = "";
+        });
+        resetReferenceForm();
+        renderAll();
+        scheduleSave("Literatur geloescht");
+      }
+
+      function resetReferenceForm() {
+        selectedReferenceId = null;
+        ["refKey", "refAuthor", "refTitle", "refSubtitle", "refYear", "refPlace", "refPublisher", "refContainer", "refVolume", "refPages", "refUrl", "refAccessed", "refShortTitle", "refManual"].forEach((id) => {
+          qs(`#${id}`).value = "";
+        });
+        qs("#refKind").value = "literature";
+        qs("#refType").value = "book";
+      }
+
+      function createBibKey(ref) {
+        const last = authorLast(ref) || "Literatur";
+        const year = ref.year || "oJ";
+        const title = (ref.title || "").split(/\s+/).find((word) => word.length > 3) || "";
+        return `${asciiSlug(last)}${year}${asciiSlug(title)}`;
+      }
+
+      function asciiSlug(value) {
+        return String(value || "")
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-z0-9]/gi, "")
+          .slice(0, 18);
+      }
+
+      function importBibtexFromTextarea() {
+        const refs = parseBibtex(qs("#bibtexImport").value);
+        if (!refs.length) {
+          setStatus("Kein BibTeX erkannt");
+          return;
+        }
+        mergeReferences(refs);
+        qs("#bibtexImport").value = "";
+        renderAll();
+        scheduleSave(`${refs.length} BibTeX-Eintraege importiert`);
+      }
+
+      function parseBibtex(text) {
+        const chunks = String(text || "").split(/(?=@\w+\s*\{)/g);
+        return chunks.map((chunk) => {
+          const head = chunk.match(/@(\w+)\s*\{\s*([^,]+),([\s\S]*)\}\s*$/m);
+          if (!head) return null;
+          const type = bibTypeToRefType(head[1]);
+          const key = head[2].trim();
+          const body = head[3];
+          const fields = {};
+          const regex = /(\w+)\s*=\s*(\{(?:[^{}]|\{[^{}]*\})*\}|"[^"]*"|[^,\n]+)/g;
+          let match;
+          while ((match = regex.exec(body))) {
+            fields[match[1].toLowerCase()] = match[2].replace(/^[{"]|[}"]$/g, "").trim();
+          }
+          return {
+            id: uid("ref"),
+            kind: "literature",
+            type,
+            key,
+            author: fields.author || fields.editor || "",
+            title: fields.title || "",
+            subtitle: fields.subtitle || "",
+            year: fields.year || fields.date || "",
+            place: fields.location || fields.address || "",
+            publisher: fields.publisher || "",
+            container: fields.booktitle || fields.journal || fields.journaltitle || "",
+            volume: fields.volume || fields.number || "",
+            pages: fields.pages || "",
+            url: fields.url || "",
+            accessed: fields.urldate || "",
+            shortTitle: fields.shorttitle || "",
+            manual: ""
+          };
+        }).filter(Boolean);
+      }
+
+      function bibTypeToRefType(type) {
+        const normalized = String(type || "").toLowerCase();
+        if (["article"].includes(normalized)) return "article";
+        if (["incollection", "inproceedings", "inbook"].includes(normalized)) return "collection";
+        if (["phdthesis", "mastersthesis", "thesis"].includes(normalized)) return "thesis";
+        if (["online", "misc", "webpage"].includes(normalized)) return "web";
+        return "book";
+      }
+
+      function mergeReferences(refs) {
+        refs.forEach((ref) => {
+          const existing = state.references.findIndex((item) => item.key && item.key === ref.key);
+          if (existing >= 0) state.references[existing] = { ...state.references[existing], ...ref, id: state.references[existing].id };
+          else state.references.push(ref);
+        });
+      }
+
+      async function openProject() {
+        if ("showDirectoryPicker" in window) {
+          try {
+            const directory = await window.showDirectoryPicker();
+            const files = await collectDirectoryFiles(directory);
+            await loadFileRecords(files);
+            return;
+          } catch (error) {
+            if (error.name === "AbortError") return;
+          }
+        }
+        qs("#projectFiles").click();
+      }
+
+      async function collectDirectoryFiles(handle, prefix = "") {
+        const records = [];
+        for await (const [name, child] of handle.entries()) {
+          const path = prefix ? `${prefix}/${name}` : name;
+          if (child.kind === "directory") {
+            records.push(...await collectDirectoryFiles(child, path));
+          } else if (/\.(tex|bib|json)$/i.test(name)) {
+            const file = await child.getFile();
+            records.push({ name: path, text: await file.text() });
+          }
+        }
+        return records;
+      }
+
+      async function loadSelectedFiles(fileList) {
+        const files = Array.from(fileList || []).filter((file) => /\.(tex|bib|json)$/i.test(file.name));
+        const records = await Promise.all(files.map(async (file) => ({ name: file.webkitRelativePath || file.name, text: await file.text() })));
+        await loadFileRecords(records);
+        qs("#projectFiles").value = "";
+        qs("#projectDirectory").value = "";
+      }
+
+      async function loadFileRecords(records) {
+        if (!records.length) {
+          setStatus("Keine .tex-, .bib- oder .json-Dateien gefunden");
+          return;
+        }
+        const json = records.find((file) => /paper-maker\.json$/i.test(file.name) || /\.json$/i.test(file.name));
+        if (json) {
+          try {
+            state = normalizeState(JSON.parse(json.text));
+            editor.innerHTML = state.content;
+            hydrateControls();
+          } catch (error) {
+            setStatus("Projektdatei konnte nicht gelesen werden");
+          }
+        }
+        const bibs = records.filter((file) => /\.bib$/i.test(file.name)).flatMap((file) => parseBibtex(file.text));
+        if (bibs.length) mergeReferences(bibs);
+        const texFiles = records.filter((file) => /\.tex$/i.test(file.name));
+        if (texFiles.length) {
+          const main = texFiles.find((file) => /main\.tex$/i.test(file.name)) || texFiles.find((file) => /\\begin\{document\}/.test(file.text)) || texFiles[0];
+          importLatex(main.text);
+        }
+        renderAll();
+        persistNow();
+        setStatus(`${records.length} Projektdateien geladen`);
+      }
+
+      function importLatex(tex) {
+        const title = readLatexCommand(tex, "title");
+        const author = readLatexCommand(tex, "author");
+        if (title) state.metadata.title = latexInlineToText(title);
+        if (author) state.metadata.author = latexInlineToText(author);
+        let body = tex.match(/\\begin\{document\}([\s\S]*?)\\end\{document\}/);
+        body = body ? body[1] : tex;
+        body = body
+          .replace(/\\begin\{titlepage\}[\s\S]*?\\end\{titlepage\}/g, "")
+          .replace(/\\tableofcontents/g, "")
+          .replace(/\\printbibliography(?:\[[^\]]*\])?/g, "")
+          .replace(/%.*$/gm, "");
+        const footnotes = [];
+        body = replaceLatexCommand(body, "footnote", (content) => {
+          const id = uid("fn");
+          footnotes.push({ id, refId: "", locator: "", prefix: "", suffix: "", custom: latexInlineToText(content) });
+          return `@@PM_FOOTNOTE_${id}@@`;
+        });
+        state.footnotes.push(...footnotes);
+        editor.innerHTML = latexBodyToHtml(body);
+        state.content = editor.innerHTML;
+        hydrateControls();
+      }
+
+      function readLatexCommand(tex, command) {
+        const index = tex.indexOf(`\\${command}`);
+        if (index < 0) return "";
+        const start = tex.indexOf("{", index);
+        if (start < 0) return "";
+        const extracted = extractBraceContent(tex, start);
+        return extracted ? extracted.content : "";
+      }
+
+      function replaceLatexCommand(text, command, replacer) {
+        let output = "";
+        let cursor = 0;
+        while (cursor < text.length) {
+          const index = text.indexOf(`\\${command}`, cursor);
+          if (index < 0) {
+            output += text.slice(cursor);
+            break;
+          }
+          const brace = text.indexOf("{", index);
+          if (brace < 0) break;
+          const extracted = extractBraceContent(text, brace);
+          if (!extracted) break;
+          output += text.slice(cursor, index) + replacer(extracted.content);
+          cursor = extracted.end + 1;
+        }
+        return output;
+      }
+
+      function extractBraceContent(text, start) {
+        let depth = 0;
+        for (let i = start; i < text.length; i += 1) {
+          if (text[i] === "{" && text[i - 1] !== "\\") depth += 1;
+          if (text[i] === "}" && text[i - 1] !== "\\") depth -= 1;
+          if (depth === 0) return { content: text.slice(start + 1, i), end: i };
+        }
+        return null;
+      }
+
+      function latexBodyToHtml(body) {
+        const lines = body.split(/\n{2,}/);
+        return lines.map((block) => {
+          let text = block.trim();
+          if (!text) return "";
+          const heading = text.match(/^\\(chapter|section|subsection|subsubsection)\*?\{([\s\S]*)\}$/);
+          if (heading) {
+            const tag = heading[1] === "subsection" ? "h2" : heading[1] === "subsubsection" ? "h3" : "h1";
+            return `<${tag}>${latexInlineToHtml(heading[2])}</${tag}>`;
+          }
+          text = text
+            .replace(/\\(chapter|section)\*?\{([^{}]+)\}/g, "<h1>$2</h1>")
+            .replace(/\\subsection\*?\{([^{}]+)\}/g, "<h2>$1</h2>")
+            .replace(/\\subsubsection\*?\{([^{}]+)\}/g, "<h3>$1</h3>");
+          if (/^<h[1-3]>/.test(text)) return latexInlineToHtml(text);
+          return `<p>${latexInlineToHtml(text.replace(/\n/g, " "))}</p>`;
+        }).join("");
+      }
+
+      function latexInlineToText(value) {
+        const div = document.createElement("div");
+        div.innerHTML = latexInlineToHtml(value);
+        return div.textContent || "";
+      }
+
+      function latexInlineToHtml(value) {
+        return escapeHtml(value)
+          .replace(/\\textbf\{([^{}]+)\}/g, "<strong>$1</strong>")
+          .replace(/\\(?:emph|textit)\{([^{}]+)\}/g, "<em>$1</em>")
+          .replace(/\\underline\{([^{}]+)\}/g, "<u>$1</u>")
+          .replace(/``/g, "&bdquo;")
+          .replace(/''/g, "&ldquo;")
+          .replace(/---/g, "&mdash;")
+          .replace(/--/g, "&ndash;")
+          .replace(/\\&/g, "&amp;")
+          .replace(/\\%/g, "%")
+          .replace(/\\_/g, "_")
+          .replace(/\\#/g, "#")
+          .replace(/~/g, " ")
+          .replace(/@@PM_FOOTNOTE_([\w-]+)@@/g, '<sup class="pm-footnote-ref" data-footnote-id="$1" contenteditable="false">?</sup>');
+      }
+
+      function renderPrintDocument() {
+        const headings = getHeadings().filter((heading) => heading.level <= state.settings.tocDepth);
+        const bodyClone = editor.cloneNode(true);
+        bodyClone.removeAttribute("contenteditable");
+        bodyClone.className = "print-body-content";
+        qsa("h1,h2,h3", bodyClone).forEach((heading, index) => {
+          const source = getHeadings()[index];
+          if (source && source.number) {
+            heading.innerHTML = `<span>${escapeHtml(source.number)}</span> ${heading.innerHTML}`;
+          }
+        });
+        qsa("sup.pm-footnote-ref", bodyClone).forEach((sup, index) => {
+          sup.textContent = String(index + 1);
+        });
+
+        const footnotes = getOrderedFootnotes();
+        const references = groupedReferences();
+        printRoot.innerHTML = `
+          <section class="print-title-page">
+            <div>${escapeHtml(state.metadata.university)}</div>
+            <div>${escapeHtml(state.metadata.institute)}</div>
+            <div>${escapeHtml(state.metadata.semester)}</div>
+            <div>${escapeHtml(state.metadata.course)}</div>
+            <div>${escapeHtml(state.metadata.lecturer)}</div>
+            <h1>${escapeHtml(state.metadata.title)}</h1>
+            <h2>${escapeHtml(state.metadata.subtitle)}</h2>
+            <div class="title-meta">
+              <span>Name</span><span>${escapeHtml(state.metadata.author)}</span>
+              <span>Matrikel</span><span>${escapeHtml(state.metadata.matriculation)}</span>
+              <span>Studiengang</span><span>${escapeHtml(state.metadata.study)}</span>
+              <span>Fachsemester</span><span>${escapeHtml(state.metadata.studySemester)}</span>
+              <span>E-Mail</span><span>${escapeHtml(state.metadata.email)}</span>
+              <span>Adresse</span><span>${escapeHtml(state.metadata.address)}</span>
+              <span>Abgabe</span><span>${escapeHtml(state.metadata.submission)}</span>
+            </div>
+          </section>
+          <section class="print-toc-page">
+            <h1>Inhaltsverzeichnis</h1>
+            ${headings.map((heading) => `
+              <div class="print-toc-entry level-${heading.level}">
+                <span>${escapeHtml(heading.number ? `${heading.number} ${heading.title}` : heading.title)}</span>
+                <span class="toc-leader"></span>
+                <span>${heading.page}</span>
+              </div>
+            `).join("")}
+          </section>
+          <section class="print-body"></section>
+          ${footnotes.length ? `
+            <section class="print-footnotes">
+              <h1>Fussnoten</h1>
+              <ol>${footnotes.map((fn) => `<li>${formatFootnote(fn)}</li>`).join("")}</ol>
+            </section>` : ""}
+          <section class="print-bibliography">
+            <h1>Quellen- und Literaturverzeichnis</h1>
+            ${references.sources.length ? `<h2>Quellen</h2><ul>${references.sources.map((ref) => `<li>${escapeHtml(formatBibliography(ref))}</li>`).join("")}</ul>` : ""}
+            ${references.literature.length ? `<h2>Literatur</h2><ul>${references.literature.map((ref) => `<li>${escapeHtml(formatBibliography(ref))}</li>`).join("")}</ul>` : ""}
+          </section>
+        `;
+        qs(".print-body", printRoot).appendChild(bodyClone);
+      }
+
+      function groupedReferences() {
+        const usedIds = new Set(getOrderedFootnotes().map((fn) => fn.refId).filter(Boolean));
+        const refs = state.references
+          .filter((ref) => usedIds.size ? usedIds.has(ref.id) : true)
+          .sort((a, b) => (authorLast(a) || "").localeCompare(authorLast(b) || "", "de"));
+        return {
+          sources: refs.filter((ref) => ref.kind === "source"),
+          literature: refs.filter((ref) => ref.kind !== "source")
+        };
+      }
+
+      function generateLatexDocument() {
+        const meta = state.metadata;
+        const s = state.settings;
+        const body = htmlToLatex(editor);
+        const bib = state.references.length ? "\\printbibliography\n" : "";
+        return [
+          `\\documentclass[${Math.min(12, Math.max(10, Number(s.fontSize) || 12))}pt,a4paper]{article}`,
+          "\\usepackage[ngerman]{babel}",
+          "\\usepackage[T1]{fontenc}",
+          "\\usepackage[utf8]{inputenc}",
+          "\\usepackage{mathptmx}",
+          "\\usepackage{csquotes}",
+          "\\usepackage{setspace}",
+          "\\usepackage{geometry}",
+          "\\usepackage{hyperref}",
+          "\\usepackage[backend=biber,style=verbose]{biblatex}",
+          "\\addbibresource{references.bib}",
+          `\\geometry{left=${s.marginLeft}cm,right=${s.marginRight}cm,top=${s.marginTop}cm,bottom=${s.marginBottom}cm}`,
+          `\\setstretch{${s.lineHeight}}`,
+          "\\begin{document}",
+          "\\begin{titlepage}",
+          latexText(meta.university) + "\\\\",
+          latexText(meta.institute) + "\\\\",
+          latexText(meta.semester) + "\\\\",
+          latexText(meta.course) + "\\\\",
+          latexText(meta.lecturer) + "\\\\",
+          "\\vfill",
+          `\\begin{center}\\LARGE\\textbf{${latexText(meta.title)}}\\\\[0.6cm]\\large ${latexText(meta.subtitle)}\\end{center}`,
+          "\\vfill",
+          "\\begin{tabular}{ll}",
+          `Name: & ${latexText(meta.author)} \\\\`,
+          `Matrikel: & ${latexText(meta.matriculation)} \\\\`,
+          `Studiengang: & ${latexText(meta.study)} \\\\`,
+          `Fachsemester: & ${latexText(meta.studySemester)} \\\\`,
+          `E-Mail: & ${latexText(meta.email)} \\\\`,
+          `Adresse: & ${latexText(meta.address)} \\\\`,
+          `Abgabe: & ${latexText(meta.submission)} \\\\`,
+          "\\end{tabular}",
+          "\\end{titlepage}",
+          "\\tableofcontents",
+          "\\newpage",
+          body,
+          bib,
+          "\\end{document}",
+          ""
+        ].join("\n");
+      }
+
+      function htmlToLatex(root) {
+        return Array.from(root.childNodes).map(nodeToLatex).join("\n").replace(/\n{3,}/g, "\n\n");
+      }
+
+      function nodeToLatex(node) {
+        if (node.nodeType === Node.TEXT_NODE) return latexText(node.textContent);
+        if (node.nodeType !== Node.ELEMENT_NODE) return "";
+        const tag = node.tagName.toLowerCase();
+        if (tag === "br") return "\\\\";
+        if (tag === "sup" && node.classList.contains("pm-footnote-ref")) {
+          const fn = state.footnotes.find((item) => item.id === node.dataset.footnoteId);
+          return fn ? `\\footnote{${latexText(textOnly(formatFootnote(fn)))}}` : "";
+        }
+        const content = Array.from(node.childNodes).map(nodeToLatex).join("");
+        if (tag === "strong" || tag === "b") return `\\textbf{${content}}`;
+        if (tag === "em" || tag === "i") return `\\emph{${content}}`;
+        if (tag === "u") return `\\underline{${content}}`;
+        if (tag === "h1") return `${sectionCommand("section")}{${content}}`;
+        if (tag === "h2") return `${sectionCommand("subsection")}{${content}}`;
+        if (tag === "h3") return `${sectionCommand("subsubsection")}{${content}}`;
+        if (tag === "blockquote") return `\\begin{quote}\n${content}\n\\end{quote}\n`;
+        if (tag === "ul") return `\\begin{itemize}\n${Array.from(node.children).map((li) => `\\item ${Array.from(li.childNodes).map(nodeToLatex).join("")}`).join("\n")}\n\\end{itemize}\n`;
+        if (tag === "ol") return `\\begin{enumerate}\n${Array.from(node.children).map((li) => `\\item ${Array.from(li.childNodes).map(nodeToLatex).join("")}`).join("\n")}\n\\end{enumerate}\n`;
+        if (tag === "p" || tag === "div") return `${content}\n\n`;
+        return content;
+      }
+
+      function sectionCommand(command) {
+        return state.settings.numberingStyle === "none" ? `\\${command}*` : `\\${command}`;
+      }
+
+      function latexText(value) {
+        return String(value || "")
+          .replace(/\\/g, "\\textbackslash{}")
+          .replace(/([{}$&#_%])/g, "\\$1")
+          .replace(/~/g, "\\textasciitilde{}")
+          .replace(/\^/g, "\\textasciicircum{}");
+      }
+
+      function generateBibtex() {
+        return state.references.map((ref) => {
+          const type = refTypeToBibType(ref.type);
+          const fields = {
+            author: ref.author,
+            title: fullTitle(ref),
+            year: ref.year,
+            location: ref.place,
+            publisher: ref.publisher,
+            booktitle: ref.type === "collection" ? ref.container : "",
+            journaltitle: ref.type === "article" ? ref.container : "",
+            volume: ref.volume,
+            pages: ref.pages,
+            url: ref.url,
+            urldate: ref.accessed,
+            shorttitle: ref.shortTitle
+          };
+          const body = Object.entries(fields)
+            .filter(([, value]) => String(value || "").trim())
+            .map(([key, value]) => `  ${key} = {${String(value).replace(/[{}]/g, "")}}`)
+            .join(",\n");
+          return `@${type}{${ref.key || createBibKey(ref)},\n${body}\n}`;
+        }).join("\n\n");
+      }
+
+      function refTypeToBibType(type) {
+        if (type === "article") return "article";
+        if (type === "collection") return "incollection";
+        if (type === "thesis") return "phdthesis";
+        if (type === "web") return "online";
+        return "book";
+      }
+
+      function downloadText(filename, content, mime = "text/plain") {
+        const blob = new Blob([content], { type: `${mime};charset=utf-8` });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+      }
+
+      async function downloadZipProject() {
+        syncContentFromEditor();
+        if (!window.JSZip) {
+          downloadText("main.tex", generateLatexDocument(), "application/x-tex");
+          downloadText("references.bib", generateBibtex(), "application/x-bibtex");
+          setStatus("ZIP-Bibliothek nicht geladen, Einzeldateien exportiert");
+          return;
+        }
+        const zip = new window.JSZip();
+        zip.file("main.tex", generateLatexDocument());
+        zip.file("references.bib", generateBibtex());
+        zip.file("paper-maker.json", JSON.stringify(state, null, 2));
+        zip.file("README.md", [
+          "# Paper-Maker Export",
+          "",
+          "Dieses Projekt enthaelt main.tex, references.bib und paper-maker.json.",
+          "PDF-Erzeugung lokal z. B. mit:",
+          "",
+          "```bash",
+          "latexmk -pdf main.tex",
+          "```",
+          ""
+        ].join("\n"));
+        const blob = await zip.generateAsync({ type: "blob" });
+        const filename = `${asciiSlug(state.metadata.title || "paper-maker") || "paper-maker"}.zip`;
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+        setStatus("LaTeX-Projekt exportiert");
+      }
+
+      init();
+    })();
+  </script>
+</body>
+
+</html>

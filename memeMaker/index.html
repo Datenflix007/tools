@@ -1,0 +1,1194 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="icon" type="image/png" href="../../../media/favicon.png">
+    <title>MemeMaker</title>
+
+  <!-- Fabric.js (Canvas Editor) -->
+  <script defer src="https://cdn.jsdelivr.net/npm/fabric@6.4.3/dist/fabric.min.js"></script>
+
+  <!-- MathJax (LaTeX -> SVG) -->
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+      svg: { fontCache: 'none' }
+    };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+
+  <style>
+    :root{
+      --bg0:#070a14;
+      --bg1:#0a0f22;
+      --glass: rgba(255,255,255,.06);
+      --stroke: rgba(255,255,255,.12);
+      --stroke2: rgba(255,255,255,.18);
+      --text:#eaf0ff;
+      --muted: rgba(234,240,255,.65);
+      --accent:#7c5cff;
+      --accent2:#4dd6ff;
+      --shadow: 0 18px 60px rgba(0,0,0,.45);
+      --radius: 22px;
+      --bad:#ef4444;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      color:var(--text);
+      background:
+        radial-gradient(1200px 500px at 30% -10%, rgba(124,92,255,.25), transparent 60%),
+        radial-gradient(900px 450px at 80% 0%, rgba(77,214,255,.18), transparent 60%),
+        radial-gradient(900px 600px at 50% 120%, rgba(124,92,255,.18), transparent 60%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      min-height:100vh;
+    }
+    .topbar{
+      max-width: 1180px;
+      margin: 24px auto 18px;
+      padding: 16px 18px;
+      border-radius: 26px;
+      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.05));
+      border: 1px solid var(--stroke);
+      box-shadow: var(--shadow);
+      display:flex;
+      align-items:center;
+      gap:14px;
+    }
+    .logo{
+      width:44px;height:44px;border-radius:14px;
+      background: radial-gradient(circle at 30% 30%, rgba(124,92,255,.9), rgba(77,214,255,.55));
+      display:grid;place-items:center;
+      border:1px solid rgba(255,255,255,.25);
+    }
+    .logo span{font-weight:900; letter-spacing:.5px}
+    .titlewrap{display:flex;flex-direction:column}
+    .title{
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing:.2px;
+      line-height:1.1;
+    }
+    .subtitle{
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 4px;
+    }
+    .spacer{flex:1}
+    .pill{
+      display:flex; gap:10px; align-items:center;
+      padding: 10px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.06);
+      border:1px solid var(--stroke);
+    }
+    .pill small{color:var(--muted)}
+    .kbd{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size:12px;
+      padding: 3px 8px;
+      border-radius: 8px;
+      background: rgba(0,0,0,.35);
+      border:1px solid var(--stroke);
+      color: rgba(234,240,255,.85);
+    }
+    .layout{
+      max-width: 1180px;
+      margin: 0 auto 30px;
+      padding: 0 14px 26px;
+      display:grid;
+      grid-template-columns: 280px 1fr 320px;
+      gap: 16px;
+    }
+    .panel{
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.04));
+      border: 1px solid var(--stroke);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .panelHeader{
+      padding: 16px 16px 12px;
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-end;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      background: rgba(0,0,0,.12);
+    }
+    .panelHeader h3{
+      margin:0;
+      font-size: 14px;
+      letter-spacing:.9px;
+      text-transform:uppercase;
+      color: rgba(234,240,255,.82);
+    }
+    .panelBody{ padding: 14px; }
+    .toolbtn{
+      width:100%;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding: 12px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.05);
+      color: var(--text);
+      cursor:pointer;
+      transition: .15s ease;
+      margin-bottom: 10px;
+    }
+    .toolbtn:hover{ transform: translateY(-1px); border-color: var(--stroke2); background: rgba(255,255,255,.07);}
+    .toolbtn .hint{color: var(--muted); font-size: 12px;}
+    .row{ display:flex; gap:10px; align-items:center; margin: 10px 0; }
+    .row label{ color: var(--muted); font-size: 12px; width: 110px; }
+    .row input[type="text"], .row input[type="number"], .row textarea, select{
+      width: 100%;
+      padding: 10px 10px;
+      border-radius: 12px;
+      background: rgba(0,0,0,.30);
+      border: 1px solid rgba(255,255,255,.12);
+      color: var(--text);
+      outline:none;
+    }
+    .row textarea{ min-height: 70px; resize: vertical; }
+    input[type="color"]{
+      width: 44px; height: 38px; border: none; padding:0;
+      background: transparent;
+    }
+    .split{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+    .btn{
+      width:100%;
+      padding: 12px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      cursor:pointer;
+      transition:.15s ease;
+    }
+    .btn:hover{ border-color: var(--stroke2); background: rgba(255,255,255,.09); }
+    .btn.primary{
+      background: linear-gradient(135deg, rgba(124,92,255,.95), rgba(77,214,255,.55));
+      border-color: rgba(255,255,255,.25);
+      color: #061024;
+      font-weight: 800;
+    }
+    .btn.danger{
+      background: rgba(239,68,68,.12);
+      border-color: rgba(239,68,68,.28);
+    }
+    .canvasWrap{
+      padding: 14px;
+      display:flex;
+      flex-direction:column;
+      gap: 12px;
+    }
+    .canvasShell{
+      border-radius: 22px;
+      background: rgba(0,0,0,.20);
+      border: 1px solid rgba(255,255,255,.10);
+      padding: 12px;
+    }
+    canvas{ border-radius: 16px; }
+    .minihelp{
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+      padding: 0 2px;
+    }
+    .minihelp b{color: rgba(234,240,255,.9)}
+    .footer{
+      padding: 10px 14px 14px;
+      color: rgba(234,240,255,.45);
+      font-size: 12px;
+      text-align:center;
+    }
+    .badge{
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      color: rgba(234,240,255,.8);
+    }
+    .previewImg{
+      width:100%;
+      border-radius: 18px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.18);
+      display:block;
+    }
+    .tiny{
+      font-size: 12px;
+      color: rgba(234,240,255,.55);
+      line-height: 1.35;
+      margin-top: 8px;
+    }
+    .hr{
+      height:1px;
+      background: rgba(255,255,255,.10);
+      margin: 14px 0;
+    }
+    .warn{
+      color: rgba(239,68,68,.9);
+      font-size: 12px;
+      margin-top: 8px;
+      display:none;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="topbar">
+    <div class="logo"><span>MM</span></div>
+    <div class="titlewrap">
+      <div class="title">MemeMaker</div>
+      <div class="subtitle">Dynamische Vorlagen aus GitHub Repo · Text / Sprechblasen / LaTeX · Download als PNG</div>
+    </div>
+    <div class="spacer"></div>
+    <div class="pill">
+      <small>Shortcuts:</small>
+      <span class="kbd">Entf</span>
+      <span class="kbd">Strg+Z</span>
+      <span class="kbd">Strg+Y</span>
+    </div>
+  </div>
+
+  <div class="layout">
+    <!-- LINKS: Tools -->
+    <section class="panel">
+      <div class="panelHeader">
+        <h3>Elemente</h3>
+        <span class="badge" id="statusBadge">bereit</span>
+      </div>
+      <div class="panelBody">
+
+        <button class="toolbtn" id="btnAddText">
+          <div>
+            <div style="font-weight:800">Text</div>
+            <div class="hint">verschiebbar / skalierbar</div>
+          </div>
+          <div class="hint">T</div>
+        </button>
+
+        <button class="toolbtn" id="btnAddBubble">
+          <div>
+            <div style="font-weight:800">Sprechblase</div>
+            <div class="hint">mit Schwanz + Text</div>
+          </div>
+          <div class="hint">💬</div>
+        </button>
+
+        <button class="toolbtn" id="btnAddLatex">
+          <div>
+            <div style="font-weight:800">LaTeX</div>
+            <div class="hint">z.B. \\(\\frac{a}{b}\\)</div>
+          </div>
+          <div class="hint">∑</div>
+        </button>
+
+        <div style="height:10px"></div>
+
+        <button class="btn danger" id="btnDelete">Auswahl löschen</button>
+        <div class="split" style="margin-top:10px">
+          <button class="btn" id="btnBringFront">Nach vorn</button>
+          <button class="btn" id="btnSendBack">Nach hinten</button>
+        </div>
+
+        <div style="height:16px"></div>
+
+        <div class="minihelp">
+          <b>Tipps</b><br/>
+          • Elemente per Maus ziehen, Ecken skalieren<br/>
+          • Doppelklick auf Text zum Bearbeiten<br/>
+          • Export als PNG für Abgabe/Präsentation
+        </div>
+      </div>
+      <div class="footer">© MemeMaker · statisch · kein Login</div>
+    </section>
+
+    <!-- MITTE: Editor -->
+    <section class="panel">
+      <div class="panelHeader">
+        <h3>Editor</h3>
+        <span class="badge" id="canvasInfo">Canvas: —</span>
+      </div>
+      <div class="canvasWrap">
+        <div class="canvasShell">
+          <canvas id="c" width="860" height="540"></canvas>
+        </div>
+        <div class="minihelp">
+          <b>Bild wechseln</b> überschreibt den Hintergrund (Elemente bleiben).<br/>
+          Für komplett neu: <b>Reset</b>.
+        </div>
+      </div>
+    </section>
+
+    <!-- RECHTS: Auswahl / Einstellungen / Export -->
+    <section class="panel">
+      <div class="panelHeader">
+        <h3>Steuerung</h3>
+        <span class="badge">Vorlagen & Export</span>
+      </div>
+      <div class="panelBody">
+        <!-- Dynamische Repo-Auswahl -->
+        <div class="row">
+          <label>Kategorie</label>
+          <select id="categorySelect">
+            <option value="">(lädt…)</option>
+          </select>
+        </div>
+
+        <div class="row">
+          <label>Bild</label>
+          <select id="imageSelect">
+            <option value="">(bitte Kategorie)</option>
+          </select>
+        </div>
+
+        <div class="split">
+          <button class="btn" id="btnSetBg">Bild setzen</button>
+          <button class="btn" id="btnReset">Reset</button>
+        </div>
+
+        <div class="warn" id="rateWarn">
+          GitHub API Rate-Limit erreicht. Bitte später neu laden (oder Cache abwarten).
+        </div>
+
+        <div class="hr"></div>
+
+        <!-- Eigene Vorlagen (lokal speichern) -->
+        <div class="minihelp"><b>Eigene Vorlagen</b> (nur auf diesem Gerät)</div>
+        <div class="row">
+          <label>URL</label>
+          <input id="tplUrl" type="text" placeholder="https://…/bild.png" />
+        </div>
+        <div class="split">
+          <button class="btn" id="btnAddUrlTpl">URL speichern</button>
+          <button class="btn danger" id="btnClearLocalTpl">lokal löschen</button>
+        </div>
+
+        <div class="row">
+          <label>Datei</label>
+          <input id="tplFile" type="file" accept="image/*" />
+        </div>
+        <button class="btn" id="btnSaveFileTpl">Datei speichern</button>
+
+        <div class="tiny">
+          Gemeinsame Vorlagen für alle: Bilder einfach ins Repo
+          <span style="opacity:.9">Datenflix007/memesCollection</span> hochladen (Commit) –
+          sie erscheinen automatisch.
+        </div>
+
+        <div class="hr"></div>
+
+        <!-- Text/Style -->
+        <div class="row">
+          <label>Text</label>
+          <input id="textInput" type="text" placeholder="Text für neues Element…" />
+        </div>
+
+        <div class="row">
+          <label>LaTeX</label>
+          <input id="latexInput" type="text" placeholder="z.B. \\frac{1}{2} oder E=mc^2" />
+        </div>
+
+        <div class="split">
+          <div class="row" style="margin:0">
+            <label style="width:auto;min-width:0">Farbe</label>
+            <input id="colorPick" type="color" value="#ffffff" />
+          </div>
+          <div class="row" style="margin:0">
+            <label style="width:auto;min-width:0">Größe</label>
+            <input id="fontSize" type="number" min="10" max="160" value="44" />
+          </div>
+        </div>
+
+        <div class="split">
+          <div class="row" style="margin:0">
+            <label style="width:auto;min-width:0">Kontur</label>
+            <select id="outlineMode">
+              <option value="none">keine</option>
+              <option value="black" selected>schwarz</option>
+              <option value="white">weiß</option>
+            </select>
+          </div>
+          <div class="row" style="margin:0">
+            <label style="width:auto;min-width:0">Kontur px</label>
+            <input id="outlineWidth" type="number" min="0" max="20" value="6" />
+          </div>
+        </div>
+
+        <div class="hr"></div>
+
+        <!-- Export -->
+        <div class="row">
+          <label>Export-Skalierung</label>
+          <select id="exportScale">
+            <option value="1">1×</option>
+            <option value="2" selected>2×</option>
+            <option value="3">3×</option>
+          </select>
+        </div>
+
+        <button class="btn primary" id="btnDownload">Download PNG</button>
+
+        <div style="height:14px"></div>
+        <div class="minihelp" style="margin-bottom:10px"><b>Vorschau</b></div>
+        <img id="preview" class="previewImg" alt="Vorschau" />
+      </div>
+    </section>
+  </div>
+
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+  // =========================================================
+  // 1) KONFIG: Hier stellst du das Vorlagen-Repo ein
+  // =========================================================
+  const REMOTE = {
+    owner: "Datenflix007",
+    repo: "memesCollection",
+    branch: "main",
+    rootPath: "" // falls du alles unter einem Ordner hast, z.B. "bilder"
+  };
+
+  
+
+  // GitHub API Limit entschärfen: Cache-Zeit (ms)
+  const LIST_CACHE_MS = 10 * 60 * 1000; // 10 Minuten
+
+  // =========================================================
+  // 2) DOM
+  // =========================================================
+  const statusBadge = document.getElementById('statusBadge');
+  const canvasInfo  = document.getElementById('canvasInfo');
+  const previewEl   = document.getElementById('preview');
+  const rateWarn    = document.getElementById('rateWarn');
+
+  const categorySelect = document.getElementById('categorySelect');
+  const imageSelect = document.getElementById('imageSelect');
+  const btnSetBg    = document.getElementById('btnSetBg');
+  const btnReset    = document.getElementById('btnReset');
+
+  const btnAddText  = document.getElementById('btnAddText');
+  const btnAddBubble= document.getElementById('btnAddBubble');
+  const btnAddLatex = document.getElementById('btnAddLatex');
+  const btnDelete   = document.getElementById('btnDelete');
+  const btnFront    = document.getElementById('btnBringFront');
+  const btnBack     = document.getElementById('btnSendBack');
+
+  const textInput   = document.getElementById('textInput');
+  const latexInput  = document.getElementById('latexInput');
+  const colorPick   = document.getElementById('colorPick');
+  const fontSize    = document.getElementById('fontSize');
+  const outlineMode = document.getElementById('outlineMode');
+  const outlineWidth= document.getElementById('outlineWidth');
+  const exportScale = document.getElementById('exportScale');
+  const btnDownload = document.getElementById('btnDownload');
+
+  // Eigene Vorlagen
+  const tplUrl = document.getElementById('tplUrl');
+  const tplFile = document.getElementById('tplFile');
+  const btnAddUrlTpl = document.getElementById('btnAddUrlTpl');
+  const btnSaveFileTpl = document.getElementById('btnSaveFileTpl');
+  const btnClearLocalTpl = document.getElementById('btnClearLocalTpl');
+
+  // =========================================================
+  // 3) Canvas Setup
+  // =========================================================
+  const canvas = new fabric.Canvas('c', { preserveObjectStacking: true, selection: true });
+
+  fabric.Object.prototype.transparentCorners = false;
+  fabric.Object.prototype.cornerStyle = 'circle';
+  fabric.Object.prototype.cornerSize = 10;
+  fabric.Object.prototype.borderColor = 'rgba(124,92,255,.9)';
+  fabric.Object.prototype.cornerColor = 'rgba(77,214,255,.9)';
+  fabric.Object.prototype.cornerStrokeColor = 'rgba(255,255,255,.25)';
+
+  function setStatus(text) { statusBadge.textContent = text; }
+  function updateCanvasInfo() { canvasInfo.textContent = `Canvas: ${canvas.getWidth()}×${canvas.getHeight()}`; }
+  updateCanvasInfo();
+
+  // =========================================================
+  // 4) Helpers: Cache + GitHub API Listing + jsDelivr URL
+  // =========================================================
+  function cacheGet(key, maxAgeMs) {
+    try {
+      const raw = localStorage.getItem(key);
+      if (!raw) return null;
+      const obj = JSON.parse(raw);
+      if (Date.now() - obj.t > maxAgeMs) return null;
+      return obj.v;
+    } catch { return null; }
+  }
+  function cacheSet(key, value) {
+    try { localStorage.setItem(key, JSON.stringify({ t: Date.now(), v: value })); } catch {}
+  }
+
+  function isImageFile(name) {
+    return /\.(png|jpe?g|gif|webp)$/i.test(name || "");
+  }
+
+  function joinPath(...parts) {
+    return parts.filter(Boolean).join('/').replace(/\/+/g,'/').replace(/^\/+/,'');
+  }
+
+  function cdnUrl(pathInRepo) {
+    const clean = pathInRepo.replace(/^\/+/, "");
+    return `https://cdn.jsdelivr.net/gh/${REMOTE.owner}/${REMOTE.repo}@${REMOTE.branch}/${clean}`;
+  }
+
+  function jsdelivrUrl() {
+    return `https://data.jsdelivr.com/v1/package/gh/${REMOTE.owner}/${REMOTE.repo}@${REMOTE.branch}/flat`;
+  }
+
+  function listFromFlat(flatFiles, path) {
+    const clean = path ? path.replace(/^\/+/, "") : "";
+    const prefix = clean ? `/${clean.replace(/\/+$/,"")}/` : "/";
+    const seenDirs = new Set();
+    const entries = [];
+
+    for (const f of flatFiles || []) {
+      const name = f.name || "";
+      if (!name.startsWith(prefix)) continue;
+      const rest = name.slice(prefix.length);
+      if (!rest) continue;
+      const parts = rest.split('/');
+      if (parts.length > 1) {
+        const dir = parts[0];
+        if (!seenDirs.has(dir)) {
+          seenDirs.add(dir);
+          entries.push({ name: dir, type: "dir" });
+        }
+      } else {
+        entries.push({ name: parts[0], type: "file" });
+      }
+    }
+
+    return entries;
+  }
+
+  async function jsDelivrList(path) {
+    const cacheKey = `mm_flat_${REMOTE.owner}_${REMOTE.repo}_${REMOTE.branch}`;
+    let flat = cacheGet(cacheKey, LIST_CACHE_MS);
+    if (!flat) {
+      const res = await fetch(jsdelivrUrl(), { cache: "no-store" });
+      if (!res.ok) throw new Error(`jsDelivr Fehler (${res.status})`);
+      const data = await res.json();
+      flat = Array.isArray(data.files) ? data.files : [];
+      cacheSet(cacheKey, flat);
+    }
+    return listFromFlat(flat, path);
+  }
+
+  async function ghList(path) {
+    const clean = path ? path.replace(/^\/+/, "") : "";
+    const url = `https://api.github.com/repos/${REMOTE.owner}/${REMOTE.repo}/contents/${clean}?ref=${REMOTE.branch}`;
+    let res;
+    try {
+      res = await fetch(url, { cache: "no-store" });
+    } catch (e) {
+      return await jsDelivrList(clean);
+    }
+
+    // Rate limit sichtbar machen
+    if (res.status === 403) {
+      rateWarn.style.display = 'block';
+    } else {
+      rateWarn.style.display = 'none';
+    }
+
+    if (!res.ok) {
+      return await jsDelivrList(clean);
+    }
+    return await res.json();
+  }
+
+  // =========================================================
+  // 5) Eigene Vorlagen (LocalStorage)
+  // =========================================================
+  const LOCAL_KEY = "mememaker_local_templates_v1";
+
+  function loadLocalTemplates() {
+    try {
+      return JSON.parse(localStorage.getItem(LOCAL_KEY) || "[]");
+    } catch {
+      return [];
+    }
+  }
+  function saveLocalTemplates(arr) {
+    localStorage.setItem(LOCAL_KEY, JSON.stringify(arr));
+  }
+
+  function addLocalTemplate(item) {
+    const arr = loadLocalTemplates();
+    arr.unshift(item); // newest first
+    // kleine Begrenzung, damit LocalStorage nicht explodiert
+    const trimmed = arr.slice(0, 40);
+    saveLocalTemplates(trimmed);
+  }
+
+  // =========================================================
+  // 6) Dynamisches Laden: Kategorien + Bilder
+  // =========================================================
+  // Datenstruktur:
+  // categories = [{ id, name, type: 'repo'|'local', path?, items:[{label, src, kind}]}]
+  let categories = [];
+
+  async function buildCategories() {
+    setStatus("lade kategorien…");
+
+    const root = joinPath(REMOTE.rootPath);
+    const cacheKey = `mm_root_${REMOTE.owner}_${REMOTE.repo}_${REMOTE.branch}_${root || "ROOT"}`;
+    let listing = cacheGet(cacheKey, LIST_CACHE_MS);
+
+    if (!listing) {
+      listing = await ghList(root);
+      cacheSet(cacheKey, listing);
+    }
+
+    const safeListing = Array.isArray(listing) ? listing : [];
+    const rootImages = safeListing
+      .filter(x => x.type === "file" && isImageFile(x.name))
+      .map(file => {
+        const pathInRepo = joinPath(root, file.name);
+        return {
+          label: file.name,
+          src: cdnUrl(pathInRepo),
+          kind: "repo"
+        };
+      });
+
+    const rootCat = rootImages.length ? {
+      id: "repo:__root__",
+      name: REMOTE.rootPath ? REMOTE.rootPath.split('/').pop() : "Vorlagen",
+      type: "repo-root",
+      path: root,
+      items: rootImages
+    } : null;
+
+    const folderCats = safeListing
+      .filter(x => x.type === "dir")
+      .map(dir => ({
+        id: `repo:${dir.name}`,
+        name: dir.name,
+        type: "repo",
+        path: joinPath(root, dir.name),
+        items: []
+      }))
+      .sort((a,b) => a.name.localeCompare(b.name, 'de'));
+
+    const localItems = loadLocalTemplates().map((t, idx) => ({
+      label: t.label || `Eigene Vorlage ${idx+1}`,
+      src: t.src,
+      kind: t.kind || "local"
+    }));
+
+    const localCat = {
+      id: "local:templates",
+      name: "Eigene Vorlagen",
+      type: "local",
+      path: null,
+      items: localItems
+    };
+
+    categories = [localCat, ...(rootCat ? [rootCat] : []), ...folderCats];
+  }
+
+  async function loadCategoryItems(catId) {
+    const cat = categories.find(c => c.id === catId);
+    if (!cat) return;
+
+    // local category
+    if (cat.type === "local") {
+      renderImageSelect(cat.items);
+      return;
+    }
+
+    if (cat.type === "repo-root") {
+      renderImageSelect(cat.items);
+      setStatus("bereit");
+      return;
+    }
+
+    // repo category
+    setStatus("lade bilder…");
+    const cacheKey = `mm_dir_${REMOTE.owner}_${REMOTE.repo}_${REMOTE.branch}_${cat.path}`;
+    let listing = cacheGet(cacheKey, LIST_CACHE_MS);
+
+    if (!listing) {
+      listing = await ghList(cat.path);
+      cacheSet(cacheKey, listing);
+    }
+
+    const items = (Array.isArray(listing) ? listing : [])
+      .filter(x => x.type === "file" && isImageFile(x.name))
+      .map(file => {
+        const pathInRepo = joinPath(cat.path, file.name);
+        return {
+          label: `${cat.name}/${file.name}`,
+          src: cdnUrl(pathInRepo),
+          kind: "repo"
+        };
+      });
+
+    cat.items = items;
+    renderImageSelect(items);
+    setStatus("bereit");
+  }
+
+  function renderCategorySelect() {
+    categorySelect.innerHTML = "";
+    if (!categories.length) {
+      categorySelect.innerHTML = `<option value="">(keine kategorien)</option>`;
+      return;
+    }
+    categorySelect.innerHTML =
+      categories.map(c => `<option value="${c.id}">${c.name}</option>`).join("");
+  }
+
+  function renderImageSelect(items) {
+    imageSelect.innerHTML = "";
+    if (!items || !items.length) {
+      imageSelect.innerHTML = `<option value="">(keine bilder)</option>`;
+      return;
+    }
+    imageSelect.innerHTML =
+      `<option value="">(bitte wählen)</option>` +
+      items.map(it => `<option value="${escapeHtml(it.src)}">${escapeHtml(it.label)}</option>`).join("");
+  }
+
+  function escapeHtml(str) {
+    return (str || "").replace(/[&<>"']/g, m => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+    }[m]));
+  }
+
+  async function initDynamicTemplates() {
+    try {
+      await buildCategories();
+      renderCategorySelect();
+      // auto first category = Eigene Vorlagen
+      categorySelect.value = categories[0]?.id || "";
+      await loadCategoryItems(categorySelect.value);
+      setStatus("bereit");
+    } catch (e) {
+      console.warn(e);
+      setStatus("ladefehler");
+      categorySelect.innerHTML = `<option value="">(Fehler)</option>`;
+      imageSelect.innerHTML = `<option value="">(Fehler)</option>`;
+    }
+  }
+
+  categorySelect.addEventListener('change', async () => {
+    imageSelect.innerHTML = `<option value="">(lädt…)</option>`;
+    await loadCategoryItems(categorySelect.value);
+  });
+
+  // =========================================================
+  // 7) Background setzen (CORS safe: jsDelivr / dataURL)
+  // =========================================================
+  async function setBackgroundFromUrl(url) {
+    if (!url) return;
+    setStatus('lade bild…');
+
+    await new Promise((resolve, reject) => {
+      fabric.Image.fromURL(url, (img) => {
+        try {
+          const cw = canvas.getWidth(), ch = canvas.getHeight();
+          const scale = Math.min(cw / img.width, ch / img.height);
+          img.set({
+            originX: 'center',
+            originY: 'center',
+            left: cw / 2,
+            top: ch / 2,
+            selectable: false,
+            evented: false
+          });
+          img.scale(scale);
+
+          canvas.setBackgroundImage(img, () => {
+            canvas.requestRenderAll();
+            setStatus('bereit');
+            updatePreview();
+            resolve();
+          });
+        } catch (err) { reject(err); }
+      }, { crossOrigin: 'anonymous' });
+    });
+  }
+
+  btnSetBg.addEventListener('click', () => setBackgroundFromUrl(imageSelect.value));
+
+  btnReset.addEventListener('click', () => {
+    canvas.getObjects().forEach(o => canvas.remove(o));
+    canvas.setBackgroundImage(null, canvas.requestRenderAll.bind(canvas));
+    setStatus('bereit');
+    updatePreview();
+  });
+
+  // =========================================================
+  // 8) Text / Bubble / LaTeX
+  // =========================================================
+  function currentTextStyle() {
+    const fill = colorPick.value;
+    const size = Number(fontSize.value || 44);
+    const mode = outlineMode.value;
+    const w = Number(outlineWidth.value || 0);
+    const stroke = (mode === 'none' || w === 0) ? null : (mode === 'black' ? '#000000' : '#ffffff');
+    return { fill, fontSize: size, stroke, strokeWidth: stroke ? w : 0 };
+  }
+
+  function addText(content) {
+    const t = new fabric.Textbox(content || 'Text', {
+      left: 60, top: 60, width: 520,
+      fontFamily: 'Impact, Haettenschweiler, "Arial Black", sans-serif',
+      fontWeight: '800',
+      textAlign: 'center',
+      ...currentTextStyle(),
+      paintFirst: (outlineMode.value !== 'none' ? 'stroke' : 'fill')
+    });
+    canvas.add(t);
+    canvas.setActiveObject(t);
+    canvas.requestRenderAll();
+    updatePreview();
+  }
+
+  function makeSpeechBubbleGroup(text) {
+    const fill = 'rgba(255,255,255,.92)';
+    const stroke = 'rgba(0,0,0,.95)';
+
+    const bubble = new fabric.Rect({
+      rx: 18, ry: 18,
+      width: 360, height: 140,
+      fill, stroke, strokeWidth: 4
+    });
+
+    const tail = new fabric.Path('M 230 140 L 190 185 L 260 150 Z', {
+      fill, stroke, strokeWidth: 4, left: 0, top: 0
+    });
+
+    const txt = new fabric.Textbox(text || 'Sprechblase', {
+      left: 18, top: 18,
+      width: 324, height: 110,
+      fontFamily: 'ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial',
+      fontWeight: '700',
+      fill: '#0b1020',
+      fontSize: Math.max(18, Number(fontSize.value || 36) * 0.55),
+      textAlign: 'center'
+    });
+
+    return new fabric.Group([bubble, tail, txt], { left: 70, top: 90, subTargetCheck: true });
+  }
+
+  function latexToSvgDataUrl(latex) {
+    if (!window.MathJax || !MathJax.tex2svg) throw new Error('MathJax noch nicht geladen');
+
+    const node = MathJax.tex2svg(latex, { display: true });
+    const svg = node.querySelector('svg');
+    svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+
+    const fill = colorPick.value;
+    svg.querySelectorAll('path').forEach(p => p.setAttribute('fill', fill));
+
+    const svgText = new XMLSerializer().serializeToString(svg);
+    const encoded = encodeURIComponent(svgText).replace(/'/g, "%27").replace(/"/g, "%22");
+    return `data:image/svg+xml;charset=utf-8,${encoded}`;
+  }
+
+  async function addLatex(latexRaw) {
+    const latex = (latexRaw || latexInput.value || '').trim();
+    if (!latex) { setStatus('LaTeX fehlt'); return; }
+
+    setStatus('render latex…');
+    try {
+      const dataUrl = latexToSvgDataUrl(latex);
+      await new Promise((resolve, reject) => {
+        fabric.loadSVGFromURL(dataUrl, (objects, options) => {
+          try {
+            const obj = fabric.util.groupSVGElements(objects, options);
+            obj.set({ left: 80, top: 80, scaleX: 1.2, scaleY: 1.2 });
+            canvas.add(obj);
+            canvas.setActiveObject(obj);
+            canvas.requestRenderAll();
+            setStatus('bereit');
+            updatePreview();
+            resolve();
+          } catch (e) { reject(e); }
+        });
+      });
+    } catch (e) {
+      console.warn(e);
+      setStatus('latex fehler');
+    }
+  }
+
+  btnAddText.addEventListener('click', () => addText(textInput.value.trim() || 'Text'));
+  btnAddBubble.addEventListener('click', () => {
+    const g = makeSpeechBubbleGroup(textInput.value.trim() || 'Sprechblase');
+    canvas.add(g);
+    canvas.setActiveObject(g);
+    canvas.requestRenderAll();
+    updatePreview();
+  });
+  btnAddLatex.addEventListener('click', () => addLatex());
+
+  // =========================================================
+  // 9) Selection actions + Style apply
+  // =========================================================
+  btnDelete.addEventListener('click', () => {
+    const active = canvas.getActiveObjects();
+    if (!active.length) return;
+    active.forEach(o => canvas.remove(o));
+    canvas.discardActiveObject();
+    canvas.requestRenderAll();
+    updatePreview();
+  });
+
+  btnFront.addEventListener('click', () => {
+    const o = canvas.getActiveObject();
+    if (!o) return;
+    canvas.bringToFront(o);
+    canvas.requestRenderAll();
+    updatePreview();
+  });
+
+  btnBack.addEventListener('click', () => {
+    const o = canvas.getActiveObject();
+    if (!o) return;
+    canvas.sendToBack(o);
+    canvas.requestRenderAll();
+    updatePreview();
+  });
+
+  function toHex(color) {
+    if (!color) return '#ffffff';
+    if (color.startsWith('#')) {
+      if (color.length === 4) return '#' + color[1]+color[1] + color[2]+color[2] + color[3]+color[3];
+      return color.slice(0,7);
+    }
+    const m = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
+    if (!m) return '#ffffff';
+    const r = Number(m[1]).toString(16).padStart(2,'0');
+    const g = Number(m[2]).toString(16).padStart(2,'0');
+    const b = Number(m[3]).toString(16).padStart(2,'0');
+    return `#${r}${g}${b}`;
+  }
+
+  function syncUIFromSelection() {
+    const o = canvas.getActiveObject();
+    if (!o) return;
+
+    if (o.type === 'textbox' || o.type === 'text' || o.type === 'i-text') {
+      if (o.fill) colorPick.value = toHex(o.fill);
+      if (o.fontSize) fontSize.value = Math.round(o.fontSize);
+
+      if (!o.stroke || !o.strokeWidth) {
+        outlineMode.value = 'none';
+        outlineWidth.value = 6;
+      } else {
+        outlineWidth.value = Math.round(o.strokeWidth || 0);
+        outlineMode.value = (toHex(o.stroke).toLowerCase() === '#ffffff') ? 'white' : 'black';
+      }
+    }
+  }
+
+  function applyStyleToSelection() {
+    const o = canvas.getActiveObject();
+    if (!o) return;
+
+    // text
+    if (o.type === 'textbox' || o.type === 'text' || o.type === 'i-text') {
+      const s = currentTextStyle();
+      o.set({
+        fill: s.fill,
+        fontSize: s.fontSize,
+        stroke: s.stroke,
+        strokeWidth: s.strokeWidth,
+        paintFirst: s.stroke ? 'stroke' : 'fill'
+      });
+      canvas.requestRenderAll();
+      updatePreview();
+    }
+
+    // speech bubble: only inner text size
+    if (o.type === 'group') {
+      const items = o.getObjects();
+      const innerText = items.find(x => x.type === 'textbox');
+      if (innerText) {
+        innerText.set({ fontSize: Math.max(18, Number(fontSize.value || 36) * 0.55) });
+        canvas.requestRenderAll();
+        updatePreview();
+      }
+    }
+  }
+
+  canvas.on('selection:created', syncUIFromSelection);
+  canvas.on('selection:updated', syncUIFromSelection);
+
+  colorPick.addEventListener('input', applyStyleToSelection);
+  fontSize.addEventListener('input', applyStyleToSelection);
+  outlineMode.addEventListener('change', applyStyleToSelection);
+  outlineWidth.addEventListener('input', applyStyleToSelection);
+
+  // =========================================================
+  // 10) Preview + Download
+  // =========================================================
+  function updatePreview() {
+    try {
+      const data = canvas.toDataURL({ format: 'png', multiplier: 1 });
+      previewEl.src = data;
+    } catch {}
+  }
+
+  btnDownload.addEventListener('click', () => {
+    const mult = Number(exportScale.value || 2);
+    const data = canvas.toDataURL({ format: 'png', multiplier: mult });
+    const a = document.createElement('a');
+    a.href = data;
+    a.download = `mememaker_${Date.now()}.png`;
+    a.click();
+  });
+
+  canvas.on('object:modified', updatePreview);
+  canvas.on('object:added', updatePreview);
+  canvas.on('object:removed', updatePreview);
+
+  // =========================================================
+  // 11) Undo/Redo (Snapshots)
+  // =========================================================
+  let history = [];
+  let histIndex = -1;
+  let isRestoring = false;
+
+  function pushHistory() {
+    if (isRestoring) return;
+    const json = canvas.toJSON(['selectable', 'evented']);
+    history = history.slice(0, histIndex + 1);
+    history.push(json);
+    histIndex = history.length - 1;
+  }
+
+  async function restoreFrom(index) {
+    if (index < 0 || index >= history.length) return;
+    isRestoring = true;
+    await canvas.loadFromJSON(history[index]);
+    canvas.requestRenderAll();
+    isRestoring = false;
+    updatePreview();
+  }
+
+  canvas.on('object:added', pushHistory);
+  canvas.on('object:modified', pushHistory);
+  canvas.on('object:removed', pushHistory);
+
+  pushHistory();
+
+  document.addEventListener('keydown', async (e) => {
+    // Delete
+    if (e.key === 'Delete' || e.key === 'Backspace') {
+      const active = canvas.getActiveObjects();
+      if (active.length) {
+        e.preventDefault();
+        active.forEach(o => canvas.remove(o));
+        canvas.discardActiveObject();
+        canvas.requestRenderAll();
+        updatePreview();
+      }
+    }
+
+    // Undo/Redo
+    const z = (e.key.toLowerCase() === 'z');
+    const y = (e.key.toLowerCase() === 'y');
+    if (e.ctrlKey && z) {
+      e.preventDefault();
+      if (histIndex > 0) { histIndex--; await restoreFrom(histIndex); }
+    }
+    if (e.ctrlKey && y) {
+      e.preventDefault();
+      if (histIndex < history.length - 1) { histIndex++; await restoreFrom(histIndex); }
+    }
+  });
+
+  // =========================================================
+  // 12) Eigene Vorlagen hinzufügen (URL / Datei)
+  // =========================================================
+  btnAddUrlTpl.addEventListener('click', async () => {
+    const url = (tplUrl.value || "").trim();
+    if (!url) return;
+
+    // kleiner Check: Bild ladbar?
+    try {
+      await new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => resolve();
+        img.onerror = () => reject(new Error("URL nicht ladbar"));
+        img.src = url;
+      });
+
+      addLocalTemplate({
+        kind: "url",
+        label: `URL: ${url.split('/').pop() || 'Bild'}`,
+        src: url
+      });
+
+      tplUrl.value = "";
+      await initDynamicTemplates(); // refresh
+      categorySelect.value = "local:templates";
+      await loadCategoryItems("local:templates");
+      setStatus("gespeichert");
+      setTimeout(()=>setStatus("bereit"), 600);
+    } catch (e) {
+      console.warn(e);
+      setStatus("URL fehler");
+      setTimeout(()=>setStatus("bereit"), 900);
+    }
+  });
+
+  btnSaveFileTpl.addEventListener('click', async () => {
+    const file = tplFile.files && tplFile.files[0];
+    if (!file) return;
+
+    // Als DataURL speichern (LocalStorage) — für viele große Bilder begrenzen wir Anzahl oben.
+    const dataUrl = await new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => resolve(String(r.result));
+      r.onerror = reject;
+      r.readAsDataURL(file);
+    });
+
+    addLocalTemplate({
+      kind: "file",
+      label: `Datei: ${file.name}`,
+      src: dataUrl
+    });
+
+    tplFile.value = "";
+    await initDynamicTemplates(); // refresh
+    categorySelect.value = "local:templates";
+    await loadCategoryItems("local:templates");
+    setStatus("gespeichert");
+    setTimeout(()=>setStatus("bereit"), 600);
+  });
+
+  btnClearLocalTpl.addEventListener('click', async () => {
+    saveLocalTemplates([]);
+    await initDynamicTemplates();
+    setStatus("lokal gelöscht");
+    setTimeout(()=>setStatus("bereit"), 700);
+  });
+
+  // =========================================================
+  // 13) Start
+  // =========================================================
+  initDynamicTemplates().then(() => updatePreview());
+
+});
+</script>
+    <script src="../../../feedback-widget.js" defer></script>
+</body>
+</html>

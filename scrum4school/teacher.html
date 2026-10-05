@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="../../../media/favicon.png">
+    <title>Scrum4School Teacher</title>
+  <style>
+    :root{--bg:#0b141e;--card:#152434;--line:#2a3a4a;--text:#dbe7f2;--muted:#95a8bc;--ok:#7be4a7;--warn:#ffd38a;--bad:#ff9e9e}
+    *{box-sizing:border-box} body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:radial-gradient(130% 130% at 10% 0,#21364a 0,var(--bg) 45%);color:var(--text)}
+    .wrap{max-width:1220px;margin:0 auto;padding:20px 14px 42px}
+    .card{background:linear-gradient(180deg,#142434,var(--card));border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:10px}
+    .toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    button,.btn{border:1px solid var(--line);background:#22384d;color:var(--text);border-radius:9px;padding:8px 11px;cursor:pointer;font-weight:600}
+    .btn-primary{background:linear-gradient(135deg,#7eb4ff,#7be4a7);border:none;color:#0a2d20;font-weight:800}
+    input[type=file],select{background:#132333;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:6px}
+    h1{margin:0 0 6px;font-size:28px} h2{margin:3px 0 9px;font-size:20px}
+    .muted,.hint{color:var(--muted)} .hint{font-size:12px}
+    .grid{display:grid;gap:8px}.g4{grid-template-columns:repeat(4,minmax(130px,1fr))}
+    .metric{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:10px;padding:8px}
+    .metric .l{font-size:12px;color:var(--muted)} .metric .v{font-size:22px;font-weight:800}
+    .empty{border:1px dashed var(--line);border-radius:10px;padding:12px;color:var(--muted);background:rgba(255,255,255,.02)}
+    table{width:100%;border-collapse:collapse;margin-top:8px} th,td{border-bottom:1px solid var(--line);padding:7px;text-align:left;vertical-align:top}
+    th{font-size:12px;color:var(--muted);text-transform:uppercase}
+    .lesson{border:1px solid var(--line);border-radius:10px;padding:10px;background:rgba(255,255,255,.02);margin-top:8px}
+    .lesson-head{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+    .badge{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:2px 8px;font-size:12px;margin-right:4px;margin-top:3px}
+    .status-open{color:var(--bad)} .status-work{color:var(--warn)} .status-done{color:var(--ok)}
+    @media(max-width:900px){.g4{grid-template-columns:1fr 1fr}} @media(max-width:620px){.g4{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Scrum4School Teacher View</h1>
+    <div class="muted">Progressorientierte Auswertung von Stunden, Versionen und Lernentwicklung.</div>
+
+    <section class="card">
+      <div class="toolbar">
+        <input id="projectFileInput" type="file" accept=".json">
+        <button id="loadBtn" class="btn-primary" type="button">JSON laden</button>
+        <button id="copySummaryBtn" type="button">Bewertungsnotiz kopieren</button>
+        <a class="btn" href="./index.html">Zurueck</a>
+      </div>
+      <div id="loadStatus" class="hint" style="margin-top:8px">Noch keine Datei geladen.</div>
+    </section>
+
+    <section class="card">
+      <h2>Projektueberblick</h2>
+      <div id="projectOverview" class="empty">Bitte JSON laden.</div>
+    </section>
+
+    <section class="card">
+      <h2>Stundenverlauf</h2>
+      <div id="lessonTimeline" class="empty">Keine Stunden vorhanden.</div>
+    </section>
+
+    <section class="card">
+      <h2>Versionkontrolle</h2>
+      <div class="toolbar">
+        <label>Von <select id="compareFrom"></select></label>
+        <label>Zu <select id="compareTo"></select></label>
+        <button id="compareBtn" type="button">Vergleichen</button>
+      </div>
+      <div id="versionSummary" class="hint" style="margin-top:6px">Noch keine Versionen geladen.</div>
+      <div id="versionList" class="empty" style="margin-top:8px">Keine Versionen.</div>
+      <div id="compareResult" class="empty" style="margin-top:8px">Bitte Versionen waehlen.</div>
+    </section>
+
+    <section class="card">
+      <h2>Bewertung je Schueler:in</h2>
+      <div id="studentMetrics" class="empty">Noch keine Teamdaten.</div>
+      <div id="studentMatrix" class="empty" style="margin-top:8px">Noch keine Stundenmatrix.</div>
+    </section>
+  </div>
+
+  <script>
+    let loadedProject = null;
+    let assessmentCache = null;
+
+    const fileInput = document.getElementById('projectFileInput');
+    const loadBtn = document.getElementById('loadBtn');
+    const copySummaryBtn = document.getElementById('copySummaryBtn');
+    const loadStatus = document.getElementById('loadStatus');
+    const compareFrom = document.getElementById('compareFrom');
+    const compareTo = document.getElementById('compareTo');
+    const compareBtn = document.getElementById('compareBtn');
+
+    const asArray = v => Array.isArray(v) ? v : [];
+    const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    const fmtDate = iso => { const d = new Date(iso); return Number.isNaN(d.getTime()) ? String(iso || '-') : d.toLocaleDateString('de-DE'); };
+    const fmtDateTime = iso => { const d = new Date(iso); return Number.isNaN(d.getTime()) ? String(iso || '-') : d.toLocaleString('de-DE'); };
+    const fmtBytes = n => { n = Number(n)||0; if(n < 1024) return `${n} B`; if(n < 1024*1024) return `${(n/1024).toFixed(1)} KB`; return `${(n/(1024*1024)).toFixed(2)} MB`; };
+    const statusLabel = s => ({'status-red':'Offen','status-yellow':'In Bearbeitung','status-green':'Beendet'})[s] || s || '-';
+    const statusClass = s => ({'status-red':'status-open','status-yellow':'status-work','status-green':'status-done'})[s] || '';
+
+    function normalizeInput(raw) {
+      if (!raw || typeof raw !== 'object') return null;
+      if (Array.isArray(raw.versions) && !raw.sourceSnapshots) {
+        return { title: raw.projectTitle || 'Ohne Titel', description: 'Versions-Export', startDate: '', endDate: '', teamMembers: [], todos: [], sprints: [], logbook: [], sourceSnapshots: raw.versions, mode: 'versions' };
+      }
+      if (raw.files && raw.id && raw.time && !raw.sourceSnapshots) {
+        return { title: raw.workspaceName || 'Snapshot', description: 'Einzelner Code-Stand', startDate: '', endDate: '', teamMembers: [], todos: [], sprints: [], logbook: [], sourceSnapshots: [raw], mode: 'single' };
+      }
+      return {
+        title: String(raw.title || 'Ohne Titel'),
+        description: String(raw.description || ''),
+        startDate: raw.startDate || '',
+        endDate: raw.endDate || '',
+        teamMembers: asArray(raw.teamMembers).map(String),
+        todos: asArray(raw.todos),
+        sprints: asArray(raw.sprints),
+        logbook: asArray(raw.logbook),
+        sourceSnapshots: asArray(raw.sourceSnapshots),
+        mode: 'project'
+      };
+    }
+
+    function normalizeTodos(todos) {
+      return asArray(todos).map(t => ({
+        title: String(t?.title || ''),
+        description: String(t?.description || ''),
+        status: String(t?.status || 'status-red'),
+        assignee: String(t?.assignee || ''),
+        comments: asArray(t?.comments).map(c => ({
+          text: String(typeof c === 'string' ? c : c?.text || ''),
+          by: String(typeof c === 'string' ? '' : c?.by || ''),
+          time: String(typeof c === 'string' ? '' : c?.time || '')
+        }))
+      }));
+    }
+
+    function normalizeSprints(sprints, teamMembers) {
+      const members = new Set(teamMembers.map(String));
+      const out = asArray(sprints).map((s, idx) => {
+        const goals = asArray(s?.goals).map(g => ({ text: String(typeof g === 'string' ? g : g?.text || ''), done: !!(typeof g === 'string' ? false : g?.done), carry: !!(typeof g === 'string' ? false : g?.carry) })).filter(g => g.text);
+        const todos = asArray(s?.todos).map(t => ({ title: String(typeof t === 'string' ? t : t?.title || ''), addedBy: String(typeof t === 'string' ? '' : t?.addedBy || '') })).filter(t => t.title);
+        const notes = asArray(s?.notes).map(n => ({ text: String(typeof n === 'string' ? n : n?.text || ''), by: String(typeof n === 'string' ? '' : n?.by || ''), time: String(typeof n === 'string' ? '' : n?.time || '') })).filter(n => n.text);
+        const participants = asArray(s?.participants).map(p => ({ name: String(p?.name || ''), present: !!p?.present, role: p?.role === 'coding' || p?.role === 'doku' ? p.role : '' })).filter(p => p.name);
+        participants.forEach(p => members.add(p.name));
+        todos.forEach(t => t.addedBy && members.add(t.addedBy));
+        notes.forEach(n => n.by && members.add(n.by));
+        return { index: idx, date: String(s?.date || ''), goals, todos, notes, participants };
+      });
+      return { sprints: out, members: Array.from(members).filter(Boolean) };
+    }
+
+    function normalizeSnapshots(snaps) {
+      return asArray(snaps).map((s, i) => {
+        const files = asArray(s?.files).map(f => ({
+          path: String(f?.path || ''), size: Number(f?.size) || 0, lastModified: Number(f?.lastModified) || 0,
+          content: typeof f?.content === 'string' ? f.content : '', omitted: !!f?.omitted, reason: String(f?.reason || '')
+        })).filter(f => f.path);
+        const totalBytes = files.reduce((sum, f) => sum + f.size, 0);
+        return { id: String(s?.id || `v${i + 1}`), time: String(s?.time || ''), workspaceName: String(s?.workspaceName || ''), fileCount: Number(s?.fileCount) || files.length, totalBytes: Number(s?.totalBytes) || totalBytes, files };
+      });
+    }
+
+    function snapshotDiff(a, b) {
+      const mapA = new Map();
+      const mapB = new Map();
+      asArray(a?.files).forEach(f => mapA.set(f.path, f));
+      asArray(b?.files).forEach(f => mapB.set(f.path, f));
+      const all = new Set([...mapA.keys(), ...mapB.keys()]);
+      const changes = [];
+      for (const p of all) {
+        const x = mapA.get(p); const y = mapB.get(p);
+        if (!x && y) { changes.push({ type: 'added', path: p }); continue; }
+        if (x && !y) { changes.push({ type: 'removed', path: p }); continue; }
+        const mx = x.omitted ? `o:${x.reason}` : `c:${x.content}`;
+        const my = y.omitted ? `o:${y.reason}` : `c:${y.content}`;
+        if (mx !== my) changes.push({ type: 'modified', path: p });
+      }
+      return {
+        changes,
+        counts: {
+          added: changes.filter(c => c.type === 'added').length,
+          modified: changes.filter(c => c.type === 'modified').length,
+          removed: changes.filter(c => c.type === 'removed').length
+        }
+      };
+    }
+    function renderOverview(project, todos, sprints, snaps) {
+      const doneTodos = todos.filter(t => t.status === 'status-green').length;
+      const totalGoals = sprints.reduce((sum, s) => sum + s.goals.length, 0);
+      const doneGoals = sprints.reduce((sum, s) => sum + s.goals.filter(g => g.done).length, 0);
+      const el = document.getElementById('projectOverview');
+      el.className = '';
+      el.innerHTML = `
+        <div style="font-size:22px;font-weight:800">${esc(project.title)}</div>
+        <div class="muted" style="margin-top:3px">${esc(project.description || 'Keine Beschreibung')}</div>
+        <div class="grid g4" style="margin-top:8px">
+          <div class="metric"><div class="l">Zeitraum</div><div class="v" style="font-size:15px">${esc(project.startDate || '-')} bis ${esc(project.endDate || '-')}</div></div>
+          <div class="metric"><div class="l">Team</div><div class="v">${project.teamMembers.length}</div></div>
+          <div class="metric"><div class="l">TODOs erledigt</div><div class="v">${doneTodos}/${todos.length}</div></div>
+          <div class="metric"><div class="l">Ziele erledigt</div><div class="v">${doneGoals}/${totalGoals}</div></div>
+        </div>
+        <div class="hint" style="margin-top:7px">Stunden: ${sprints.length} | Code-Versionen: ${snaps.length} | Logeintraege: ${asArray(project.logbook).length}</div>
+      `;
+    }
+
+    function renderLessons(todos, sprints) {
+      const box = document.getElementById('lessonTimeline');
+      if (!sprints.length) { box.className = 'empty'; box.textContent = 'Keine Stunden vorhanden.'; return; }
+      const todoByTitle = new Map(todos.map(t => [t.title, t]));
+      box.className = '';
+      box.innerHTML = sprints.map((s, i) => {
+        const done = s.goals.filter(g => g.done).length;
+        const present = s.participants.filter(p => p.present).length;
+        const coding = s.participants.filter(p => p.present && p.role === 'coding').length;
+        const goalsHtml = s.goals.length ? `<ul>${s.goals.map((g,gi)=>`<li>${g.done ? '✔' : '○'} #${gi+1} ${esc(g.text)} ${g.carry ? '<span class="hint">(carry)</span>' : ''}</li>`).join('')}</ul>` : '<div class="hint">Keine Ziele.</div>';
+        const participantChips = s.participants.length ? s.participants.map(p => `<span class="badge">${esc(p.name)}: ${!p.present ? 'abwesend' : (p.role || 'anwesend')}</span>`).join('') : '<span class="hint">Keine Teilnehmerdaten.</span>';
+        const issueRows = s.todos.length ? s.todos.map(st => {
+          const t = todoByTitle.get(st.title);
+          const status = t?.status || 'status-red';
+          return `<tr><td>${esc(st.title)}</td><td>${esc(st.addedBy || '-')}</td><td class="${statusClass(status)}">${esc(statusLabel(status))}</td><td>${esc(t?.assignee || '-')}</td></tr>`;
+        }).join('') : '<tr><td colspan="4" class="hint">Keine Issues in dieser Stunde.</td></tr>';
+        const noteList = s.notes.length ? `<ul>${s.notes.map(n=>`<li><b>${esc(n.by || 'Unbekannt')}</b>: ${esc(n.text)}</li>`).join('')}</ul>` : '<div class="hint">Keine Notizen.</div>';
+        return `
+          <article class="lesson">
+            <div class="lesson-head">
+              <div><b>Stunde ${i+1}</b> - ${esc(fmtDate(s.date))}</div>
+              <div>
+                <span class="badge">Ziele ${done}/${s.goals.length}</span>
+                <span class="badge">Anwesend ${present}/${s.participants.length}</span>
+                <span class="badge">Coding ${coding}</span>
+              </div>
+            </div>
+            <div><b>Ziele</b>${goalsHtml}</div>
+            <div style="margin-top:6px"><b>Teilnahme</b><div>${participantChips}</div></div>
+            <div style="margin-top:6px"><b>Issues</b>
+              <table><thead><tr><th>Issue</th><th>Hinzugefuegt von</th><th>Status</th><th>Verantwortlich</th></tr></thead><tbody>${issueRows}</tbody></table>
+            </div>
+            <div style="margin-top:6px"><b>Notizen</b>${noteList}</div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    function parseActor(text, members) {
+      const src = String(text || '');
+      for (const member of members) {
+        const escaped = member.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const re = new RegExp(`\\bvon\\s+${escaped}\\b`, 'i');
+        if (re.test(src)) return member;
+      }
+      return '';
+    }
+
+    function computeAssessment(project, todos, sprints, snaps) {
+      const memberSet = new Set(project.teamMembers);
+      todos.forEach(t => { if (t.assignee) memberSet.add(t.assignee); t.comments.forEach(c => c.by && memberSet.add(c.by)); });
+      sprints.forEach(s => {
+        s.participants.forEach(p => memberSet.add(p.name));
+        s.todos.forEach(t => t.addedBy && memberSet.add(t.addedBy));
+        s.notes.forEach(n => n.by && memberSet.add(n.by));
+      });
+      const members = Array.from(memberSet).filter(Boolean);
+      const byMember = new Map(members.map(name => [name, {
+        name, attendancePresent: 0, attendanceTotal: 0, codingRoles: 0, dokuRoles: 0,
+        assignedTodos: 0, sprintTodoAdds: 0, comments: 0, notes: 0, goalCompletions: 0, statusChanges: 0,
+        lessonActivity: Array(sprints.length).fill(0)
+      }]));
+
+      const getM = name => byMember.get(name) || (byMember.set(name, { name, attendancePresent: 0, attendanceTotal: 0, codingRoles: 0, dokuRoles: 0, assignedTodos: 0, sprintTodoAdds: 0, comments: 0, notes: 0, goalCompletions: 0, statusChanges: 0, lessonActivity: Array(sprints.length).fill(0) }), byMember.get(name));
+      const lessonTimes = sprints.map(s => { const d = new Date(s.date); return Number.isNaN(d.getTime()) ? null : d.getTime(); });
+      const idxByTime = iso => {
+        const t = new Date(iso).getTime(); if (!Number.isFinite(t) || !lessonTimes.length) return -1;
+        let idx = -1; for (let i = 0; i < lessonTimes.length; i++) { if (lessonTimes[i] != null && lessonTimes[i] <= t) idx = i; } return idx;
+      };
+
+      todos.forEach(t => {
+        if (t.assignee) getM(t.assignee).assignedTodos += 1;
+        t.comments.forEach(c => {
+          if (!c.by) return;
+          const m = getM(c.by); m.comments += 1;
+          const idx = idxByTime(c.time); if (idx >= 0) m.lessonActivity[idx] += 1;
+        });
+      });
+
+      sprints.forEach((s, idx) => {
+        s.participants.forEach(p => {
+          const m = getM(p.name); m.attendanceTotal += 1;
+          if (p.present) { m.attendancePresent += 1; m.lessonActivity[idx] += 1; }
+          if (p.role === 'coding') { m.codingRoles += 1; m.lessonActivity[idx] += 1; }
+          if (p.role === 'doku') m.dokuRoles += 1;
+        });
+        s.todos.forEach(t => { if (!t.addedBy) return; const m = getM(t.addedBy); m.sprintTodoAdds += 1; m.lessonActivity[idx] += 1; });
+        s.notes.forEach(n => { if (!n.by) return; const m = getM(n.by); m.notes += 1; m.lessonActivity[idx] += 1; });
+      });
+
+      asArray(project.logbook).forEach(entry => {
+        const actor = parseActor(`${entry?.type || ''} ${entry?.info || ''}`, Array.from(byMember.keys()));
+        if (!actor) return;
+        const m = getM(actor);
+        const type = String(entry?.type || '').toLowerCase();
+        if (type.includes('stundenziel erledigt')) m.goalCompletions += 1;
+        if (type.includes('status ge')) m.statusChanges += 1;
+        const idx = idxByTime(entry?.time); if (idx >= 0) m.lessonActivity[idx] += 1;
+      });
+
+      const half = Math.ceil(sprints.length / 2);
+      const list = Array.from(byMember.values()).map(m => {
+        const rate = m.attendanceTotal ? m.attendancePresent / m.attendanceTotal : 0;
+        const first = m.lessonActivity.slice(0, half).reduce((a, b) => a + b, 0);
+        const second = m.lessonActivity.slice(half).reduce((a, b) => a + b, 0);
+        const trend = second - first;
+        const score = Math.min(100,
+          Math.round(rate * 35) +
+          Math.min(25, (m.comments + m.notes + m.sprintTodoAdds + m.statusChanges) * 2) +
+          Math.min(20, m.assignedTodos * 2 + m.goalCompletions * 4) +
+          Math.min(20, m.codingRoles * 2 + m.dokuRoles)
+        );
+        let hint = trend >= 2 ? 'Aktivitaet steigt.' : trend <= -2 ? 'Aktivitaet sinkt.' : 'Aktivitaet stabil.';
+        if (rate < 0.7 && m.attendanceTotal) hint += ' Anwesenheit als Foerderpunkt.';
+        if (m.goalCompletions > 0) hint += ' Uebernimmt Zielabschluesse.';
+        return { ...m, attendanceRate: rate, trend, orientScore: score, learningHint: hint };
+      }).sort((a, b) => b.orientScore - a.orientScore);
+
+      return { members: list, totalLessons: sprints.length, totalSnapshots: snaps.length };
+    }
+    function renderSnapshots(snaps) {
+      const summary = document.getElementById('versionSummary');
+      const list = document.getElementById('versionList');
+      compareFrom.innerHTML = ''; compareTo.innerHTML = '';
+      if (!snaps.length) {
+        summary.textContent = 'Keine Versionen vorhanden.';
+        list.className = 'empty'; list.textContent = 'Keine Code-Staende gefunden.';
+        document.getElementById('compareResult').className = 'empty';
+        document.getElementById('compareResult').textContent = 'Kein Vergleich moeglich.';
+        return;
+      }
+      const sorted = snaps.slice().sort((a, b) => new Date(a.time) - new Date(b.time));
+      const opts = sorted.map((s, i) => `<option value="${i}">${esc(s.id)} - ${esc(fmtDateTime(s.time))}</option>`).join('');
+      compareFrom.innerHTML = opts; compareTo.innerHTML = opts;
+      compareFrom.value = String(Math.max(0, sorted.length - 2)); compareTo.value = String(sorted.length - 1);
+      summary.textContent = `${sorted.length} Versionen geladen. Letzte Version: ${sorted[sorted.length - 1].id}`;
+
+      const rows = sorted.map((s, i) => {
+        const prev = sorted[i - 1]; const d = prev ? snapshotDiff(prev, s).counts : null;
+        return `<tr><td>${esc(s.id)}</td><td>${esc(fmtDateTime(s.time))}</td><td>${esc(s.workspaceName || '-')}</td><td>${s.fileCount}</td><td>${esc(fmtBytes(s.totalBytes))}</td><td>${d ? `+${d.added} / ~${d.modified} / -${d.removed}` : '-'}</td></tr>`;
+      }).join('');
+      list.className = '';
+      list.innerHTML = `<table><thead><tr><th>Version</th><th>Zeit</th><th>Workspace</th><th>Dateien</th><th>Groesse</th><th>Diff zu vorher</th></tr></thead><tbody>${rows}</tbody></table>`;
+      renderCompareResult(sorted);
+    }
+
+    function renderCompareResult(sortedSnaps) {
+      const sorted = sortedSnaps || [];
+      const out = document.getElementById('compareResult');
+      const a = Number(compareFrom.value), b = Number(compareTo.value);
+      if (!sorted[a] || !sorted[b] || a === b) { out.className = 'empty'; out.textContent = 'Bitte zwei verschiedene Versionen waehlen.'; return; }
+      const from = sorted[Math.min(a, b)], to = sorted[Math.max(a, b)];
+      const diff = snapshotDiff(from, to);
+      const rows = diff.changes.slice(0, 200).map(c => `<tr><td>${esc(c.type)}</td><td>${esc(c.path)}</td></tr>`).join('');
+      out.className = '';
+      out.innerHTML = `
+        <div class="hint">Vergleich ${esc(from.id)} -> ${esc(to.id)} | +${diff.counts.added} / ~${diff.counts.modified} / -${diff.counts.removed}</div>
+        <table><thead><tr><th>Typ</th><th>Datei</th></tr></thead><tbody>${rows || '<tr><td colspan="2" class="hint">Keine Aenderungen erkannt.</td></tr>'}</tbody></table>
+        ${diff.changes.length > 200 ? `<div class="hint">Anzeige auf 200 Eintraege begrenzt (gesamt ${diff.changes.length}).</div>` : ''}
+      `;
+    }
+
+    function renderStudentAssessment(assessment, sprints) {
+      const el = document.getElementById('studentMetrics');
+      const matrix = document.getElementById('studentMatrix');
+      if (!assessment.members.length) {
+        el.className = 'empty'; el.textContent = 'Keine Schuelerdaten gefunden.';
+        matrix.className = 'empty'; matrix.textContent = 'Keine Matrix moeglich.';
+        return;
+      }
+
+      const rows = assessment.members.map(m => `
+        <tr>
+          <td>${esc(m.name)}</td>
+          <td>${m.attendancePresent}/${m.attendanceTotal} (${Math.round(m.attendanceRate * 100)}%)</td>
+          <td>${m.codingRoles}/${m.dokuRoles}</td>
+          <td>${m.assignedTodos}</td>
+          <td>${m.sprintTodoAdds}</td>
+          <td>${m.comments + m.notes}</td>
+          <td>${m.goalCompletions}</td>
+          <td>${m.statusChanges}</td>
+          <td>${m.trend > 0 ? '+' : ''}${m.trend}</td>
+          <td><b>${m.orientScore}</b></td>
+          <td>${esc(m.learningHint)}</td>
+        </tr>
+      `).join('');
+      el.className = '';
+      el.innerHTML = `
+        <div class="hint">Der Orientierungswert ist eine transparente Hilfe (kein Ersatz fuer paedagogische Gesamtbeurteilung).</div>
+        <table>
+          <thead><tr><th>Name</th><th>Anwesenheit</th><th>Rollen C/D</th><th>Zugew. TODOs</th><th>Issues hinzugef.</th><th>Kommentare+Notizen</th><th>Ziele</th><th>Statuspflege</th><th>Trend</th><th>Wert</th><th>Lernhinweis</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+
+      const header = sprints.map((_, i) => `<th>U${i + 1}</th>`).join('');
+      const matrixRows = assessment.members.map(m => {
+        const cells = sprints.map(s => {
+          const p = s.participants.find(x => x.name === m.name);
+          if (!p) return '<td>-</td>';
+          if (!p.present) return '<td>A</td>';
+          if (p.role === 'coding') return '<td>P(C)</td>';
+          if (p.role === 'doku') return '<td>P(D)</td>';
+          return '<td>P</td>';
+        }).join('');
+        return `<tr><td><b>${esc(m.name)}</b></td>${cells}</tr>`;
+      }).join('');
+      matrix.className = '';
+      matrix.innerHTML = `<div class="hint">A=abwesend, P=anwesend, C=Coding, D=Doku</div><table><thead><tr><th>Schueler:in</th>${header}</tr></thead><tbody>${matrixRows}</tbody></table>`;
+    }
+
+    function buildSummary(project, assessment) {
+      const lines = [
+        `Projekt: ${project.title}`,
+        `Stunden: ${assessment.totalLessons}, Versionen: ${assessment.totalSnapshots}`,
+        '',
+        'Lehrkraft-Notiz:'
+      ];
+      assessment.members.forEach(m => {
+        lines.push(`- ${m.name}: Anwesenheit ${m.attendancePresent}/${m.attendanceTotal}, Rollen C/D ${m.codingRoles}/${m.dokuRoles}, TODOs ${m.assignedTodos}, Beteiligung ${m.comments + m.notes}, Ziele ${m.goalCompletions}, Trend ${m.trend > 0 ? '+' : ''}${m.trend}. ${m.learningHint}`);
+      });
+      return lines.join('\n');
+    }
+
+    function loadFromObject(raw) {
+      const base = normalizeInput(raw);
+      if (!base) throw new Error('JSON-Struktur nicht erkannt.');
+      const todos = normalizeTodos(base.todos);
+      const sprintPack = normalizeSprints(base.sprints, base.teamMembers);
+      const sprints = sprintPack.sprints;
+      const snaps = normalizeSnapshots(base.sourceSnapshots);
+      const project = { ...base, teamMembers: sprintPack.members };
+      const assessment = computeAssessment(project, todos, sprints, snaps);
+
+      loadedProject = { project, todos, sprints, snaps };
+      assessmentCache = assessment;
+
+      renderOverview(project, todos, sprints, snaps);
+      renderLessons(todos, sprints);
+      renderSnapshots(snaps);
+      renderStudentAssessment(assessment, sprints);
+
+      const modeLabel = project.mode === 'project' ? 'Projektmodus' : project.mode === 'versions' ? 'Nur-Versionen-Modus' : 'Snapshot-Modus';
+      loadStatus.textContent = `Geladen: ${project.title} (${modeLabel})`;
+    }
+
+    async function loadFromFile() {
+      const file = fileInput.files && fileInput.files[0];
+      if (!file) { alert('Bitte eine JSON-Datei waehlen.'); return; }
+      const text = await file.text();
+      let raw;
+      try { raw = JSON.parse(text); } catch { throw new Error('Datei ist kein gueltiges JSON.'); }
+      loadFromObject(raw);
+    }
+
+    loadBtn.addEventListener('click', async () => {
+      try { await loadFromFile(); }
+      catch (err) {
+        console.error(err);
+        loadStatus.textContent = `Fehler: ${err.message || err}`;
+        alert(`Fehler beim Laden: ${err.message || err}`);
+      }
+    });
+
+    compareBtn.addEventListener('click', () => {
+      if (!loadedProject) return;
+      const sorted = loadedProject.snaps.slice().sort((a, b) => new Date(a.time) - new Date(b.time));
+      renderCompareResult(sorted);
+    });
+
+    copySummaryBtn.addEventListener('click', async () => {
+      if (!loadedProject || !assessmentCache) { alert('Bitte zuerst eine Datei laden.'); return; }
+      const text = buildSummary(loadedProject.project, assessmentCache);
+      try {
+        await navigator.clipboard.writeText(text);
+        alert('Bewertungsnotiz wurde kopiert.');
+      } catch (err) {
+        console.error(err);
+        alert('Kopieren nicht moeglich. Browser-Berechtigung pruefen.');
+      }
+    });
+  </script>
+    <script src="../../../feedback-widget.js" defer></script>
+</body>
+</html>

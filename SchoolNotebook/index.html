@@ -1,0 +1,1105 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="icon" type="image/png" href="../../../media/favicon.png">
+    <title>School Notebook – JS & Python (Schüler)</title>
+
+  <!-- CodeMirror 5 (CDN) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/lib/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/theme/material-darker.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/lib/codemirror.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/mode/python/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/mode/javascript/javascript.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #0f1220;
+      --panel: #151a2e;
+      --panel2: #101427;
+      --text: #e6e6f0;
+      --muted: #a7a7c0;
+      --accent: #7dd3fc;
+      --danger: #fb7185;
+      --ok: #86efac;
+      --border: rgba(255,255,255,.10);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(1200px 700px at 20% 0%, rgba(125,211,252,.10), transparent 60%),
+                  radial-gradient(1000px 600px at 80% 10%, rgba(134,239,172,.08), transparent 55%),
+                  var(--bg);
+      color: var(--text);
+    }
+    header {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 16px;
+      letter-spacing: .2px;
+      color: var(--text);
+    }
+    header .hint {
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .wrap {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 14px;
+      padding: 14px;
+    }
+    @media (max-width: 980px) {
+      .wrap { grid-template-columns: 1fr; }
+    }
+    .panel {
+      background: linear-gradient(180deg, rgba(255,255,255,.03), transparent), var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 12px 35px rgba(0,0,0,.25);
+    }
+    .panel .bar {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .panel .bar .left, .panel .bar .right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    button, select, input[type="text"] {
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 13px;
+      outline: none;
+    }
+    button:hover { border-color: rgba(255,255,255,.18); }
+    button.primary { border-color: rgba(125,211,252,.35); }
+    button.danger { border-color: rgba(251,113,133,.45); }
+    button.ok { border-color: rgba(134,239,172,.40); }
+
+    .cells {
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .cell {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      background: linear-gradient(180deg, rgba(255,255,255,.03), transparent), var(--panel2);
+    }
+    .cellHead {
+      padding: 10px 10px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .cellHead .meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .badge {
+      font-size: 12px;
+      color: var(--muted);
+      padding: 4px 8px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: rgba(255,255,255,.04);
+    }
+    .cellBtns { display: flex; gap: 6px; flex-wrap: wrap; }
+    .editorWrap {
+      height: 220px;
+      min-height: 120px;
+      max-height: 72vh;
+      resize: vertical;
+      overflow: auto;
+      border-top: 1px solid rgba(255,255,255,.02);
+    }
+    .CodeMirror {
+      height: 100%;
+      font-size: 13px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    }
+
+    .console {
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 110px);
+      min-height: 520px;
+    }
+    .consoleArea {
+      padding: 10px 12px;
+      overflow: auto;
+      flex: 1;
+      background: #0b0e1b;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 13px;
+      line-height: 1.45;
+      white-space: pre-wrap;
+      border-top: 1px solid var(--border);
+    }
+    .consoleInput {
+      padding: 10px 12px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      background: rgba(255,255,255,.03);
+    }
+    .consoleInput input {
+      flex: 1;
+      padding: 10px 10px;
+      border-radius: 12px;
+    }
+    .small {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    a, a:visited { color: var(--accent); }
+    .siteFooter {
+      margin-top: 10px;
+      padding: 18px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-top: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(0,0,0,.08), rgba(0,0,0,.28));
+    }
+    .siteFooter a {
+      color: #dbeafe;
+      text-decoration: none;
+      font-size: 15px;
+      letter-spacing: .2px;
+      padding: 10px 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(125,211,252,.40);
+      background: linear-gradient(135deg, rgba(125,211,252,.18), rgba(125,211,252,.06));
+      box-shadow: 0 6px 22px rgba(125,211,252,.20);
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+    .siteFooter a:hover {
+      transform: translateY(-1px);
+      border-color: rgba(125,211,252,.75);
+      box-shadow: 0 10px 26px rgba(125,211,252,.32);
+    }
+  </style>
+</head>
+
+<body>
+<header>
+  <h1>School Notebook</h1>
+  <div class="hint">Schülerorientierte Vereinfachung von Python.</div>
+</header>
+
+<div class="wrap">
+  <!-- LEFT: Notebook -->
+  <section class="panel">
+    <div class="bar">
+      <div class="left">
+        <button class="primary" id="addCellBtn">+ Zelle</button>
+        <button id="runAllBtn" class="ok">▶ Run All</button>
+        <button id="clearConsoleBtn">Konsole leeren</button>
+      </div>
+      <div class="right">
+        <button id="downloadBtn">⬇️ Download JSON</button>
+        <label class="small" style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+          ⬆️ Laden
+          <input id="fileInput" type="file" accept="application/json" style="display:none;">
+        </label>
+      </div>
+    </div>
+
+    <div class="cells" id="cells"></div>
+
+    <div style="padding: 0 12px 14px 12px;">
+      <div class="small">
+        <b>Sprachen:</b> JavaScript, JSON (als Datenzelle), Python (Indent-Subset), <b>Python Schüler</b> (Subset mit <code>{}</code> statt Einrückung).<br>
+        <b>Konvertierung:</b> In Python Schüler-Zellen steht der Button <code>To Python</code> bereit (Klammern -&gt; Einrückung).<br>
+        <b>Sicherheits-Hinweis:</b> Läuft komplett im Browser (client-side). Kein Server.
+      </div>
+    </div>
+  </section>
+
+  <!-- RIGHT: Console -->
+  <aside class="panel console">
+    <div class="bar">
+      <div class="left">
+        <span class="badge">Konsole</span>
+        <span class="small"></span>
+      </div>
+      <div class="right">
+        <button id="copyConsoleBtn">Copy</button>
+      </div>
+    </div>
+
+    <div class="consoleArea" id="consoleOut"></div>
+
+    <div class="consoleInput">
+      <input id="consoleIn" type="text" placeholder="Input hier eingeben (für input()) und Enter drücken…" />
+      <button id="sendInputBtn" class="primary">Senden</button>
+    </div>
+  </aside>
+</div>
+
+  <style> .siteFooter {
+      margin-top: 10px;
+      padding: 18px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-top: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(0,0,0,.08), rgba(0,0,0,.28));
+    }
+    .siteFooter a {
+      color: #dbeafe;
+      text-decoration: none;
+      font-size: 15px;
+      letter-spacing: .2px;
+      padding: 10px 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(125,211,252,.40);
+      background: linear-gradient(135deg, rgba(125,211,252,.18), rgba(125,211,252,.06));
+      box-shadow: 0 6px 22px rgba(125,211,252,.20);
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+    .siteFooter a:hover {
+      transform: translateY(-1px);
+      border-color: rgba(125,211,252,.75);
+      box-shadow: 0 10px 26px rgba(125,211,252,.32);
+    }</style>
+  <footer class="siteFooter">
+  <a href="https://datenflix007.github.io/" target="_blank" rel="noopener noreferrer">2026 Felix Staacke - datenflix007.github.io</a>
+</footer>
+
+
+<script>
+/** ---------------------------------------------------------
+ *  Runtime: Console I/O + async input queue
+ *  --------------------------------------------------------- */
+const consoleOut = document.getElementById("consoleOut");
+const consoleIn = document.getElementById("consoleIn");
+const sendInputBtn = document.getElementById("sendInputBtn");
+
+function appendOut(text) {
+  consoleOut.textContent += text;
+  consoleOut.scrollTop = consoleOut.scrollHeight;
+}
+function println(text="") { appendOut(String(text) + "\n"); }
+
+function formatConsoleValue(v) {
+  return typeof v === "object" ? JSON.stringify(v) : String(v);
+}
+
+let inputResolvers = [];
+let inputBuffer = [];
+
+function consolePrint(...args) {
+  pyPrint(args, { end: "\n" });
+}
+
+function pyPrint(args = [], opts = {}) {
+  const sep = Object.prototype.hasOwnProperty.call(opts, "sep") ? String(opts.sep) : " ";
+  const end = Object.prototype.hasOwnProperty.call(opts, "end") ? String(opts.end) : "";
+  appendOut(args.map(formatConsoleValue).join(sep) + end);
+}
+
+function pyInt(v) {
+  const n = Number(v);
+  if (!Number.isFinite(n)) throw new Error(`int(): ungültiger Wert ${v}`);
+  return n < 0 ? Math.ceil(n) : Math.floor(n);
+}
+
+function pyFloat(v) {
+  const n = Number(v);
+  if (Number.isNaN(n)) throw new Error(`float(): ungültiger Wert ${v}`);
+  return n;
+}
+
+function pyStr(v) {
+  return String(v);
+}
+
+function pyBool(v) {
+  return Boolean(v);
+}
+
+function pyList(v) {
+  if (Array.isArray(v)) return v.slice();
+  if (typeof v === "string") return Array.from(v);
+  if (v != null && typeof v[Symbol.iterator] === "function") return Array.from(v);
+  throw new Error("list(): erwartet iterierbaren Wert");
+}
+
+function pyLen(v) {
+  if (Array.isArray(v) || typeof v === "string") return v.length;
+  if (v && typeof v === "object") return Object.keys(v).length;
+  throw new Error("len(): nicht unterstützt für diesen Typ");
+}
+
+function pyIndex(seq, idx) {
+  if (seq == null) throw new Error("Indexzugriff auf null/undefined");
+  const n = Number(idx);
+  if (!Number.isFinite(n) || !Number.isInteger(n)) throw new Error("Index muss ganze Zahl sein");
+  if (typeof seq === "string" || Array.isArray(seq)) {
+    const i = n < 0 ? seq.length + n : n;
+    return seq[i];
+  }
+  if (typeof seq.at === "function") return seq.at(n);
+  return seq[n];
+}
+
+async function consoleInput(promptText="") {
+  if (promptText) appendOut(String(promptText));
+  // If already buffered
+  if (inputBuffer.length > 0) {
+    const v = inputBuffer.shift();
+    println(v);
+    return v;
+  }
+  // Wait for user
+  return new Promise(resolve => inputResolvers.push(resolve));
+}
+
+function sendUserInput() {
+  const v = consoleIn.value;
+  consoleIn.value = "";
+  // if someone waits
+  if (inputResolvers.length > 0) {
+    const r = inputResolvers.shift();
+    println(v);
+    r(v);
+  } else {
+    inputBuffer.push(v);
+    println(v);
+  }
+}
+sendInputBtn.addEventListener("click", sendUserInput);
+consoleIn.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") sendUserInput();
+});
+
+/** ---------------------------------------------------------
+ *  Notebook model + UI
+ *  --------------------------------------------------------- */
+const cellsEl = document.getElementById("cells");
+const addCellBtn = document.getElementById("addCellBtn");
+const runAllBtn = document.getElementById("runAllBtn");
+const downloadBtn = document.getElementById("downloadBtn");
+const fileInput = document.getElementById("fileInput");
+const clearConsoleBtn = document.getElementById("clearConsoleBtn");
+const copyConsoleBtn = document.getElementById("copyConsoleBtn");
+
+const LANGS = [
+  { id: "javascript", label: "JavaScript", cmMode: "javascript" },
+  { id: "json", label: "JSON (Daten)", cmMode: { name:"javascript", json: true } },
+  { id: "python", label: "Python (Indent, Subset)", cmMode: "python" },
+  { id: "python_student", label: "Python Schüler ({ } statt Indent, Subset)", cmMode: "python" },
+];
+
+let notebook = {
+  version: 1,
+  title: "School Notebook",
+  cells: []
+};
+
+let editors = new Map(); // cellId -> CodeMirror instance
+
+function uid() {
+  return Math.random().toString(16).slice(2) + Date.now().toString(16);
+}
+
+function defaultCodeFor(langId) {
+  if (langId === "javascript") return `// JavaScript\nconsolePrint("Hallo!");\n`;
+  if (langId === "json") return `{\n  "name": "Beispiel",\n  "value": 42\n}\n`;
+  if (langId === "python") return `# Python (Indent-Subset)\nname = await input("Name? ")\nprint("Hallo", name)\n`;
+  if (langId === "python_student") return `# Python Schüler: Blöcke mit { }\n# (Subset)\nname = await input("Name? ")\nif (name == "Ada") {\n  print("Hallo Ada!")\n} else {\n  print("Hallo", name)\n}\n`;
+  return "";
+}
+
+function addCell(langId="javascript", code=null) {
+  const id = uid();
+  notebook.cells.push({
+    id,
+    lang: langId,
+    code: code ?? defaultCodeFor(langId),
+  });
+  render();
+}
+
+function moveCell(id, dir) {
+  const idx = notebook.cells.findIndex(c => c.id === id);
+  if (idx < 0) return;
+  const j = idx + dir;
+  if (j < 0 || j >= notebook.cells.length) return;
+  const [c] = notebook.cells.splice(idx, 1);
+  notebook.cells.splice(j, 0, c);
+  render();
+}
+
+function deleteCell(id) {
+  notebook.cells = notebook.cells.filter(c => c.id !== id);
+  // destroy editor
+  const ed = editors.get(id);
+  if (ed) { editors.delete(id); }
+  render();
+}
+
+function setCellLang(id, lang) {
+  const c = notebook.cells.find(x => x.id === id);
+  if (!c) return;
+  c.lang = lang;
+  if (!c.code || c.code.trim() === "" || c.code === defaultCodeFor(c.lang)) {
+    // keep user code; do nothing
+  }
+  render(); // re-init editor mode
+}
+
+function convertStudentCellToPython(id) {
+  const c = notebook.cells.find(x => x.id === id);
+  if (!c || c.lang !== "python_student") return;
+  const ed = editors.get(c.id);
+  if (ed) c.code = ed.getValue();
+  c.code = studentPythonToStandardPython(c.code);
+  c.lang = "python";
+  render();
+  println("[Konvertiert] python_student -> python");
+}
+
+function updateCellCode(id, code) {
+  const c = notebook.cells.find(x => x.id === id);
+  if (!c) return;
+  c.code = code;
+}
+
+function render() {
+  // preserve codes from existing editors
+  for (const c of notebook.cells) {
+    const ed = editors.get(c.id);
+    if (ed) {
+      c.code = ed.getValue();
+      if (ed._resizeObserver) ed._resizeObserver.disconnect();
+    }
+  }
+  editors.clear();
+
+  // clear DOM
+  cellsEl.innerHTML = "";
+  // rebuild
+  notebook.cells.forEach((cell, index) => {
+    const cellDiv = document.createElement("div");
+    cellDiv.className = "cell";
+
+    const head = document.createElement("div");
+    head.className = "cellHead";
+
+    const meta = document.createElement("div");
+    meta.className = "meta";
+
+    const badge = document.createElement("span");
+    badge.className = "badge";
+    badge.textContent = `Zelle ${index+1}`;
+
+    const langSel = document.createElement("select");
+    for (const L of LANGS) {
+      const opt = document.createElement("option");
+      opt.value = L.id;
+      opt.textContent = L.label;
+      if (cell.lang === L.id) opt.selected = true;
+      langSel.appendChild(opt);
+    }
+    langSel.addEventListener("change", () => setCellLang(cell.id, langSel.value));
+
+    meta.appendChild(badge);
+    meta.appendChild(langSel);
+
+    const btns = document.createElement("div");
+    btns.className = "cellBtns";
+
+    const runBtn = document.createElement("button");
+    runBtn.className = "ok";
+    runBtn.textContent = "▶ Run";
+    runBtn.addEventListener("click", () => runCell(cell.id));
+
+    const convertBtn = document.createElement("button");
+    convertBtn.textContent = "To Python";
+    convertBtn.title = "Python Schueler zu Python (Indent) konvertieren";
+    convertBtn.disabled = cell.lang !== "python_student";
+    convertBtn.addEventListener("click", () => convertStudentCellToPython(cell.id));
+
+    const upBtn = document.createElement("button");
+    upBtn.textContent = "↑";
+    upBtn.addEventListener("click", () => moveCell(cell.id, -1));
+
+    const downBtn = document.createElement("button");
+    downBtn.textContent = "↓";
+    downBtn.addEventListener("click", () => moveCell(cell.id, +1));
+
+    const delBtn = document.createElement("button");
+    delBtn.className = "danger";
+    delBtn.textContent = "✕";
+    delBtn.addEventListener("click", () => deleteCell(cell.id));
+
+    btns.appendChild(runBtn);
+    btns.appendChild(convertBtn);
+    btns.appendChild(upBtn);
+    btns.appendChild(downBtn);
+    btns.appendChild(delBtn);
+
+    head.appendChild(meta);
+    head.appendChild(btns);
+
+    const ta = document.createElement("textarea");
+    ta.value = cell.code;
+
+    const editorWrap = document.createElement("div");
+    editorWrap.className = "editorWrap";
+    editorWrap.appendChild(ta);
+
+    cellDiv.appendChild(head);
+    cellDiv.appendChild(editorWrap);
+    cellsEl.appendChild(cellDiv);
+
+    // init CodeMirror
+    const lang = LANGS.find(L => L.id === cell.lang) || LANGS[0];
+    const cm = CodeMirror.fromTextArea(ta, {
+      mode: lang.cmMode,
+      theme: "material-darker",
+      lineNumbers: true,
+      indentUnit: 2,
+      tabSize: 2,
+      indentWithTabs: false,
+      viewportMargin: Infinity,
+    });
+    cm.setSize(null, editorWrap.clientHeight);
+    if (typeof ResizeObserver !== "undefined") {
+      const ro = new ResizeObserver(() => {
+        cm.setSize(null, editorWrap.clientHeight);
+        cm.refresh();
+      });
+      ro.observe(editorWrap);
+      cm._resizeObserver = ro;
+    }
+    cm.on("change", () => updateCellCode(cell.id, cm.getValue()));
+
+    // replace old editor reference (if existed)
+    editors.set(cell.id, cm);
+  });
+
+  // If empty, add one cell
+  if (notebook.cells.length === 0) addCell("javascript");
+}
+
+/** ---------------------------------------------------------
+ *  Save / Load
+ *  --------------------------------------------------------- */
+function downloadNotebook() {
+  // sync editor -> model
+  for (const c of notebook.cells) {
+    const ed = editors.get(c.id);
+    if (ed) c.code = ed.getValue();
+  }
+  const blob = new Blob([JSON.stringify(notebook, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "notebook.json";
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+async function loadNotebookFromFile(file) {
+  const text = await file.text();
+  const obj = JSON.parse(text);
+  if (!obj || !Array.isArray(obj.cells)) throw new Error("Ungültige Notebook-Datei.");
+  notebook = {
+    version: obj.version ?? 1,
+    title: obj.title ?? "School Notebook",
+    cells: obj.cells.map(c => ({
+      id: c.id ?? uid(),
+      lang: c.lang ?? "javascript",
+      code: c.code ?? "",
+    })),
+  };
+  editors.clear();
+  render();
+}
+
+/** ---------------------------------------------------------
+ *  Transpiler (Subset): Python -> JS
+ *  --------------------------------------------------------- */
+
+// Very small expression mapper (keeps JS-like expressions mostly)
+function mapExpr(expr, opts = {}) {
+  let out = expr
+    .replace(/\bself\./g, "this.")
+    .replace(/\bTrue\b/g, "true")
+    .replace(/\bFalse\b/g, "false")
+    .replace(/\bNone\b/g, "null")
+    .replace(/\band\b/g, "&&")
+    .replace(/\bor\b/g, "||")
+    .replace(/\bnot\b/g, "!")
+    .replace(/\blen\s*\(/g, "pyLen(")
+    .replace(/\bint\s*\(/g, "pyInt(")
+    .replace(/\bfloat\s*\(/g, "pyFloat(")
+    .replace(/\bstr\s*\(/g, "pyStr(")
+    .replace(/\bbool\s*\(/g, "pyBool(")
+    .replace(/\blist\s*\(/g, "pyList(")
+    .replace(/\b([A-Za-z_]\w*(?:\.[A-Za-z_]\w*)*)\.append\s*\(/g, "$1.push(")
+    .replace(/([A-Za-z_]\w*(?:\.[A-Za-z_]\w*)*)\s*\[\s*-\s*([^\]\s][^\]]*)\s*\]/g, "pyIndex($1, -($2))");
+
+  if (opts.classNames && opts.classNames.size) {
+    for (const cn of opts.classNames) {
+      const re = new RegExp(`(^|[^\\w$.])(${cn})\\s*\\(`, "g");
+      out = out.replace(re, (m, prefix, klass, offset, source) => {
+        const before = source.slice(0, offset + prefix.length);
+        if (/\b(?:new|function|class)\s*$/.test(before)) return m;
+        return `${prefix}new ${klass}(`;
+      });
+    }
+  }
+  return out;
+}
+
+function ensureAwaitOnConsoleInput(expr) {
+  return expr.replace(/\bconsoleInput\s*\(/g, (m, offset, source) => {
+    const before = source.slice(0, offset);
+    if (/\bawait\s*$/.test(before)) return m;
+    return `await ${m}`;
+  });
+}
+
+function splitTopLevelCSV(text) {
+  if (!text || text.trim() === "") return [];
+  const out = [];
+  let cur = "";
+  let round = 0;
+  let square = 0;
+  let curly = 0;
+  let quote = "";
+  let esc = false;
+
+  for (const ch of text) {
+    if (quote) {
+      cur += ch;
+      if (esc) { esc = false; continue; }
+      if (ch === "\\") { esc = true; continue; }
+      if (ch === quote) quote = "";
+      continue;
+    }
+
+    if (ch === "'" || ch === "\"") { quote = ch; cur += ch; continue; }
+    if (ch === "(") { round++; cur += ch; continue; }
+    if (ch === ")") { round--; cur += ch; continue; }
+    if (ch === "[") { square++; cur += ch; continue; }
+    if (ch === "]") { square--; cur += ch; continue; }
+    if (ch === "{") { curly++; cur += ch; continue; }
+    if (ch === "}") { curly--; cur += ch; continue; }
+
+    if (ch === "," && round === 0 && square === 0 && curly === 0) {
+      out.push(cur.trim());
+      cur = "";
+      continue;
+    }
+    cur += ch;
+  }
+  if (cur.trim() !== "") out.push(cur.trim());
+  return out;
+}
+
+function transpilePrintCall(inside, opts = {}) {
+  const parts = splitTopLevelCSV(inside);
+  const args = [];
+  let sepExpr = null;
+  let endExpr = null;
+
+  for (const p of parts) {
+    if (/^sep\s*=/.test(p)) {
+      sepExpr = mapExpr(p.replace(/^sep\s*=\s*/, ""), opts);
+      continue;
+    }
+    if (/^end\s*=/.test(p)) {
+      endExpr = mapExpr(p.replace(/^end\s*=\s*/, ""), opts);
+      continue;
+    }
+    args.push(mapExpr(p, opts));
+  }
+
+  const cfg = [];
+  if (sepExpr !== null) cfg.push(`sep: ${sepExpr}`);
+  if (endExpr !== null) cfg.push(`end: ${endExpr}`);
+  const cfgPart = cfg.length ? `, { ${cfg.join(", ")} }` : "";
+  return `pyPrint([${args.join(", ")}]${cfgPart});`;
+}
+
+function isBlockHeaderLine(t) {
+  const s = t.trim();
+  return (
+    /^if\s*\(/.test(s) ||
+    /^else if\s*\(/.test(s) ||
+    /^else$/.test(s) ||
+    /^while\s*\(/.test(s) ||
+    /^for\s*\(/.test(s) ||
+    /^class\s+[A-Za-z_]\w*$/.test(s) ||
+    /^async function\s+[A-Za-z_]\w*\s*\(/.test(s) ||
+    /^constructor\s*\(/.test(s) ||
+    /^async\s+[A-Za-z_]\w*\s*\(/.test(s)
+  );
+}
+
+// Convert Python indent blocks to { } with a stack
+function pythonIndentToBraces(code) {
+  const lines = code.replace(/\r\n/g, "\n").split("\n");
+  const out = [];
+  const indents = [0];
+
+  function countIndent(line) {
+    let n = 0;
+    for (let i=0;i<line.length;i++) {
+      const ch = line[i];
+      if (ch === " ") n++;
+      else if (ch === "\t") n += 2; // treat tab ~2
+      else break;
+    }
+    return n;
+  }
+
+  for (let raw of lines) {
+    // keep empty lines
+    if (/^\s*$/.test(raw)) { out.push(""); continue; }
+    // ignore pure comment lines
+    const lineNoNL = raw;
+    const indent = countIndent(lineNoNL);
+    let line = lineNoNL.trim();
+
+    // dedent
+    while (indent < indents[indents.length-1]) {
+      indents.pop();
+      out.push("}");
+    }
+    // new block?
+    if (indent > indents[indents.length-1]) {
+      indents.push(indent);
+      out.push("{");
+    }
+
+    out.push(line);
+  }
+
+  while (indents.length > 1) { indents.pop(); out.push("}"); }
+  return out.join("\n");
+}
+
+// Python-student already uses braces; we normalize a bit
+function normalizeStudentPython(code) {
+  // Erlaubt sowohl "if x:" als auch "if x {" usw.
+  // Wir normalisieren nur das Muster ": {" -> " {"
+  return code.replace(/:\s*\{/g, " {");
+}
+
+function studentPythonToStandardPython(code) {
+  const lines = normalizeStudentPython(code).replace(/\r\n/g, "\n").split("\n");
+  const out = [];
+  const unit = "  ";
+  let indent = 0;
+
+  for (let raw of lines) {
+    let t = raw.trim();
+    if (t === "") { out.push(""); continue; }
+
+    while (t.startsWith("}")) {
+      indent = Math.max(0, indent - 1);
+      t = t.slice(1).trimStart();
+    }
+    if (t === "") continue;
+
+    let openCount = 0;
+    while (t.endsWith("{")) {
+      openCount++;
+      t = t.slice(0, -1).trimEnd();
+    }
+
+    if (/^(if|elif|else|while|for|def|class)\b/.test(t) && !t.endsWith(":")) {
+      t += ":";
+    }
+
+    out.push(unit.repeat(indent) + t);
+    indent += openCount;
+  }
+  return out.join("\n");
+}
+
+// Core: translate brace-Python-ish statements to JS
+function bracePythonToJS(code) {
+  const declared = new Set();
+  const classNames = new Set();
+
+  const lines = code.replace(/\r\n/g, "\n").split("\n");
+  const out = [];
+
+  for (let raw of lines) {
+    let line = raw;
+
+    // Kommentare (# ...) entfernen (vereinfachte Schulregel)
+    const hash = line.indexOf("#");
+    if (hash >= 0) line = line.slice(0, hash);
+
+    if (/^\s*$/.test(line)) { out.push(""); continue; }
+
+    const leading = raw.match(/^\s*/)[0];
+    let t = line.trim();
+
+    // Reine Klammerzeilen unver�ndert lassen
+    if (t === "{" || t === "}") {
+      out.push(leading + t);
+      continue;
+    }
+
+    // Merken, ob die Zeile am Ende ein "{" hat
+    let hasOpenBrace = false;
+    if (t.endsWith("{")) {
+      hasOpenBrace = true;
+      t = t.slice(0, -1).trim();
+    }
+
+    // Ein eventuell vorhandenes ":" am Ende entfernen (Python-Style)
+    if (t.endsWith(":")) t = t.slice(0, -1).trim();
+
+    // def -> async function (damit await input() geht)
+    // def name(a,b)
+    t = t.replace(/^def\s+([A-Za-z_]\w*)\s*\((.*?)\)\s*$/, (m, fn, args) => {
+      return `async function ${fn}(${args.trim()})`;
+    });
+
+    // class -> JS class
+    t = t.replace(/^class\s+([A-Za-z_]\w*)\s*$/, (m, cn) => {
+      classNames.add(cn);
+      return `class ${cn}`;
+    });
+
+    // __init__ -> constructor
+    t = t.replace(/^async function __init__\s*\((.*?)\)/, (m, args) => {
+      const parts = args.split(",").map(s=>s.trim()).filter(Boolean);
+      const rest = parts[0] === "self" ? parts.slice(1) : parts;
+      return `constructor(${rest.join(", ")})`;
+    });
+
+    // Methoden im class-Kontext: def name(self, x) -> async name(x)
+    t = t.replace(/^async function\s+([A-Za-z_]\w*)\s*\((.*?)\)/, (m, name, args) => {
+      const parts = args.split(",").map(s=>s.trim()).filter(Boolean);
+      const rest = parts[0] === "self" ? parts.slice(1) : parts;
+      return `async ${name}(${rest.join(", ")})`;
+    });
+
+    // if/elif/else/while
+    t = t.replace(/^if\s+(.*)$/, (m, cond) => `if (${mapExpr(cond, { classNames })})`);
+    t = t.replace(/^elif\s+(.*)$/, (m, cond) => `else if (${mapExpr(cond, { classNames })})`);
+    t = t.replace(/^else\s*$/, () => `else`);
+    t = t.replace(/^while\s+(.*)$/, (m, cond) => `while (${mapExpr(cond, { classNames })})`);
+
+    // for i in range(...)
+    t = t.replace(/^for\s+([A-Za-z_]\w*)\s+in\s+range\s*\((.*?)\)\s*$/, (m, v, inside) => {
+      const parts = inside.split(",").map(s => s.trim()).filter(Boolean).map(s => mapExpr(s, { classNames }));
+      let a="0", b="0", step="1";
+      if (parts.length === 1) { b = parts[0]; }
+      if (parts.length === 2) { a = parts[0]; b = parts[1]; }
+      if (parts.length >= 3) { a = parts[0]; b = parts[1]; step = parts[2]; }
+      return `for (let ${v} = ${a}; ${v} < ${b}; ${v} += ${step})`;
+    });
+
+    // print(...) inkl. sep= / end=
+    t = t.replace(/^print\s*\((.*)\)\s*;?$/, (m, inside) => {
+      return transpilePrintCall(inside, { classNames });
+    });
+
+    // input(...) -> consoleInput(...)
+    t = t.replace(/\binput\s*\(/g, "consoleInput(");
+
+    // Assignment auf Attribute (z.B. self.x = ...)
+    const attrAssignMatch = t.match(/^([A-Za-z_]\w*(?:\.[A-Za-z_]\w*)+)\s*=\s*(.+)$/);
+    if (attrAssignMatch && !/[=!<>]=/.test(t)) {
+      const lhs = mapExpr(attrAssignMatch[1], { classNames });
+      let expr = mapExpr(attrAssignMatch[2].trim(), { classNames });
+      expr = ensureAwaitOnConsoleInput(expr);
+      t = `${lhs} = ${expr};`;
+    } else {
+      // Assignment x = expr (sehr simpel)
+    const assignMatch = t.match(/^([A-Za-z_]\w*)\s*=\s*(.+)$/);
+    if (assignMatch && !/[=!<>]=/.test(t)) {
+      const name = assignMatch[1];
+      let expr = mapExpr(assignMatch[2].trim(), { classNames });
+      expr = ensureAwaitOnConsoleInput(expr);
+
+      if (!declared.has(name)) {
+        declared.add(name);
+        t = `let ${name} = ${expr};`;
+      } else {
+        t = `${name} = ${expr};`;
+      }
+    } else {
+      // allgemeine Expression-Mapping
+      t = mapExpr(t, { classNames });
+      t = ensureAwaitOnConsoleInput(t);
+      if (!isBlockHeaderLine(t) && !/[;{}]$/.test(t)) t += ";";
+    }
+    }
+
+    // Falls die Originalzeile ein "{" hatte: wieder dranh�ngen
+    if (hasOpenBrace) {
+      // bei Zeilen, die schon ; haben: "if (...) ; {" w�re doof -> wir entfernen das ;
+      t = t.replace(/;$/, "");
+      t += " {";
+    }
+
+    out.push(leading + t);
+  }
+
+  return out.join("\n");
+}
+function transpile(lang, code) {
+  if (lang === "javascript") return code;
+  if (lang === "json") {
+    // JSON cell does nothing on run; but you can access it via notebook JSON download
+    return `consolePrint("JSON-Zelle: keine Ausführung. (Nur Daten)");`;
+  }
+  if (lang === "python") {
+    // indent -> braces -> js
+    const brace = pythonIndentToBraces(code);
+    return bracePythonToJS(brace);
+  }
+  if (lang === "python_student") {
+    const normalized = normalizeStudentPython(code);
+    return bracePythonToJS(normalized);
+  }
+  return code;
+}
+
+/** ---------------------------------------------------------
+ *  Execution
+ *  --------------------------------------------------------- */
+async function runJS(jsCode) {
+  // Wrap in async IIFE to allow await
+  const wrapped = `
+    "use strict";
+    return (async () => {
+      ${jsCode}
+    })();
+  `;
+  const fn = new Function(
+    "consolePrint", "consoleInput",
+    "pyPrint", "pyInt", "pyFloat", "pyStr", "pyBool", "pyList", "pyLen", "pyIndex",
+    wrapped
+  );
+  return fn(consolePrint, consoleInput, pyPrint, pyInt, pyFloat, pyStr, pyBool, pyList, pyLen, pyIndex);
+}
+
+async function runCell(cellId) {
+  // sync editor
+  const cell = notebook.cells.find(c => c.id === cellId);
+  if (!cell) return;
+  const ed = editors.get(cell.id);
+  if (ed) cell.code = ed.getValue();
+
+  println(`\n--- Run Zelle (${cell.lang}) ---`);
+  try {
+    const js = transpile(cell.lang, cell.code);
+    // Show transpiled JS for learning (optional): comment out if unwanted
+    // println("[Transpiled JS]\\n" + js + "\\n[/Transpiled JS]");
+    await runJS(js);
+    println(`--- OK ---`);
+  } catch (e) {
+    println(`--- FEHLER ---`);
+    println(String(e && e.stack ? e.stack : e));
+  }
+}
+
+async function runAll() {
+  // clear pending input waits
+  inputResolvers = [];
+  inputBuffer = [];
+
+  for (const cell of notebook.cells) {
+    // skip JSON cells
+    if (cell.lang === "json") continue;
+    await runCell(cell.id);
+  }
+}
+
+/** ---------------------------------------------------------
+ *  Bind buttons
+ *  --------------------------------------------------------- */
+addCellBtn.addEventListener("click", () => addCell("javascript"));
+runAllBtn.addEventListener("click", runAll);
+downloadBtn.addEventListener("click", downloadNotebook);
+clearConsoleBtn.addEventListener("click", () => { consoleOut.textContent = ""; });
+
+fileInput.addEventListener("change", async (e) => {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  try {
+    await loadNotebookFromFile(file);
+    println("Notebook geladen.");
+  } catch (err) {
+    println("Konnte Notebook nicht laden: " + err);
+  } finally {
+    fileInput.value = "";
+  }
+});
+
+copyConsoleBtn.addEventListener("click", async () => {
+  try {
+    await navigator.clipboard.writeText(consoleOut.textContent);
+    println("[Konsole kopiert]");
+  } catch {
+    println("[Clipboard nicht verfügbar]");
+  }
+});
+
+/** ---------------------------------------------------------
+ *  Start
+ *  --------------------------------------------------------- */
+(function init() {
+  // start with a few helpful cells
+  notebook.cells = [
+    { id: uid(), lang: "python_student", code: defaultCodeFor("python_student") },
+    { id: uid(), lang: "python", code: `# Python (Indent-Subset)\n# for range + while + Funktionen\n\ndef add(a, b):\n  return a + b\n\nsumme = add(3, 4)\nprint("summe =", summe)\n\nfor i in range(3):\n  print("i =", i)\n`},
+    { id: uid(), lang: "javascript", code: `// JavaScript\n// Du kannst consolePrint benutzen statt console.log\nconst x = 10;\nconsolePrint("x =", x);\n`},
+    { id: uid(), lang: "json", code: `{\n  "topic": "Daten für später",\n  "notes": ["JSON wird nicht ausgeführt", "aber gespeichert/geladen"]\n}\n`},
+  ];
+  render();
+  println("Bereit. Tipp: Run All oder Run pro Zelle.");
+})();
+</script>
+    <script src="../../../feedback-widget.js" defer></script>
+</body>
+</html>

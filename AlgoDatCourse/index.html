@@ -1,0 +1,3675 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="../../../media/favicon.png">
+    <title>Algorithmen und Datenstrukturen</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/java.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/prolog.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/c.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/cpp.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/csharp.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/php.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/javascript.min.js"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    :root {
+      --sidebar-w: 256px;
+      --accent:    #63e6b5;
+      --accent2:   #58b5ff;
+      --bg:        #0d0f14;
+      --sidebar-bg:#090b0f;
+      --surface:   #13161f;
+      --border:    rgba(255,255,255,.07);
+      --muted:     #7d8598;
+      --text:      #dde3f0;
+      --mono:      'JetBrains Mono', monospace;
+      --radius:    12px;
+    }
+
+    [data-theme="light"] {
+      --bg:        #f5f7fa;
+      --sidebar-bg:#eaedf3;
+      --surface:   #ffffff;
+      --border:    rgba(0,0,0,.09);
+      --muted:     #6b7585;
+      --text:      #1e2535;
+    }
+
+    [data-theme="light"] .nav-link { color: #4b5470; }
+    [data-theme="light"] .nav-link:hover { background: rgba(0,0,0,.05); color: #1e2535; }
+    [data-theme="light"] .nav-link.active { background: rgba(99,230,181,.12); }
+    [data-theme="light"] .chapter > h1 { color: #1a2040; }
+    [data-theme="light"] .chapter-body p,
+    [data-theme="light"] .chapter-body ul { color: #374060; }
+    [data-theme="light"] .chapter-body h2 { color: #1e2535; }
+    [data-theme="light"] .complexity-table td { color: #374060; }
+    [data-theme="light"] .info-box { background: rgba(99,230,181,.07); }
+    [data-theme="light"] .info-box p { color: #374060; }
+    [data-theme="light"] .chapter-meta { color: #6b7585; }
+    [data-theme="light"] .img-caption { color: #6b7585; }
+
+    html, body {
+      margin: 0; padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Syne', sans-serif;
+    }
+
+    a  { color: inherit; text-decoration: none; }
+    h1, h2, h3 { margin: 0; }
+    button, select { font: inherit; cursor: pointer; }
+    code { font-family: var(--mono); }
+
+    /* ─── LAYOUT ─────────────────────────────────────────── */
+    .layout {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ─── SIDEBAR ────────────────────────────────────────── */
+    #sidebar {
+      width: var(--sidebar-w);
+      min-width: var(--sidebar-w);
+      background: var(--sidebar-bg);
+      border-right: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 18px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand-logo {
+      width: 36px; height: 36px;
+      border-radius: 9px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #0a0c10;
+      font-weight: 800;
+      font-size: .85rem;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+
+    .brand-name { font-weight: 700; font-size: .92rem; line-height: 1.2; }
+    .brand-sub  { color: var(--muted); font-size: .74rem; margin-top: 2px; }
+
+    .nav-section { padding: 4px 0 8px; border-bottom: 1px solid var(--border); }
+    .nav-section:last-child { border-bottom: none; }
+
+    .nav-group-label {
+      padding: 14px 16px 5px;
+      font-size: .68rem;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .nav-link {
+      display: block;
+      padding: 8px 16px;
+      font-size: .9rem;
+      color: #9aa5be;
+      border-left: 3px solid transparent;
+      transition: background .13s, color .13s, border-color .13s;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    .nav-link:hover {
+      background: rgba(255,255,255,.04);
+      color: var(--text);
+    }
+
+    .nav-link.active {
+      background: rgba(99,230,181,.09);
+      border-left-color: var(--accent);
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .nav-link.nav-sub {
+      padding-left: 28px;
+      font-size: .86rem;
+    }
+
+    /* ─── MAIN AREA ──────────────────────────────────────── */
+    #main { flex: 1; min-width: 0; }
+
+    .chapter {
+      display: none;
+      padding: 52px 60px 72px;
+      max-width: 860px;
+      animation: fadein .18s ease;
+    }
+
+    .chapter.active { display: block; }
+
+    @keyframes fadein {
+      from { opacity: 0; transform: translateY(5px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─── CHAPTER TYPOGRAPHY ─────────────────────────────── */
+    .chapter > h1 {
+      font-size: clamp(1.9rem, 3vw, 2.9rem);
+      letter-spacing: -.04em;
+      color: #edf1ff;
+      margin-bottom: 6px;
+    }
+
+    .chapter-meta {
+      color: var(--muted);
+      font-size: .87rem;
+      margin-bottom: 32px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .chapter-body   { display: grid; gap: 22px; margin-bottom: 40px; }
+
+    .chapter-body p { margin: 0; line-height: 1.9; color: #bec8de; font-size: .97rem; }
+
+    .chapter-body h2 {
+      font-size: 1.2rem;
+      color: #dde3f0;
+      margin-bottom: 6px;
+    }
+
+    .chapter-body h3 {
+      font-size: .74rem;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+
+    .chapter-body ul {
+      margin: 0;
+      padding-left: 1.4em;
+      line-height: 1.95;
+      color: #bec8de;
+      font-size: .97rem;
+    }
+
+    .info-box {
+      background: rgba(99,230,181,.05);
+      border: 1px solid rgba(99,230,181,.18);
+      border-radius: var(--radius);
+      padding: 14px 18px;
+    }
+
+    .info-box p { color: #c2cfdf; }
+
+    /* ─── COMPLEXITY TABLE ───────────────────────────────── */
+    .complexity-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .88rem;
+    }
+
+    .complexity-table th {
+      padding: 8px 14px;
+      text-align: left;
+      color: var(--muted);
+      font-size: .7rem;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .complexity-table td {
+      padding: 9px 14px;
+      border-bottom: 1px solid rgba(255,255,255,.04);
+      color: #bec8de;
+    }
+
+    .complexity-table td:last-child {
+      font-family: var(--mono);
+      font-size: .84rem;
+      color: var(--accent2);
+    }
+
+    /* ─── CHAPTER IMAGE ──────────────────────────────────── */
+    .img-wrap { display: grid; gap: 8px; }
+
+    .chapter-img {
+      max-width: 100%;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+
+    .img-caption {
+      text-align: center;
+      color: var(--muted);
+      font-size: .8rem;
+    }
+
+    /* ─── CODE VIEWER COMPONENT ──────────────────────────── */
+    .code-viewer-label {
+      font-size: .8rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .code-viewer {
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .code-viewer-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      background: #161a24;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .dot   { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+    .dot-r { background: #ff5f57; }
+    .dot-y { background: #ffbd2e; }
+    .dot-g { background: #26c281; }
+
+    .viewer-title {
+      font-family: var(--mono);
+      font-size: .8rem;
+      color: var(--muted);
+      margin-left: 6px;
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .lang-select {
+      border: 1px solid rgba(255,255,255,.1);
+      background: rgba(20,24,34,.96);
+      color: #e2e6f0;
+      padding: 4px 10px;
+      border-radius: 7px;
+      font-size: .8rem;
+    }
+
+    .copy-btn {
+      border: 1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.04);
+      color: #b5c0d8;
+      padding: 4px 12px;
+      border-radius: 7px;
+      font-size: .78rem;
+      transition: border-color .18s, color .18s;
+    }
+
+    .copy-btn:hover  { border-color: var(--accent); color: var(--accent); }
+    .copy-btn.copied { border-color: var(--accent); color: var(--accent); }
+
+    .download-btn {
+      border: 1px solid rgba(88,181,255,.2);
+      background: rgba(88,181,255,.05);
+      color: var(--accent2);
+      padding: 4px 12px;
+      border-radius: 7px;
+      font-size: .78rem;
+      text-decoration: none;
+      display: none;
+      align-items: center;
+      gap: 5px;
+      transition: border-color .18s, background .18s;
+    }
+    .download-btn:hover { border-color: var(--accent2); background: rgba(88,181,255,.1); }
+
+    .code-wrap { position: relative; background: #11151f; }
+
+    .code-wrap pre {
+      margin: 0;
+      padding: 20px 24px;
+      overflow-x: auto;
+      font-family: var(--mono);
+      font-size: .87rem;
+      line-height: 1.65;
+      min-height: 100px;
+    }
+
+    .code-wrap code.hljs { display: block; }
+
+    /* code-source divs are data carriers only */
+    .code-source { display: none; }
+
+    /* ─── ANZEIGE SETTINGS ───────────────────────────────────── */
+    .setting-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-size: .88rem;
+      color: #9aa5be;
+      -webkit-user-select: none;
+      user-select: none;
+      transition: background .13s, color .13s;
+    }
+    .setting-row:hover { background: rgba(255,255,255,.04); color: var(--text); }
+
+    [data-theme="light"] .setting-row { color: #4b5470; }
+    [data-theme="light"] .setting-row:hover { background: rgba(0,0,0,.04); color: #1e2535; }
+
+    .switch {
+      width: 34px; height: 19px;
+      border-radius: 10px;
+      background: rgba(255,255,255,.1);
+      position: relative;
+      flex-shrink: 0;
+      transition: background .2s;
+      pointer-events: none;
+    }
+    .switch::after {
+      content: '';
+      position: absolute;
+      top: 3px; left: 3px;
+      width: 13px; height: 13px;
+      border-radius: 50%;
+      background: var(--muted);
+      transition: transform .2s, background .2s;
+    }
+    .switch.on { background: rgba(99,230,181,.28); }
+    .switch.on::after { transform: translateX(15px); background: var(--accent); }
+
+    [data-theme="light"] .switch { background: rgba(0,0,0,.12); }
+    [data-theme="light"] .switch.on { background: rgba(99,230,181,.35); }
+
+    /* ─── RESPONSIVE ─────────────────────────────────────── */
+    @media (max-width: 800px) {
+      #sidebar { display: none; }
+      .chapter { padding: 28px 20px 48px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- ═══════════════════════════════════════════════════════
+       SIDEBAR NAVIGATION
+  ═══════════════════════════════════════════════════════ -->
+  <nav id="sidebar">
+
+    <div class="sidebar-brand">
+      <div class="brand-logo">AD</div>
+      <div>
+        <div class="brand-name">Algorithmen und</div>
+        <div class="brand-name">Datenstrukturen</div>
+      </div>
+    </div>
+
+    <!-- 
+    <div class="nav-section">
+      <div class="nav-group-label">KapitelLabel</div>
+      <a class="nav-link active" data-chapter="vorwort">Kapitel Name</a>
+    </div>
+    -->
+
+    <div class="nav-section">
+      <div class="nav-group-label">Allgemein</div>
+      <a class="nav-link active" data-chapter="vorwort">Vorwort</a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-group-label">Laufzeitanalyse</div>
+      <a class="nav-link" data-chapter="laufzeitanalyse">Einführung</a>
+      <a class="nav-link" data-chapter="laufzeit-notation">Asymptotische Notation</a>
+      <a class="nav-link" data-chapter="laufzeit-klassen">Laufzeitklassen</a>
+      <a class="nav-link" data-chapter="laufzeit-methode1">Methode 1: Fkt. ineinander überführen</a>
+      <a class="nav-link" data-chapter="laufzeit-methode2">Methode 2: Rekursionsbaum</a>
+      <a class="nav-link" data-chapter="laufzeit-methode3">Methode 3: Master-Theorem</a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-group-label">Algorithmen</div>
+      <a class="nav-link" data-chapter="algorithmen">Überblick</a>
+      <div>
+        <div class="nav-group-label" style="padding-left: 28px">Sortieralgorithmen</div>
+        <a class="nav-link nav-sub" data-chapter="bubblesort">Sortieralgorithmen</a>
+        <a class="nav-link nav-sub" data-chapter="heapsort">Heapsort</a>
+        <a class="nav-link nav-sub" data-chapter="mergesort">Mergesort</a>
+        <a class="nav-link nav-sub" data-chapter="quicksort">Quicksort</a>
+        <a class="nav-link nav-sub" data-chapter="insertionsort">Insertionsort</a>
+        <a class="nav-link nav-sub" data-chapter="selectionsort">Selectionsort</a>
+        <a class="nav-link nav-sub" data-chapter="countingsort">Countingsort</a>
+        <a class="nav-link nav-sub" data-chapter="radixsort">Radixsort</a>
+        <a class="nav-link nav-sub" data-chapter="bucketsort">Weitere Sortieralgorithmen</a>
+      </div>
+      <div>
+        <div class="nav-group-label" style="padding-left: 28px">Graphenalgorithmen</div>
+        <a class="nav-link nav-sub" data-chapter="graphenalgorithmen">Graphenalgorithmen</a>
+        <a class="nav-link nav-sub" data-chapter="dijkstra">Dijkstra</a>
+        <a class="nav-link nav-sub" data-chapter="prim">Prim</a>
+        <a class="nav-link nav-sub" data-chapter="kruskal">Kruskal</a>
+        <a class="nav-link nav-sub" data-chapter="toposort">Topologisches Sortieren</a>
+      </div>
+      
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-group-label">Datenstrukturen</div>
+      <a class="nav-link" data-chapter="datenstrukturen">Überblick</a>
+      <div>
+        <div class="nav-group-label" style="padding-left: 28px">Heap</div>
+        <a class="nav-link nav-sub" data-chapter="maxheap">MaxHeap</a>
+        <a class="nav-link nav-sub" data-chapter="minheap">MinHeap</a>
+        <a class="nav-link nav-sub" data-chapter="priorityqueue">PriorityQueue</a>
+        <a class="nav-link nav-sub" data-chapter="binomialheap">Binomialheap</a>
+        <a class="nav-link nav-sub" data-chapter="fibonacciheap">Fibonacci-Heap</a>
+      </div>
+      <div>
+        <div class="nav-group-label" style="padding-left: 28px">Mengenstrukturen</div>
+        <a class="nav-link nav-sub" data-chapter="unionfind">Union-Find / Disjoint Sets</a>
+      </div>
+      <div>
+        <div class="nav-group-label" style="padding-left: 28px">Suchbäume</div>
+        <a class="nav-link nav-sub" data-chapter="rbtree">Rot-Schwarz-Baum</a>
+      </div>
+
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-group-label">Tools</div>
+      <a class="nav-link" href="DatastructureLab.html" target="_blank">DatastructureLab ↗</a>
+      <a class="nav-link" href="infopedia.html" target="_blank">InfoPedia ↗</a>
+      <a class="nav-link" href="../AutomataLab/index.html" target="_blank">AutomataLab ↗</a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-group-label">Anzeige</div>
+
+      <div class="setting-row" id="row-theme" title="Zwischen Dunkel- und Hellmodus wechseln">
+        <span>Dunkelmodus</span>
+        <span class="switch on" id="sw-theme"></span>
+      </div>
+
+      <div class="setting-row" id="row-colors" title="R / B Farbbeschriftung an Knoten einblenden">
+        <span>R / B Farbbeschriftung</span>
+        <span class="switch" id="sw-colors"></span>
+      </div>
+
+      <div class="setting-row" id="row-values" title="Werte in Komplexitätstabellen einblenden">
+        <span>Werte anzeigen</span>
+        <span class="switch" id="sw-values"></span>
+      </div>
+
+    </div>
+
+  </nav><!-- /sidebar -->
+
+
+  <!-- ═══════════════════════════════════════════════════════
+       MAIN CONTENT
+  ═══════════════════════════════════════════════════════ -->
+  <main id="main">
+
+    <!-- ─── VORWORT ──────────────────────────────────────── -->
+    <section id="ch-vorwort" class="chapter active">
+      <h1>Vorwort</h1>
+      <p class="chapter-meta">Überblick über diesen Kurs und seine Kapitel</p>
+
+      <div class="chapter-body">
+        <p>
+          Dieser Kurs behandelt grundlegende Konzepte der Algorithmik und Datenstrukturen,
+          wie sie im Bachelorstudium Informatik an der FSU Jena gelehrt werden. Die Inhalte
+          orientieren sich am Standardwerk <a href="https://www.cs.mcgill.ca/~akroit/math/compsci/Cormen%20Introduction%20to%20Algorithms.pdf" target="_blank"><em>Cormen et al. – Introduction to Algorithms (CLRS)</em></a>.
+        </p>
+
+        <div>
+          <h2>Themenübersicht</h2>
+          <ul>
+            <li><strong>Laufzeitanalyse</strong> – Asymptotische Notation, Komplexitätsklassen</li>
+            <li><strong>Algorithmen</strong> – Sortieralgorithmen, Suchalgorithmen</li>
+            <li><strong>Datenstrukturen</strong> – Heaps, Suchbäume</li>
+          </ul>
+        </div>
+
+        <div>
+          <h2>Aufbau der Kapitel</h2>
+          <p>
+            Jedes Kapitel enthält sowohl eine fachliche Definition, Erklärungen und Beispiele als auch einen Code-Viewer mit Implementierungen in verschiedenen Programmier- und Pseudosprachen. So kannst du die Konzepte sowohl theoretisch verstehen, als auch so manche Anwendungsfälle nachvollziehen.
+         
+          </p>
+        </div>
+
+        <div class="info-box">
+          <p>
+            Den Code-Viewer findest du am Ende jedes Kapitels. Über das Dropdown im
+            Header des Viewers kannst du zwischen Pseudocode und den jeweiligen
+            Programmiersprachen wechseln.
+          </p>
+        </div>
+      </div>
+
+      <p class="code-viewer-label">Code-Beispiel</p>
+      <div class="code-viewer">
+        <div class="code-source" data-lang="Pseudocode">// Vorwort – kein Algorithmus, nur eine Beschreibung
+// Dieses Dokument gibt einen Überblick über den gesamten Kurs.
+
+function Begrüßung()
+  print("Willkommen zu Algorithmen und Datenstrukturen")
+  print("Themen: Laufzeitanalyse · Heapsort · MaxHeap · MinHeap")
+end function</div>
+      </div>
+    </section><!-- /vorwort -->
+
+
+    <!-- ─── LAUFZEITANALYSE ───────────────────────────────── -->
+    <section id="ch-laufzeitanalyse" class="chapter">
+      <h1>Laufzeitanalyse</h1>
+      <p class="chapter-meta">Asymptotische Notation und Komplexitätsbewertung von Algorithmen</p>
+
+      <div class="chapter-body">
+        <p>
+          Die Laufzeitanalyse bewertet, wie sich die Ausführungszeit eines Algorithmus
+          in Abhängigkeit von der Eingabegröße <em>n</em> verhält. Dabei interessiert uns vor
+          allem das <strong>asymptotische Verhalten</strong> – also das Wachstum für große <em>n</em>.
+        </p>
+
+        <div>
+          <h2>O-Notation (Groß-O)</h2>
+          <p>
+            Die O-Notation beschreibt eine <strong>obere Schranke</strong> der Laufzeit.
+            <code>T(n) = O(f(n))</code> bedeutet: <em>T(n)</em> wächst höchstens so schnell wie
+            <em>f(n)</em>, ab einem bestimmten Schwellwert n₀.
+          </p>
+        </div>
+
+        <div>
+          <h3>Häufige Komplexitätsklassen</h3>
+          <table class="complexity-table">
+            <thead>
+              <tr><th>Notation</th><th>Bezeichnung</th><th>Typische Beispiele</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>O(1)</td><td>Konstant</td><td>Array-Zugriff, Heap-Maximum lesen</td></tr>
+              <tr><td>O(log n)</td><td>Logarithmisch</td><td>Binäre Suche, Heap-Einfügen</td></tr>
+              <tr><td>O(n)</td><td>Linear</td><td>Lineare Suche, BuildHeap</td></tr>
+              <tr><td>O(n log n)</td><td>Log-linear</td><td>Heapsort, Mergesort</td></tr>
+              <tr><td>O(n²)</td><td>Quadratisch</td><td>Bubblesort, Insertionsort</td></tr>
+              <tr><td>O(2ⁿ)</td><td>Exponentiell</td><td>Naive Teilmengenproblem</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div>
+          <h2>Weitere Notationen</h2>
+          <ul>
+            <li><strong>Ω-Notation</strong> – untere Schranke: der Algorithmus braucht <em>mindestens</em> so viel Zeit</li>
+            <li><strong>Θ-Notation</strong> – enge Schranke: obere und untere Schranke stimmen überein</li>
+            <li><strong>o-Notation</strong> – echte obere Schranke: strikt kleiner, nicht gleich</li>
+          </ul>
+        </div>
+
+        <div class="info-box">
+          <p>
+            Konstante Faktoren und kleinere Terme werden bei der asymptotischen Analyse ignoriert.
+            <code>T(n) = 3n² + 5n + 7</code> ist daher einfach <strong>O(n²)</strong>.
+          </p>
+        </div>
+      </div>
+
+      <p class="code-viewer-label">Pseudocode-Beispiele</p>
+      <div class="code-viewer">
+        <div class="code-source" data-lang="Pseudocode">// Laufzeitanalyse – Beispiele für verschiedene Komplexitätsklassen
+
+// O(1) – konstant: kein Schleifendurchlauf, direkte Operation
+function Maximum(A)
+  return A[1]           // MaxHeap-Eigenschaft: Maximum immer an Position 1
+end function
+
+// O(n) – linear: einmalige Schleife über alle Elemente
+function Suche(A, key)
+  for i = 1 to length(A) do
+    if A[i] == key then return i
+    end if
+  end for
+  return -1
+end function
+
+// O(n²) – quadratisch: verschachtelte Schleife
+function BubbleSort(A)
+  for i = 1 to length(A) do
+    for j = 1 to length(A) - i do
+      if A[j] > A[j+1] then
+        swap(A[j], A[j+1])
+      end if
+    end for
+  end for
+end function</div>
+        <div class="code-source" data-lang="Java">public class LaufzeitBeispiele {
+
+    // O(1) – konstante Zeit
+    public static int maximum(int[] A) {
+        return A[0]; // MaxHeap: größtes Element immer an Index 0
+    }
+
+    // O(n) – lineares Suchen
+    public static int suche(int[] A, int key) {
+        for (int i = 0; i < A.length; i++) {
+            if (A[i] == key) return i;
+        }
+        return -1;
+    }
+
+    // O(n²) – Bubblesort als Beispiel
+    public static void bubbleSort(int[] A) {
+        for (int i = 0; i < A.length; i++) {
+            for (int j = 0; j < A.length - i - 1; j++) {
+                if (A[j] > A[j + 1]) {
+                    int tmp = A[j]; A[j] = A[j + 1]; A[j + 1] = tmp;
+                }
+            }
+        }
+    }
+}</div>
+        <div class="code-source" data-lang="Python">## O(1) – konstante Zeit
+def maximum(A):
+    return A[0]  # MaxHeap: größtes Element immer an Index 0
+
+## O(n) – lineares Suchen
+def suche(A, key):
+    for i, val in enumerate(A):
+        if val == key:
+            return i
+    return -1
+
+## O(n²) – Bubblesort
+def bubble_sort(A):
+    n = len(A)
+    for i in range(n):
+        for j in range(n - i - 1):
+            if A[j] > A[j + 1]:
+                A[j], A[j + 1] = A[j + 1], A[j]</div>
+      </div>
+    </section><!-- /laufzeitanalyse -->
+
+
+    <!-- ─── ALGORITHMEN ÜBERBLICK ─────────────────────────── -->
+    <section id="ch-algorithmen" class="chapter">
+      <h1>Algorithmen</h1>
+      <p class="chapter-meta">Grundlegende Begriffe und Klassifikation von Algorithmen</p>
+
+      <div class="chapter-body">
+        <p>
+          Ein <strong>Algorithmus</strong> ist eine endliche, präzise Folge von Anweisungen,
+          die ein gegebenes Problem für alle zulässigen Eingaben korrekt löst und terminiert.
+        </p>
+
+        <div>
+          <h2>Wichtige Eigenschaften</h2>
+          <ul>
+            <li><strong>Korrektheit</strong> – Das Ergebnis ist für alle Eingaben richtig.</li>
+            <li><strong>Terminierung</strong> – Der Algorithmus hält nach endlich vielen Schritten an.</li>
+            <li><strong>Effizienz</strong> – Zeit- und Speicherkomplexität sind vertretbar.</li>
+            <li><strong>Determiniertheit</strong> – Gleiche Eingabe liefert immer gleiche Ausgabe.</li>
+          </ul>
+        </div>
+
+        <div>
+          <h2>Klassifikation von Sortieralgorithmen</h2>
+          <table class="complexity-table">
+            <thead>
+              <tr><th>Algorithmus</th><th>Worst Case</th><th>Stabil?</th><th>In-Place?</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Heapsort</td><td>O(n log n)</td><td>Nein</td><td>Ja</td></tr>
+              <tr><td>Mergesort</td><td>O(n log n)</td><td>Ja</td><td>Nein</td></tr>
+              <tr><td>Quicksort</td><td>O(n²)</td><td>Nein</td><td>Ja</td></tr>
+              <tr><td>Insertionsort</td><td>O(n²)</td><td>Ja</td><td>Ja</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div>
+          <h2>In diesem Kurs</h2>
+          <p>
+            Als konkretes Beispiel eines effizienten Sortierverfahrens wird
+            <strong>Heapsort</strong> behandelt. Er garantiert O(n log n) in allen Fällen
+            und benötigt keinen zusätzlichen Speicher (in-place).
+          </p>
+        </div>
+      </div>
+    </section><!-- /algorithmen -->
+
+
+    <!-- GRAPHENALGORITHMEN -->
+    <section id="ch-graphenalgorithmen" class="chapter">
+      <h1>Graphenalgorithmen</h1>
+      <p class="chapter-meta">Algorithmen &rsaquo; Graphen &nbsp;&middot;&nbsp; BFS, DFS, Dijkstra, Bellman-Ford, Floyd-Warshall, Kruskal, Prim</p>
+
+      <div class="chapter-body">
+        <p>
+          Ein <strong>Graph</strong> modelliert Objekte und Beziehungen. Die Objekte heißen
+          <em>Knoten</em> oder <em>Vertices</em>, die Beziehungen heißen <em>Kanten</em>. Graphen
+          können gerichtet oder ungerichtet, gewichtet oder ungewichtet, zusammenhängend oder in
+          mehrere Komponenten zerfallen sein. Viele klassische Informatikprobleme sind
+          Graphprobleme: Routing, Abhängigkeiten, soziale Netzwerke, Projektplanung, Compilerbau,
+          Spielzustände, Webgraphen und Datenbankbeziehungen.
+        </p>
+
+        <div>
+          <h2>Grundbegriffe</h2>
+          <table class="complexity-table">
+            <thead>
+              <tr><th>Begriff</th><th>Bedeutung</th><th>Beispiel</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>G = (V, E)</code></td><td>Knotenmenge und Kantenmenge</td><td>Städte und Straßen</td></tr>
+              <tr><td>gerichtet</td><td>Kanten haben Richtung</td><td>Abhängigkeit A vor B</td></tr>
+              <tr><td>ungerichtet</td><td>Kanten gelten in beide Richtungen</td><td>Freundschaft, Straße ohne Richtung</td></tr>
+              <tr><td>gewichtet</td><td>Kanten tragen Kosten</td><td>Distanz, Zeit, Preis</td></tr>
+              <tr><td>Pfad</td><td>Folge benachbarter Knoten</td><td>A -> B -> C</td></tr>
+              <tr><td>Zyklus</td><td>Pfad führt zum Start zurück</td><td>A -> B -> C -> A</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div>
+          <h2>Darstellung: Adjazenzliste vs. Adjazenzmatrix</h2>
+          <p>
+            Für die meisten Algorithmen ist die Repräsentation entscheidend. Eine
+            <strong>Adjazenzliste</strong> speichert zu jedem Knoten nur seine Nachbarn und ist für
+            dünne Graphen speichereffizient. Eine <strong>Adjazenzmatrix</strong> speichert für jedes
+            Knotenpaar einen Eintrag und erlaubt Kantenabfragen in <code>O(1)</code>, braucht aber
+            <code>Θ(|V|²)</code> Speicher.
+          </p>
+          <table class="complexity-table">
+            <thead>
+              <tr><th>Darstellung</th><th>Speicher</th><th>Kante prüfen</th><th>Alle Nachbarn von v</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Adjazenzliste</td><td><code>Θ(|V| + |E|)</code></td><td><code>O(deg(v))</code></td><td><code>O(deg(v))</code></td></tr>
+              <tr><td>Adjazenzmatrix</td><td><code>Θ(|V|²)</code></td><td><code>O(1)</code></td><td><code>O(|V|)</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div>
+          <h2>BFS: Breitensuche</h2>
+          <p>
+            <strong>Breadth-First Search</strong> besucht den Graphen schichtweise vom Startknoten
+            aus. Zuerst kommen alle Knoten in Distanz 1, dann Distanz 2 usw. In ungewichteten
+            Graphen berechnet BFS dadurch kürzeste Wege nach Anzahl der Kanten. Die zentrale
+            Datenstruktur ist eine Queue.
+          </p>
+          <div class="info-box">
+            <p>
+              Laufzeit mit Adjazenzlisten: <code>Θ(|V| + |E|)</code>. Jeder Knoten wird höchstens
+              einmal entdeckt, jede Kante wird höchstens konstant oft betrachtet.
+            </p>
+          </div>
+        </div>
+
+        <div>
+          <h2>DFS: Tiefensuche</h2>
+          <p>
+            <strong>Depth-First Search</strong> folgt einem Pfad so weit wie möglich, bevor
+            zurückgegangen wird. DFS eignet sich für Zusammenhangskomponenten, Zyklenerkennung,
+            topologische Sortierung und Zeitstempel-Analysen. Implementiert wird DFS rekursiv oder
+            explizit mit einem Stack.
+          </p>
+          <ul>
+            <li><strong>Entdeckungszeit:</strong> Zeitpunkt, an dem ein Knoten erstmals betreten wird.</li>
+            <li><strong>Abschlusszeit:</strong> Zeitpunkt, an dem alle ausgehenden Kanten bearbeitet sind.</li>
+            <li><strong>Topologische Sortierung:</strong> Knoten nach fallender Abschlusszeit ausgeben.</li>
+          </ul>
+        </div>
+
+        <div>
+          <h2>Kürzeste Wege</h2>
+          <table class="complexity-table">
+            <thead>
+              <tr><th>Algorithmus</th><th>Problem</th><th>Voraussetzung</th><th>Laufzeit</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>BFS</td><td>Single Source Shortest Paths</td><td>ungewichtet</td><td><code>Θ(|V| + |E|)</code></td></tr>
+              <tr><td>Dijkstra</td><td>Single Source Shortest Paths</td><td>keine negativen Kanten</td><td><code>O((|V| + |E|) log |V|)</code> mit Heap</td></tr>
+              <tr><td>Bellman-Ford</td><td>Single Source Shortest Paths</td><td>negative Kanten erlaubt</td><td><code>O(|V| · |E|)</code></td></tr>
+              <tr><td>Floyd-Warshall</td><td>All Pairs Shortest Paths</td><td>negative Kanten, keine negativen Zyklen</td><td><code>Θ(|V|³)</code></td></tr>
+            </tbody>
+          </table>
+          <p>
+            <strong>Dijkstra</strong> arbeitet gierig: Der noch nicht fixierte Knoten mit kleinster
+            aktueller Distanz wird endgültig gemacht, danach werden seine ausgehenden Kanten
+            relaxiert. Genau deshalb braucht der Algorithmus eine Prioritätswarteschlange. Mit
+            Fibonacci-Heaps lässt sich die theoretische Laufzeit auf
+            <code>O(|E| + |V| log |V|)</code> verbessern, weil <em>Decrease-Key</em> amortisiert
+            <code>O(1)</code> kostet.
+          </p>
+        </div>
+
+        <div>
+          <h2>Minimal Spanning Tree: Kruskal und Prim</h2>
+          <p>
+            Ein <strong>minimaler Spannbaum</strong> verbindet alle Knoten eines zusammenhängenden,
+            ungerichteten, gewichteten Graphen mit minimaler Gesamtkantenlänge und ohne Zyklus.
+            Kruskal und Prim lösen dasselbe Problem, wachsen aber aus unterschiedlichen Blickwinkeln.
+          </p>
+          <table class="complexity-table">
+            <thead>
+              <tr><th>Algorithmus</th><th>Idee</th><th>Zentrale Datenstruktur</th><th>Laufzeit</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Kruskal</td><td>Kanten aufsteigend sortieren, sichere Kanten wählen</td><td>Union-Find</td><td><code>O(|E| log |E|)</code></td></tr>
+              <tr><td>Prim</td><td>Baum von Startknoten aus erweitern</td><td>PriorityQueue / Heap</td><td><code>O((|V| + |E|) log |V|)</code></td></tr>
+            </tbody>
+          </table>
+          <p>
+            Kruskal ist ein sehr gutes Beispiel dafür, warum Disjoint Sets wichtig sind:
+            <em>FindSet</em> prüft, ob zwei Endpunkte bereits in derselben Komponente liegen.
+            <em>Union</em> vereinigt Komponenten, wenn eine Kante sicher aufgenommen wird.
+          </p>
+        </div>
+
+        <div>
+          <h2>Wann welcher Algorithmus?</h2>
+          <ul>
+            <li><strong>Ungewichtete kürzeste Wege:</strong> BFS.</li>
+            <li><strong>Positive Kantengewichte:</strong> Dijkstra mit MinHeap oder Fibonacci-Heap.</li>
+            <li><strong>Negative Kantengewichte:</strong> Bellman-Ford; bei allen Paaren Floyd-Warshall.</li>
+            <li><strong>Abhängigkeitsreihenfolge:</strong> Topologische Sortierung mit DFS oder Kahn-Algorithmus.</li>
+            <li><strong>Minimaler Spannbaum:</strong> Kruskal bei kantenorientierter Sicht, Prim bei wachsendem Baum.</li>
+          </ul>
+        </div>
+      </div>
+
+      <p class="code-viewer-label">Pseudocode</p>
+      <div class="code-viewer">
+        <div class="code-source" data-lang="BFS">BFS(G, s)
+  for each vertex u in G.V
+    color[u] = WHITE
+    dist[u] = infinity
+    parent[u] = NIL
+
+  color[s] = GRAY
+  dist[s] = 0
+  Q = empty queue
+  ENQUEUE(Q, s)
+
+  while Q is not empty
+    u = DEQUEUE(Q)
+    for each v in Adj[u]
+      if color[v] == WHITE
+        color[v] = GRAY
+        dist[v] = dist[u] + 1
+        parent[v] = u
+        ENQUEUE(Q, v)
+    color[u] = BLACK</div>
+        <div class="code-source" data-lang="DFS">DFS(G)
+  for each vertex u in G.V
+    color[u] = WHITE
+    parent[u] = NIL
+  time = 0
+
+  for each vertex u in G.V
+    if color[u] == WHITE
+      DFS-VISIT(G, u)
+
+DFS-VISIT(G, u)
+  time = time + 1
+  discover[u] = time
+  color[u] = GRAY
+  for each v in Adj[u]
+    if color[v] == WHITE
+      parent[v] = u
+      DFS-VISIT(G, v)
+  color[u] = BLACK
+  time = time + 1
+  finish[u] = time</div>
+        <div class="code-source" data-lang="Dijkstra">DIJKSTRA(G, w, s)
+  for each vertex v in G.V
+    dist[v] = infinity
+    parent[v] = NIL
+  dist[s] = 0
+
+  Q = all vertices keyed by dist
+  while Q is not empty
+    u = EXTRACT-MIN(Q)
+    for each edge (u, v) in Adj[u]
+      if dist[v] &gt; dist[u] + w(u, v)
+        dist[v] = dist[u] + w(u, v)
+        parent[v] = u
+        DECREASE-KEY(Q, v, dist[v])</div>
+        <div class="code-source" data-lang="Kruskal">KRUSKAL(G, w)
+  A = empty set
+  for each vertex v in G.V
+    MAKE-SET(v)
+
+  sort edges by nondecreasing weight
+  for each edge (u, v) in sorted edges
+    if FIND-SET(u) != FIND-SET(v)
+      A = A union {(u, v)}
+      UNION(u, v)
+
+  return A</div>
+      </div>
+    </section><!-- /graphenalgorithmen -->
+
+
+    <!-- DIJKSTRA -->
+    <section id="ch-dijkstra" class="chapter">
+      <h1>Dijkstra</h1>
+      <p class="chapter-meta">Graphenalgorithmen &rsaquo; Kürzeste Wege &nbsp;&middot;&nbsp; Nichtnegative Kantengewichte</p>
+
+      <div class="chapter-body">
+        <p>
+          Der <strong>Dijkstra-Algorithmus</strong> berechnet kürzeste Wege von einem Startknoten
+          <code>s</code> zu allen anderen Knoten in einem gewichteten Graphen. Er funktioniert nur
+          korrekt, wenn alle Kantengewichte <strong>nichtnegativ</strong> sind. Sobald negative
+          Kanten vorkommen, ist Bellman-Ford die robustere Wahl.
+        </p>
+
+        <div class="info-box">
+          <p>
+            Die Idee ist gierig: In jedem Schritt wird der noch nicht endgültig bearbeitete Knoten
+            mit der kleinsten aktuellen Distanz ausgewählt. Diese Distanz ist dann final, weil
+            keine negative Kante später einen kürzeren Umweg erzeugen kann.
+          </p>
+        </div>
+
+        <div>
+          <h2>Zentrale Begriffe</h2>
+          <table class="complexity-table">
+            <thead>
+              <tr><th>Symbol</th><th>Bedeutung</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>dist[v]</code></td><td>Aktuell beste bekannte Distanz von <code>s</code> nach <code>v</code></td></tr>
+              <tr><td><code>parent[v]</code></td><td>Vorgänger von <code>v</code> im kürzesten-Wege-Baum</td></tr>
+              <tr><td><code>Relax(u, v)</code></td><td>Prüft, ob der Weg über <code>u</code> nach <code>v</code> besser ist</td></tr>
+              <tr><td><code>Q</code></td><td>PriorityQueue, sortiert nach kleinster aktueller Distanz</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div>
+          <h2>Ablauf</h2>
+          <ol>
+            <li>Setze alle Distanzen auf <code>∞</code>, nur <code>dist[s] = 0</code>.</li>
+            <li>Lege alle Knoten in eine Min-PriorityQueue, Schlüssel ist <code>dist</code>.</li>
+            <li>Entnimm wiederholt den Knoten <code>u</code> mit kleinster Distanz.</li>
+            <li>Relaxiere alle ausgehenden Kanten <code>(u, v)</code>.</li>
+            <li>Wenn eine Distanz kleiner wird, aktualisiere den Schlüssel in der Queue mit <em>Decrease-Key</em>.</li>
+          </ol>
+        </div>
+
+        <div>
+          <h2>Laufzeit</h2>
+          <table class="complexity-table">
+            <thead>
+              <tr><th>Implementierung</th><th>Laufzeit</th><th>Bemerkung</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Array / lineare Suche</td><td><code>O(|V|² + |E|)</code></td><td>gut für dichte Graphen</td></tr>
+              <tr><td>Binärer MinHeap</td><td><code>O((|V| + |E|) log |V|)</code></td><td>typische Praxisvariante</td></tr>
+              <tr><td>Fibonacci-Heap</td><td><code>O(|E| + |V| log |V|)</code></td><td>theoretisch besser bei vielen Decrease-Key-Aufrufen</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <p class="code-viewer-label">Pseudocode</p>
+      <div class="code-viewer">
+        <div class="code-source" data-lang="Dijkstra">DIJKSTRA(G, w, s)
+  for each vertex v in G.V
+    dist[v] = infinity
+    parent[v] = NIL
+  dist[s] = 0
+
+  Q = MIN-PRIORITY-QUEUE(G.V, key = dist)
+  while Q is not empty
+    u = EXTRACT-MIN(Q)
+    for each edge (u, v) in Adj[u]
+      RELAX(u, v, w)
+
+RELAX(u, v, w)
+  if dist[v] &gt; dist[u] + w(u, v)
+    dist[v] = dist[u] + w(u, v)
+    parent[v] = u
+    DECREASE-KEY(Q, v, dist[v])</div>
+      </div>
+            <p class="code-viewer-label">Implementierungen</p>
+<div class="code-viewer">
+        <div class="code-source" data-lang="Python">import heapq
+
+def dijkstra(graph, source):
+    dist = {v: float("inf") for v in graph}
+    parent = {v: None for v in graph}
+    dist[source] = 0
+    pq = [(0, source)]
+
+    while pq:
+        du, u = heapq.heappop(pq)
+        if du != dist[u]:
+            continue
+        for v, w in graph[u]:
+            nd = du + w
+            if nd &lt; dist[v]:
+                dist[v] = nd
+                parent[v] = u
+                heapq.heappush(pq, (nd, v))
+    return dist, parent</div>
+        <div class="code-source" data-lang="Java">static int[] dijkstra(List&lt;List&lt;int[]&gt;&gt; g, int s) {
+    int n = g.size();
+    int[] dist = new int[n];
+    Arrays.fill(dist, Integer.MAX_VALUE);
+    dist[s] = 0;
+    PriorityQueue&lt;int[]&gt; pq = new PriorityQueue&lt;&gt;(Comparator.comparingInt(a -&gt; a[0]));
+    pq.add(new int[]{0, s});
+    while (!pq.isEmpty()) {
+        int[] cur = pq.poll();
+        int du = cur[0], u = cur[1];
+        if (du != dist[u]) continue;
+        for (int[] e : g.get(u)) {
+            int v = e[0], w = e[1];
+            if (du + w &lt; dist[v]) { dist[v] = du + w; pq.add(new int[]{dist[v], v}); }
+        }
+    }
+    return dist;
+}</div>
+        <div class="code-source" data-lang="JavaScript">function dijkstra(graph, source) {
+  const dist = new Map([...graph.keys()].map(v =&gt; [v, Infinity]));
+  const parent = new Map([...graph.keys()].map(v =&gt; [v, null]));
+  const pq = [[0, source]]; dist.set(source, 0);
+  while (pq.length) {
+    pq.sort((a, b) =&gt; a[0] - b[0]);
+    const [du, u] = pq.shift();
+    if (du !== dist.get(u)) continue;
+    for (const [v, w] of graph.get(u)) {
+      const nd = du + w;
+      if (nd &lt; dist.get(v)) { dist.set(v, nd); parent.set(v, u); pq.push([nd, v]); }
+    }
+  }
+  return { dist, parent };
+}</div>
+        <div class="code-source" data-lang="Prolog">:- use_module(library(heaps)).
+
+dijkstra(Graph, Source, Dist) :-
+    empty_heap(H0), add_to_heap(H0, 0, Source, H),
+    dijkstra_loop(Graph, H, [], Dist).
+
+dijkstra_loop(_, H, Seen, Seen) :- heap_size(H, 0), !.
+dijkstra_loop(Graph, H, Seen, Dist) :-
+    get_from_heap(H, D, U, H1),
+    ( memberchk(U-_, Seen) -&gt; dijkstra_loop(Graph, H1, Seen, Dist)
+    ; neighbors(Graph, U, Ns), foldl(relax(D), Ns, H1, H2),
+      dijkstra_loop(Graph, H2, [U-D|Seen], Dist) ).
+relax(DU, V-W, H0, H) :- D is DU + W, add_to_heap(H0, D, V, H).</div>
+        <div class="code-source" data-lang="C">void dijkstra(int n, int w[100][100], int s, int dist[]) {
+    int used[100] = {0};
+    for (int i = 0; i &lt; n; i++) dist[i] = INT_MAX;
+    dist[s] = 0;
+    for (int step = 0; step &lt; n; step++) {
+        int u = -1;
+        for (int i = 0; i &lt; n; i++) if (!used[i] &amp;&amp; (u == -1 || dist[i] &lt; dist[u])) u = i;
+        if (u == -1 || dist[u] == INT_MAX) break;
+        used[u] = 1;
+        for (int v = 0; v &lt; n; v++) if (w[u][v] &gt;= 0 &amp;&amp; dist[u] + w[u][v] &lt; dist[v])
+            dist[v] = dist[u] + w[u][v];
+    }
+}</div>
+        <div class="code-source" data-lang="C++">vector&lt;int&gt; dijkstra(vector&lt;vector&lt;pair&lt;int,int&gt;&gt;&gt;&amp; g, int s) {
+    const int INF = 1e9;
+    vector&lt;int&gt; dist(g.size(), INF);
+    priority_queue&lt;pair&lt;int,int&gt;, vector&lt;pair&lt;int,int&gt;&gt;, greater&lt;&gt;&gt; pq;
+    dist[s] = 0; pq.push({0, s});
+    while (!pq.empty()) {
+        auto [du, u] = pq.top(); pq.pop();
+        if (du != dist[u]) continue;
+        for (auto [v, w] : g[u]) if (du + w &lt; dist[v]) { dist[v] = du + w; pq.push({dist[v], v}); }
+    }
+    return dist;
+}</div>
+        <div class="code-source" data-lang="C#">static int[] Dijkstra(List&lt;(int to, int w)&gt;[] g, int s) {
+    var dist = Enumerable.Repeat(int.MaxValue, g.Length).ToArray();
+    var pq = new PriorityQueue&lt;int, int&gt;();
+    dist[s] = 0; pq.Enqueue(s, 0);
+    while (pq.Count &gt; 0) {
+        int u = pq.Dequeue();
+        foreach (var (v, w) in g[u]) if (dist[u] != int.MaxValue &amp;&amp; dist[u] + w &lt; dist[v]) {
+            dist[v] = dist[u] + w; pq.Enqueue(v, dist[v]);
+        }
+    }
+    return dist;
+}</div>
+      </div>
+    </section><!-- /dijkstra -->
+
+
+    <!-- PRIM -->
+    <section id="ch-prim" class="chapter">
+      <h1>Prim</h1>
+      <p class="chapter-meta">Graphenalgorithmen &rsaquo; Minimaler Spannbaum &nbsp;&middot;&nbsp; Baum wächst von einem Startknoten aus</p>
+
+      <div class="chapter-body">
+        <p>
+          Der <strong>Algorithmus von Prim</strong> berechnet einen minimalen Spannbaum in einem
+          zusammenhängenden, ungerichteten, gewichteten Graphen. Er beginnt mit einem Startknoten
+          und erweitert den bisherigen Baum immer um die billigste Kante, die aus dem Baum hinaus
+          zu einem noch nicht aufgenommenen Knoten führt.
+        </p>
+
+        <div class="info-box">
+          <p>
+            Prim ist strukturell ähnlich zu Dijkstra: Beide verwenden eine Min-PriorityQueue und
+            verbessern Schlüssel. Der Unterschied ist die Bedeutung des Schlüssels:
+            Bei Dijkstra ist es die Distanz vom Start, bei Prim ist es das billigste aktuelle
+            Anschlussgewicht an den wachsenden Spannbaum.
+          </p>
+        </div>
+
+        <div>
+          <h2>Ablauf</h2>
+          <ol>
+            <li>Wähle einen beliebigen Startknoten <code>r</code>.</li>
+            <li>Setze <code>key[r] = 0</code>, alle anderen Schlüssel auf <code>∞</code>.</li>
+            <li>Entnimm wiederholt den Knoten mit kleinstem Schlüssel aus der PriorityQueue.</li>
+            <li>Für jede Kante zu einem noch nicht aufgenommenen Nachbarn: verbessere dessen Schlüssel, wenn die Kante billiger ist.</li>
+            <li>Die gespeicherten <code>parent</code>-Zeiger bilden am Ende den MST.</li>
+          </ol>
+        </div>
+
+        <div>
+          <h2>Vergleich zu Kruskal</h2>
+          <table class="complexity-table">
+            <thead>
+              <tr><th>Eigenschaft</th><th>Prim</th><th>Kruskal</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Wachstum</td><td>ein zusammenhängender Baum wächst</td><td>viele Komponenten werden vereinigt</td></tr>
+              <tr><td>Datenstruktur</td><td>PriorityQueue / Heap</td><td>Union-Find</td></tr>
+              <tr><td>Kantenreihenfolge</td><td>lokal billigste Anschlusskante</td><td>global sortierte Kanten</td></tr>
+              <tr><td>Typisch gut</td><td>dichte Graphen, Adjazenzlisten mit Heap</td><td>kantenorientierte oder dünne Graphen</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <p class="code-viewer-label">Pseudocode</p>
+      <div class="code-viewer">
+        <div class="code-source" data-lang="Prim">MST-PRIM(G, w, r)
+  for each vertex u in G.V
+    key[u] = infinity
+    parent[u] = NIL
+
+  key[r] = 0
+  Q = MIN-PRIORITY-QUEUE(G.V, key = key)
+
+  while Q is not empty
+    u = EXTRACT-MIN(Q)
+    for each v in Adj[u]
+      if v is in Q and w(u, v) &lt; key[v]
+        parent[v] = u
+        key[v] = w(u, v)
+        DECREASE-KEY(Q, v, key[v])</div>
+      </div>
+            <p class="code-viewer-label">Implementierungen</p>
+<div class="code-viewer">
+        <div class="code-source" data-lang="Python">import heapq
+
+def prim(graph, start):
+    used, mst, pq = set(), [], [(0, None, start)]
+    while pq:
+        w, parent, u = heapq.heappop(pq)
+        if u in used: continue
+        used.add(u)
+        if parent is not None: mst.append((parent, u, w))
+        for v, weight in graph[u]:
+            if v not in used: heapq.heappush(pq, (weight, u, v))
+    return mst</div>
+        <div class="code-source" data-lang="Java">static List&lt;int[]&gt; prim(List&lt;List&lt;int[]&gt;&gt; g, int r) {
+    boolean[] used = new boolean[g.size()];
+    List&lt;int[]&gt; mst = new ArrayList&lt;&gt;();
+    PriorityQueue&lt;int[]&gt; pq = new PriorityQueue&lt;&gt;(Comparator.comparingInt(a -&gt; a[0]));
+    pq.add(new int[]{0, -1, r});
+    while (!pq.isEmpty()) {
+        int[] e = pq.poll(); int w = e[0], p = e[1], u = e[2];
+        if (used[u]) continue; used[u] = true;
+        if (p != -1) mst.add(new int[]{p, u, w});
+        for (int[] nx : g.get(u)) if (!used[nx[0]]) pq.add(new int[]{nx[1], u, nx[0]});
+    }
+    return mst;
+}</div>
+        <div class="code-source" data-lang="JavaScript">function prim(graph, start) {
+  const used = new Set(), mst = [], pq = [[0, null, start]];
+  while (pq.length) {
+    pq.sort((a,b) =&gt; a[0] - b[0]);
+    const [w, p, u] = pq.shift();
+    if (used.has(u)) continue;
+    used.add(u); if (p !== null) mst.push([p, u, w]);
+    for (const [v, weight] of graph.get(u)) if (!used.has(v)) pq.push([weight, u, v]);
+  }
+  return mst;
+}</div>
+        <div class="code-source" data-lang="Prolog">prim(Graph, Start, Mst) :- prim_loop(Graph, [0-none-Start], [], [], Mst).
+prim_loop(_, [], _, Mst, Mst).
+prim_loop(Graph, Queue, Seen, Acc, Mst) :-
+    keysort(Queue, [W-P-U|Rest]),
+    ( memberchk(U, Seen) -&gt; prim_loop(Graph, Rest, Seen, Acc, Mst)
+    ; (P == none -&gt; Acc1 = Acc ; Acc1 = [P-U-W|Acc]),
+      neighbors(Graph, U, Ns), findall(W2-U-V, member(V-W2, Ns), Es),
+      append(Rest, Es, Q2), prim_loop(Graph, Q2, [U|Seen], Acc1, Mst) ).</div>
+        <div class="code-source" data-lang="C">void prim(int n, int w[100][100], int parent[]) {
+    int key[100], used[100] = {0};
+    for (int i = 0; i &lt; n; i++) { key[i] = INT_MAX; parent[i] = -1; }
+    key[0] = 0;
+    for (int step = 0; step &lt; n; step++) {
+        int u = -1;
+        for (int i = 0; i &lt; n; i++) if (!used[i] &amp;&amp; (u == -1 || key[i] &lt; key[u])) u = i;
+        used[u] = 1;
+        for (int v = 0; v &lt; n; v++) if (w[u][v] &gt;= 0 &amp;&amp; !used[v] &amp;&amp; w[u][v] &lt; key[v])
+            key[v] = w[u][v], parent[v] = u;
+    }
+}</div>
+        <div class="code-source" data-lang="C++">vector&lt;tuple&lt;int,int,int&gt;&gt; prim(vector&lt;vector&lt;pair&lt;int,int&gt;&gt;&gt;&amp; g, int s) {
+    vector&lt;int&gt; used(g.size()); vector&lt;tuple&lt;int,int,int&gt;&gt; mst;
+    priority_queue&lt;tuple&lt;int,int,int&gt;, vector&lt;tuple&lt;int,int,int&gt;&gt;, greater&lt;&gt;&gt; pq;
+    pq.push({0, -1, s});
+    while (!pq.empty()) { auto [w,p,u]=pq.top(); pq.pop(); if (used[u]) continue;
+      used[u]=1; if (p!=-1) mst.push_back({p,u,w});
+      for (auto [v,ww]: g[u]) if (!used[v]) pq.push({ww,u,v}); }
+    return mst;
+}</div>
+        <div class="code-source" data-lang="C#">static List&lt;(int from,int to,int w)&gt; Prim(List&lt;(int to,int w)&gt;[] g, int s) {
+    var used = new bool[g.Length]; var mst = new List&lt;(int,int,int)&gt;();
+    var pq = new PriorityQueue&lt;(int p,int u,int w), int&gt;(); pq.Enqueue((-1,s,0),0);
+    while (pq.Count &gt; 0) { var e = pq.Dequeue(); if (used[e.u]) continue;
+      used[e.u] = true; if (e.p != -1) mst.Add((e.p,e.u,e.w));
+      foreach (var (v,w) in g[e.u]) if (!used[v]) pq.Enqueue((e.u,v,w), w); }
+    return mst;
+}</div>
+      </div>
+    </section><!-- /prim -->
+
+
+    <!-- KRUSKAL -->
+    <section id="ch-kruskal" class="chapter">
+      <h1>Kruskal</h1>
+      <p class="chapter-meta">Graphenalgorithmen &rsaquo; Minimaler Spannbaum &nbsp;&middot;&nbsp; Kanten sortieren und Komponenten vereinigen</p>
+
+      <div class="chapter-body">
+        <p>
+          Der <strong>Algorithmus von Kruskal</strong> berechnet ebenfalls einen minimalen
+          Spannbaum. Er betrachtet die Kanten global nach aufsteigendem Gewicht. Eine Kante wird
+          genau dann aufgenommen, wenn sie zwei bisher verschiedene Komponenten verbindet. Kanten,
+          deren Endpunkte bereits in derselben Komponente liegen, würden einen Zyklus erzeugen und
+          werden verworfen.
+        </p>
+
+        <div class="info-box">
+          <p>
+            Kruskal ist das Standardbeispiel für Union-Find: <em>FindSet</em> erkennt, ob zwei
+            Endpunkte schon verbunden sind; <em>Union</em> vereinigt die Komponenten nach Aufnahme
+            einer sicheren Kante.
+          </p>
+        </div>
+
+        <div>
+          <h2>Ablauf</h2>
+          <ol>
+            <li>Erzeuge für jeden Knoten eine eigene Menge mit <code>MakeSet</code>.</li>
+            <li>Sortiere alle Kanten nach aufsteigendem Gewicht.</li>
+            <li>Gehe die Kanten in dieser Reihenfolge durch.</li>
+            <li>Wenn die Endpunkte in verschiedenen Mengen liegen, füge die Kante zum MST hinzu.</li>
+            <li>Vereinige anschließend die beiden Mengen mit <code>Union</code>.</li>
+          </ol>
+        </div>
+
+        <div>
+          <h2>Laufzeit</h2>
+          <p>
+            Die Sortierung der Kanten dominiert: <code>O(|E| log |E|)</code>. Die Union-Find-
+            Operationen sind mit Path Compression und Union by Rank amortisiert fast konstant.
+            Da in einfachen Graphen <code>|E| ≤ |V|²</code> gilt, schreibt man oft auch
+            <code>O(|E| log |V|)</code>.
+          </p>
+        </div>
+      </div>
+
+      <p class="code-viewer-label">Pseudocode</p>
+      <div class="code-viewer">
+        <div class="code-source" data-lang="Kruskal">MST-KRUSKAL(G, w)
+  A = empty set
+
+  for each vertex v in G.V
+    MAKE-SET(v)
+
+  sort G.E by nondecreasing weight w
+
+  for each edge (u, v) in sorted G.E
+    if FIND-SET(u) != FIND-SET(v)
+      A = A union {(u, v)}
+      UNION(u, v)
+
+  return A</div>
+      </div>
+            <p class="code-viewer-label">Implementierungen</p>
+<div class="code-viewer">
+        <div class="code-source" data-lang="Python">def kruskal(n, edges):
+    parent = list(range(n)); rank = [0] * n
+    def find(x):
+        if parent[x] != x: parent[x] = find(parent[x])
+        return parent[x]
+    def union(a, b):
+        ra, rb = find(a), find(b)
+        if ra == rb: return False
+        if rank[ra] &lt; rank[rb]: ra, rb = rb, ra
+        parent[rb] = ra
+        if rank[ra] == rank[rb]: rank[ra] += 1
+        return True
+    mst = []
+    for w, u, v in sorted(edges):
+        if union(u, v): mst.append((u, v, w))
+    return mst</div>
+        <div class="code-source" data-lang="Java">static List&lt;int[]&gt; kruskal(int n, List&lt;int[]&gt; edges) {
+    DSU dsu = new DSU(n); edges.sort(Comparator.comparingInt(e -&gt; e[0]));
+    List&lt;int[]&gt; mst = new ArrayList&lt;&gt;();
+    for (int[] e : edges) if (dsu.union(e[1], e[2])) mst.add(e);
+    return mst;
+}
+static class DSU { int[] p,r; DSU(int n){p=new int[n];r=new int[n];for(int i=0;i&lt;n;i++)p[i]=i;}
+ int find(int x){return p[x]==x?x:(p[x]=find(p[x]));}
+ boolean union(int a,int b){a=find(a);b=find(b);if(a==b)return false;if(r[a]&lt;r[b]){int t=a;a=b;b=t;}p[b]=a;if(r[a]==r[b])r[a]++;return true;} }</div>
+        <div class="code-source" data-lang="JavaScript">function kruskal(n, edges) {
+  const p = Array.from({length:n}, (_,i)=&gt;i), r = Array(n).fill(0);
+  const find = x =&gt; p[x] === x ? x : (p[x] = find(p[x]));
+  const union = (a,b) =&gt; { a=find(a); b=find(b); if(a===b) return false;
+    if(r[a]&lt;r[b]) [a,b]=[b,a]; p[b]=a; if(r[a]===r[b]) r[a]++; return true; };
+  return edges.sort((a,b)=&gt;a[0]-b[0]).filter(([w,u,v]) =&gt; union(u,v));
+}</div>
+        <div class="code-source" data-lang="Prolog">kruskal(N, Edges, Mst) :-
+    numlist(0, N, Vs), maplist(make_set, Vs, Sets), keysort(Edges, Sorted),
+    kruskal_edges(Sorted, Sets, [], Mst).
+make_set(X, X-X).
+kruskal_edges([], _, Mst, Mst).
+kruskal_edges([W-U-V|Es], Sets, Acc, Mst) :-
+    ( same_set(U,V,Sets) -&gt; kruskal_edges(Es, Sets, Acc, Mst)
+    ; union_sets(U,V,Sets,Sets2), kruskal_edges(Es, Sets2, [U-V-W|Acc], Mst) ).</div>
+        <div class="code-source" data-lang="C">typedef struct { int w,u,v; } Edge;
+int find(int p[], int x){ return p[x]==x ? x : (p[x]=find(p,p[x])); }
+int unite(int p[], int r[], int a, int b){ a=find(p,a); b=find(p,b); if(a==b)return 0; if(r[a]&lt;r[b]){int t=a;a=b;b=t;} p[b]=a; if(r[a]==r[b])r[a]++; return 1; }
+void kruskal(int n, Edge e[], int m, Edge mst[], int *k){
+    int p[100], r[100]={0}; for(int i=0;i&lt;n;i++)p[i]=i; *k=0;
+    qsort(e,m,sizeof(Edge),cmp_edge);
+    for(int i=0;i&lt;m;i++) if(unite(p,r,e[i].u,e[i].v)) mst[(*k)++]=e[i];
+}</div>
+        <div class="code-source" data-lang="C++">vector&lt;tuple&lt;int,int,int&gt;&gt; kruskal(int n, vector&lt;tuple&lt;int,int,int&gt;&gt; edges) {
+    vector&lt;int&gt; p(n), r(n); iota(p.begin(), p.end(), 0);
+    function&lt;int(int)&gt; find=[&amp;](int x){return p[x]==x?x:p[x]=find(p[x]);};
+    auto unite=[&amp;](int a,int b){a=find(a);b=find(b);if(a==b)return false;if(r[a]&lt;r[b])swap(a,b);p[b]=a;if(r[a]==r[b])r[a]++;return true;};
+    sort(edges.begin(), edges.end()); vector&lt;tuple&lt;int,int,int&gt;&gt; mst;
+    for(auto [w,u,v]: edges) if(unite(u,v)) mst.push_back({w,u,v});
+    return mst;
+}</div>
+        <div class="code-source" data-lang="C#">static List&lt;(int w,int u,int v)&gt; Kruskal(int n, List&lt;(int w,int u,int v)&gt; edges) {
+    var d = new DSU(n); var mst = new List&lt;(int,int,int)&gt;();
+    foreach (var e in edges.OrderBy(e =&gt; e.w)) if (d.Union(e.u, e.v)) mst.Add(e);
+    return mst;
+}
+class DSU { int[] p,r; public DSU(int n){p=Enumerable.Range(0,n).ToArray();r=new int[n];}
+ int Find(int x)=&gt;p[x]==x?x:p[x]=Find(p[x]); public bool Union(int a,int b){a=Find(a);b=Find(b);if(a==b)return false;if(r[a]&lt;r[b]){var t=a;a=b;b=t;}p[b]=a;if(r[a]==r[b])r[a]++;return true;} }</div>
+      </div>
+    </section><!-- /kruskal -->
+
+
+    <!-- TOPOLOGISCHES SORTIEREN -->
+    <section id="ch-toposort" class="chapter">
+      <h1>Topologisches Sortieren</h1>
+      <p class="chapter-meta">Graphenalgorithmen &rsaquo; DAGs &nbsp;&middot;&nbsp; Reihenfolge für Abhängigkeiten</p>
+
+      <div class="chapter-body">
+        <p>
+          <strong>Topologisches Sortieren</strong> ordnet die Knoten eines gerichteten azyklischen
+          Graphen so an, dass jede Kante <code>u -> v</code> von links nach rechts zeigt:
+          <code>u</code> kommt also vor <code>v</code>. Das funktioniert genau dann, wenn der Graph
+          ein <strong>DAG</strong> ist, also keine gerichteten Zyklen enthält.
+        </p>
+
+        <div class="info-box">
+          <p>
+            Typische Anwendungen sind Build-Systeme, Modulabhängigkeiten, Kursvoraussetzungen,
+            Paketmanager, Task-Scheduling und Auswertungsreihenfolgen in Compilern.
+          </p>
+        </div>
+
+        <div>
+          <h2>DFS-Variante</h2>
+          <p>
+            Bei der DFS-Variante wird jeder Knoten erst dann vorne in die Ergebnisliste eingefügt,
+            wenn alle von ihm erreichbaren Nachfolger fertig bearbeitet wurden. Äquivalent sortiert
+            man die Knoten nach fallender Abschlusszeit.
+          </p>
+        </div>
+
+        <div>
+          <h2>Kahn-Algorithmus</h2>
+          <p>
+            Kahn arbeitet mit Eingangsgraden. Alle Knoten mit Eingangsgrad <code>0</code> können
+            sofort ausgegeben werden, weil keine unerfüllte Voraussetzung mehr vor ihnen liegt.
+            Entfernt man einen solchen Knoten, sinkt der Eingangsgrad seiner Nachfolger. Bleiben am
+            Ende Knoten übrig, liegt ein Zyklus vor.
+          </p>
+        </div>
+
+        <div>
+          <h2>Laufzeit</h2>
+          <table class="complexity-table">
+            <thead>
+              <tr><th>Variante</th><th>Datenstruktur</th><th>Laufzeit</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>DFS</td><td>Rekursion oder Stack</td><td><code>Θ(|V| + |E|)</code></td></tr>
+              <tr><td>Kahn</td><td>Queue für Eingangsgrad-0-Knoten</td><td><code>Θ(|V| + |E|)</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <p class="code-viewer-label">Pseudocode</p>
+      <div class="code-viewer">
+        <div class="code-source" data-lang="Topo-DFS">TOPOLOGICAL-SORT-DFS(G)
+  L = empty list
+  mark all vertices WHITE
+
+  for each vertex u in G.V
+    if color[u] == WHITE
+      DFS-VISIT(u)
+
+  return L
+
+DFS-VISIT(u)
+  color[u] = GRAY
+  for each v in Adj[u]
+    if color[v] == GRAY
+      error "cycle detected"
+    if color[v] == WHITE
+      DFS-VISIT(v)
+  color[u] = BLACK
+  prepend u to L</div>
+        <div class="code-source" data-lang="Kahn">TOPOLOGICAL-SORT-KAHN(G)
+  compute indegree[v] for all vertices v
+  Q = all vertices with indegree 0
+  L = empty list
+
+  while Q is not empty
+    u = DEQUEUE(Q)
+    append u to L
+    for each v in Adj[u]
+      indegree[v] = indegree[v] - 1
+      if indegree[v] == 0
+        ENQUEUE(Q, v)
+
+  if length(L) != |V|
+    error "cycle detected"
+
+  return L</div>
+      </div>
+            <p class="code-viewer-label">Implementierungen</p>
+<div class="code-viewer">
+        <div class="code-source" data-lang="Python">from collections import deque
+
+def topological_sort(graph):
+    indeg = {v: 0 for v in graph}
+    for u in graph:
+        for v in graph[u]: indeg[v] += 1
+    q = deque([v for v, d in indeg.items() if d == 0])
+    order = []
+    while q:
+        u = q.popleft(); order.append(u)
+        for v in graph[u]:
+            indeg[v] -= 1
+            if indeg[v] == 0: q.append(v)
+    if len(order) != len(graph): raise ValueError("cycle detected")
+    return order</div>
+        <div class="code-source" data-lang="Java">static List&lt;Integer&gt; topologicalSort(List&lt;List&lt;Integer&gt;&gt; g) {
+    int n = g.size(); int[] indeg = new int[n];
+    for (var adj : g) for (int v : adj) indeg[v]++;
+    ArrayDeque&lt;Integer&gt; q = new ArrayDeque&lt;&gt;();
+    for (int i = 0; i &lt; n; i++) if (indeg[i] == 0) q.add(i);
+    List&lt;Integer&gt; order = new ArrayList&lt;&gt;();
+    while (!q.isEmpty()) {
+        int u = q.remove(); order.add(u);
+        for (int v : g.get(u)) if (--indeg[v] == 0) q.add(v);
+    }
+    if (order.size() != n) throw new IllegalStateException("cycle detected");
+    return order;
+}</div>
+        <div class="code-source" data-lang="JavaScript">function topologicalSort(graph) {
+  const indeg = new Map([...graph.keys()].map(v =&gt; [v, 0]));
+  for (const adj of graph.values()) for (const v of adj) indeg.set(v, indeg.get(v) + 1);
+  const q = [...indeg].filter(([,d]) =&gt; d === 0).map(([v]) =&gt; v), order = [];
+  while (q.length) {
+    const u = q.shift(); order.push(u);
+    for (const v of graph.get(u)) { indeg.set(v, indeg.get(v) - 1); if (indeg.get(v) === 0) q.push(v); }
+  }
+  if (order.length !== graph.size) throw new Error("cycle detected");
+  return order;
+}</div>
+        <div class="code-source" data-lang="Prolog">topological_sort(Graph, Order) :-
+    vertices(Graph, Vs), indegrees(Graph, Degs), zeros(Degs, Queue),
+    kahn(Graph, Queue, Degs, [], Rev), reverse(Rev, Order),
+    same_length(Vs, Order).
+
+kahn(_, [], _, Acc, Acc).
+kahn(Graph, [U|Q], Degs, Acc, Order) :-
+    neighbors(Graph, U, Ns), dec_all(Ns, Degs, Degs2, NewZeros),
+    append(Q, NewZeros, Q2), kahn(Graph, Q2, Degs2, [U|Acc], Order).</div>
+        <div class="code-source" data-lang="C">int topological_sort(int n, int g[100][100], int order[]) {
+    int indeg[100] = {0}, q[100], front = 0, back = 0, k = 0;
+    for (int u = 0; u &lt; n; u++) for (int v = 0; v &lt; n; v++) if (g[u][v]) indeg[v]++;
+    for (int i = 0; i &lt; n; i++) if (indeg[i] == 0) q[back++] = i;
+    while (front &lt; back) {
+        int u = q[front++]; order[k++] = u;
+        for (int v = 0; v &lt; n; v++) if (g[u][v] &amp;&amp; --indeg[v] == 0) q[back++] = v;
+    }
+    return k == n;
+}</div>
+        <div class="code-source" data-lang="C++">vector&lt;int&gt; topological_sort(vector&lt;vector&lt;int&gt;&gt;&amp; g) {
+    int n = g.size(); vector&lt;int&gt; indeg(n), order; queue&lt;int&gt; q;
+    for (auto&amp; adj : g) for (int v : adj) indeg[v]++;
+    for (int i = 0; i &lt; n; i++) if (indeg[i] == 0) q.push(i);
+    while (!q.empty()) {
+        int u = q.front(); q.pop(); order.push_back(u);
+        for (int v : g[u]) if (--indeg[v] == 0) q.push(v);
+    }
+    if ((int)order.size() != n) throw runtime_error("cycle detected");
+    return order;
+}</div>
+        <div class="code-source" data-lang="C#">static List&lt;int&gt; TopologicalSort(List&lt;int&gt;[] g) {
+    int n = g.Length; var indeg = new int[n];
+    foreach (var adj in g) foreach (int v in adj) indeg[v]++;
+    var q = new Queue&lt;int&gt;(Enumerable.Range(0,n).Where(i =&gt; indeg[i] == 0));
+    var order = new List&lt;int&gt;();
+    while (q.Count &gt; 0) {
+        int u = q.Dequeue(); order.Add(u);
+        foreach (int v in g[u]) if (--indeg[v] == 0) q.Enqueue(v);
+    }
+    if (order.Count != n) throw new InvalidOperationException("cycle detected");
+    return order;
+}</div>
+      </div>
+    </section><!-- /toposort -->
+
+
+    <!-- ─── HEAPSORT ──────────────────────────────────────── -->
+    <section id="ch-heapsort" class="chapter">
+      <h1>Heapsort</h1>
+      <p class="chapter-meta">Algorithmen › Heapsort &nbsp;·&nbsp; Laufzeit: O(n log n) in allen Fällen</p>
+
+      <div class="chapter-body">
+        <p>
+          Heapsort ist ein vergleichsbasierter Sortieralgorithmus, der auf der Datenstruktur
+          <strong>MaxHeap</strong> aufbaut. Er kombiniert die Vorteile von Insertionsort
+          (in-place) mit denen von Mergesort (O(n log n) garantiert).
+        </p>
+
+        <div>
+          <h2>Ablauf in zwei Phasen</h2>
+          <ul>
+            <li>
+              <strong>Phase 1 – BuildMaxHeap:</strong> Das gesamte Array wird in einen gültigen
+              MaxHeap umgewandelt. Das größte Element steht danach an Stelle A[0].
+              Laufzeit: O(n).
+            </li>
+            <li>
+              <strong>Phase 2 – Sortierschleife:</strong> Das Maximum A[0] wird mit dem letzten
+              unsortierten Element getauscht und ans Ende „gelegt". Die Heapgröße wird um 1
+              verringert und <em>MaxHeapify</em> stellt die Heap-Eigenschaft wieder her.
+              Dieser Schritt wiederholt sich n−1 mal. Laufzeit: O(n log n).
+            </li>
+          </ul>
+        </div>
+
+        <div>
+          <h3>Komplexität</h3>
+          <table class="complexity-table">
+            <thead>
+              <tr><th>Fall</th><th>Laufzeit</th><th>Speicher</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Best Case</td><td>O(n log n)</td><td>O(1)</td></tr>
+              <tr><td>Average Case</td><td>O(n log n)</td><td>O(1)</td></tr>
+              <tr><td>Worst Case</td><td>O(n log n)</td><td>O(1)</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="info-box">
+          <p>
+            Heapsort ist <strong>in-place</strong> (sortiert ohne zusätzlichen Speicher) und
+            garantiert O(n log n) — unabhängig von der Eingabe. Es ist jedoch
+            <strong>nicht stabil</strong>, d.h. gleiche Elemente können ihre relative
+            Reihenfolge ändern.
+          </p>
+        </div>
+
+        <div>
+          <h2>Voraussetzung: MaxHeap</h2>
+          <p>
+            Heapsort setzt die Operationen <em>BuildMaxHeap</em> und <em>MaxHeapify</em> voraus,
+            die im Kapitel <strong>MaxHeap</strong> (Datenstrukturen) detailliert erklärt werden.
+          </p>
+        </div>
+      </div>
+
+      <p class="code-viewer-label">Implementierung</p>
+      <div class="code-viewer">
+        <div class="code-source" data-lang="Pseudocode" data-file="implemented/pseudocode/Heapsort.txt"></div>
+        <div class="code-source" data-lang="Java" data-file="implemented/java/Heapsort.java"></div>
+        <div class="code-source" data-lang="Python" data-file="implemented/python/Heapsort.py"></div>
+        <div class="code-source" data-lang="Prolog" data-file="implemented/prolog/Heapsort.pl"></div>
+      </div>
+    </section><!-- /heapsort -->
+
+
+    <!-- ─── DATENSTRUKTUREN ÜBERBLICK ─────────────────────── -->
+    <section id="ch-datenstrukturen" class="chapter">
+      <h1>Datenstrukturen</h1>
+      <p class="chapter-meta">Effiziente Organisation und Verwaltung von Daten</p>
+
+      <div class="chapter-body">
+        <p>
+          Eine <strong>Datenstruktur</strong> legt fest, wie Daten im Speicher angeordnet,
+          gespeichert und verwaltet werden. Die Wahl der richtigen Datenstruktur beeinflusst
+          die Laufzeit von Algorithmen erheblich.
+        </p>
+
+        <div>
+          <h2>Binäre Heaps</h2>
+          <p>
+            Ein <strong>binärer Heap</strong> ist ein vollständiger binärer Baum, der
+            als flaches Array gespeichert wird. Für einen Knoten an Index <em>i</em>
+            (0-basiert) gilt:
+          </p>
+          <ul>
+            <li>Linkes Kind: Index <code>2·i + 1</code></li>
+            <li>Rechtes Kind: Index <code>2·i + 2</code></li>
+            <li>Elternknoten: Index <code>⌊(i−1) / 2⌋</code></li>
+          </ul>
+        </div>
+
+        <div class="img-wrap">
+          <img src="image.png" alt="Heap als Baumstruktur und Array-Repräsentation" class="chapter-img" />
+          <p class="img-caption">Heap-Struktur: Baumdarstellung (oben) und Array-Repräsentation (unten)</p>
+        </div>
+
+        <div>
+          <h2>Heap-Varianten in diesem Kurs</h2>
+          <table class="complexity-table">
+            <thead>
+              <tr><th>Typ</th><th>Heap-Eigenschaft</th><th>Wurzel enthält</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>MaxHeap</td><td>A[parent] ≥ A[child]</td><td>Maximum</td></tr>
+              <tr><td>MinHeap</td><td>A[parent] ≤ A[child]</td><td>Minimum</td></tr>
+              <tr><td>Binomialheap</td><td>Wurzelliste aus Binomialbäumen</td><td>Merge in O(log n)</td></tr>
+              <tr><td>Fibonacci-Heap</td><td>Lazy Wurzelliste mit Markierungen</td><td>Decrease-Key amortisiert O(1)</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div>
+          <h2>Mengenstrukturen</h2>
+          <p>
+            Union-Find bzw. Disjoint Sets verwaltet dynamische Zerlegungen in disjunkte Mengen.
+            Die Struktur ist kein Suchbaum und kein Heap, sondern spezialisiert auf
+            <em>Zusammengehörigkeit</em>: <em>FindSet</em> liefert den Repräsentanten einer Menge,
+            <em>Union</em> vereinigt zwei Mengen. Mit Path Compression und Union by Rank werden
+            lange Elternketten vermieden.
+          </p>
+        </div>
+
+        <div>
+          <h2>Suchbäume</h2>
+          <p>
+            Suchbäume speichern Schlüssel so, dass links kleinere und rechts größere Schlüssel
+            liegen. Damit werden Suchen, Einfügen, Löschen und Bereichsanfragen strukturell
+            unterstützt. Ab einem gewissen Punkt lassen sich die einzelnen Methoden selbst nicht
+            mehr asymptotisch effizienter formulieren: Eine Suche muss dem Vergleichspfad folgen,
+            ein Einfügen muss die Einfügeposition finden, ein Löschen muss die Ordnung erhalten.
+            Die Verbesserung liegt dann nicht mehr in einer „clevereren" Methode, sondern in der
+            <strong>Optimierung der Datenstruktur</strong>. Balancierte Suchbäume halten ihre Höhe
+            klein und verhindern, dass ein Baum zur linearen Liste degeneriert.
+          </p>
+        </div>
+      </div>
+    </section><!-- /datenstrukturen -->
+
+
+    <!-- ─── MAXHEAP ───────────────────────────────────────── -->
+    <section id="ch-maxheap" class="chapter">
+      <h1>MaxHeap</h1>
+      <p class="chapter-meta">Datenstrukturen › MaxHeap &nbsp;·&nbsp; Heap-Eigenschaft: A[parent(i)] ≥ A[i]</p>
+
+      <div class="chapter-body">
+        <p>
+          Ein <strong>MaxHeap</strong> ist ein vollständiger binärer Baum (im Array gespeichert),
+          bei dem jeder Elternknoten <strong>größer oder gleich</strong> seinen Kindern ist.
+          Das <strong>Maximum</strong> steht immer an Position A[0] und kann in O(1) abgerufen werden.
+        </p>
+
+        <div>
+          <h2>Operationen und Laufzeiten</h2>
+          <table class="complexity-table">
+            <thead>
+              <tr><th>Operation</th><th>Laufzeit</th><th>Beschreibung</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>BuildMaxHeap</td><td>O(n)</td><td>Array in gültigen MaxHeap umwandeln</td></tr>
+              <tr><td>MaxHeapify</td><td>O(log n)</td><td>Heap-Eigenschaft ab Index i wiederherstellen</td></tr>
+              <tr><td>MaxHeapInsert</td><td>O(log n)</td><td>Neuen Schlüssel einfügen</td></tr>
+              <tr><td>ExtractMax</td><td>O(log n)</td><td>Maximum entfernen und zurückgeben</td></tr>
+              <tr><td>Maximum lesen</td><td>O(1)</td><td>A[0] zurückgeben</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div>
+          <h2>MaxHeapify – Kernoperation</h2>
+          <p>
+            <em>MaxHeapify(A, i)</em> stellt sicher, dass der Teilbaum ab Index <em>i</em>
+            die MaxHeap-Eigenschaft erfüllt. Dazu wird der Knoten bei Bedarf mit dem größeren
+            seiner Kinder getauscht und rekursiv weiter nach unten korrigiert.
+          </p>
+        </div>
+
+        <div>
+          <h2>BuildMaxHeap</h2>
+          <p>
+            Durch Aufruf von <em>MaxHeapify</em> auf allen inneren Knoten (von unten nach oben)
+            wird ein beliebiges Array in einen MaxHeap umgewandelt. Obwohl MaxHeapify einzeln
+            O(log n) kostet, ist die Gesamtlaufzeit von BuildMaxHeap nur <strong>O(n)</strong>.
+          </p>
+        </div>
+
+        <div class="info-box">
+          <p>
+            Der MaxHeap wird von Heapsort als Grundstruktur verwendet.
+            Das Verständnis von <em>MaxHeapify</em> und <em>BuildMaxHeap</em> ist daher
+            Voraussetzung für Heapsort.
+          </p>
+        </div>
+      </div>
+
+      <p class="code-viewer-label">Implementierung</p>
+      <div class="code-viewer">
+        <div class="code-source" data-lang="Pseudocode" data-file="implemented/pseudocode/MaxHeap.txt"></div>
+        <div class="code-source" data-lang="Java" data-file="implemented/java/MaxHeap.java"></div>
+        <div class="code-source" data-lang="Python" data-file="implemented/python/MaxHeap.py"></div>
+        <div class="code-source" data-lang="Prolog" data-file="implemented/prolog/MaxHeap.pl"></div>
+      </div>
+    </section><!-- /maxheap -->
+
+
+    <!-- ─── MINHEAP ───────────────────────────────────────── -->
+    <section id="ch-minheap" class="chapter">
+      <h1>MinHeap</h1>
+      <p class="chapter-meta">Datenstrukturen › MinHeap &nbsp;·&nbsp; Heap-Eigenschaft: A[parent(i)] ≤ A[i]</p>
+
+      <div class="chapter-body">
+        <p>
+          Ein <strong>MinHeap</strong> ist das Gegenstück zum MaxHeap: Jeder Elternknoten
+          ist <strong>kleiner oder gleich</strong> seinen Kindern. Das <strong>Minimum</strong>
+          steht immer an Position A[0] und kann in O(1) abgerufen werden.
+        </p>
+
+        <div>
+          <h2>Unterschied zum MaxHeap</h2>
+          <p>
+            Struktur und Operationen sind identisch zum MaxHeap – lediglich die
+            Vergleichsrichtung ist umgekehrt:
+          </p>
+          <ul>
+            <li>MaxHeap: <code>A[parent] ≥ A[child]</code> → Wurzel = Maximum</li>
+            <li>MinHeap: <code>A[parent] ≤ A[child]</code> → Wurzel = Minimum</li>
+          </ul>
+        </div>
+
+        <div>
+          <h2>Operationen und Laufzeiten</h2>
+          <table class="complexity-table">
+            <thead>
+              <tr><th>Operation</th><th>Laufzeit</th><th>Beschreibung</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>BuildMinHeap</td><td>O(n)</td><td>Array in gültigen MinHeap umwandeln</td></tr>
+              <tr><td>MinHeapify</td><td>O(log n)</td><td>Heap-Eigenschaft ab Index i wiederherstellen</td></tr>
+              <tr><td>MinHeapInsert</td><td>O(log n)</td><td>Neuen Schlüssel einfügen</td></tr>
+              <tr><td>ExtractMin</td><td>O(log n)</td><td>Minimum entfernen und zurückgeben</td></tr>
+              <tr><td>Minimum lesen</td><td>O(1)</td><td>A[0] zurückgeben</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div>
+          <h2>Typische Anwendungsfälle</h2>
+          <ul>
+            <li><strong>Prioritätswarteschlangen</strong> – z.B. im Dijkstra-Algorithmus für kürzeste Wege</li>
+            <li><strong>Scheduling</strong> – immer den Prozess mit kleinster Priorität zuerst</li>
+            <li><strong>K-smallest</strong> – Effizientes Abrufen der k kleinsten Elemente aus einer Menge</li>
+          </ul>
+        </div>
+
+        <div class="info-box">
+          <p>
+            MinHeapInsert beginnt mit dem Wert +∞ an der neuen Position und ruft dann
+            <em>MinHeapDecreaseKey</em> auf, um den tatsächlichen Schlüssel einzusetzen und
+            nach oben zu "sickern" (bubble-up).
+          </p>
+        </div>
+      </div>
+
+      <p class="code-viewer-label">Implementierung</p>
+      <div class="code-viewer">
+        <div class="code-source" data-lang="Pseudocode" data-file="implemented/pseudocode/MinHeap.txt"></div>
+        <div class="code-source" data-lang="Java" data-file="implemented/java/MinHeap.java"></div>
+        <div class="code-source" data-lang="Python" data-file="implemented/python/MinHeap.py"></div>
+        <div class="code-source" data-lang="Prolog" data-file="implemented/prolog/MinHeap.pl"></div>
+      </div>
+    </section><!-- /minheap -->
+
+
+    <!-- ─── PRIORITYQUEUE ──────────────────────────────────── -->
+    <section id="ch-priorityqueue" class="chapter">
+      <h1>PriorityQueue</h1>
+      <p class="chapter-meta">Datenstrukturen › PriorityQueue &nbsp;·&nbsp; Aufbauend auf dem Heap</p>
+
+      <div class="chapter-body">
+        <p>
+          Eine <strong>Prioritätswarteschlange</strong> (Priority Queue) ist ein abstrakter
+          Datentyp, bei dem jedes Element eine numerische <em>Priorität</em> trägt. Im Gegensatz
+          zur gewöhnlichen FIFO-Warteschlange wird stets das Element mit der
+          <strong>höchsten</strong> (Max-PQ) oder <strong>niedrigsten</strong> (Min-PQ) Priorität
+          als nächstes entnommen – unabhängig von der Einfügereihenfolge.
+        </p>
+
+        <div>
+          <h2>Heap als natürliche Implementierung</h2>
+          <p>
+            Der binäre Heap ist die kanonische Implementierung einer Prioritätswarteschlange:
+            <em>Insert</em> läuft in O(log n), <em>ExtractMax/Min</em> entnimmt die Wurzel in
+            O(log n), und das Maximum bzw. Minimum ist in O(1) lesbar. Eine sortierte Liste oder
+            ein unsortiertes Array wären für mindestens eine der beiden Operationen langsamer.
+          </p>
+        </div>
+
+        <div>
+          <h3>Komplexität im Vergleich</h3>
+          <table class="complexity-table">
+            <thead>
+              <tr><th>Implementierung</th><th>Insert</th><th>ExtractMax/Min</th><th>Peek</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Binärer Heap</td><td>O(log n)</td><td>O(log n)</td><td>O(1)</td></tr>
+              <tr><td>Sortiertes Array</td><td>O(n)</td><td>O(1)</td><td>O(1)</td></tr>
+              <tr><td>Unsortiertes Array</td><td>O(1)</td><td>O(n)</td><td>O(n)</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div>
+          <h2>Variante 1 – Manuell: TaskMaxHeap</h2>
+          <p>
+            <code>TaskMaxHeap</code> ist eine händisch implementierte MaxHeap-basierte
+            Prioritätswarteschlange für <code>TaskManual</code>-Objekte. Das Element mit der
+            <strong>höchsten Priorität</strong> steht stets an der Wurzel (Index&nbsp;0) und
+            wird von <em>extractMax()</em> als erstes entnommen. Nach jedem <em>Insert</em>
+            stellt ein Bubble-up, nach jeder Entnahme ein <em>Heapify-down</em> die
+            Heap-Eigenschaft wieder her. Diese Variante macht den Mechanismus explizit sichtbar
+            und zeigt, was hinter jeder fertigen Bibliotheksklasse steckt.
+          </p>
+        </div>
+
+        <div>
+          <h2>Variante 2 – Java-Standard: <code>java.util.PriorityQueue</code></h2>
+          <p>
+            Javas eingebaute <code>PriorityQueue&lt;E&gt;</code> ist intern als
+            <strong>binärer MinHeap</strong> implementiert – standardmäßig wird also das
+            Element mit der <em>niedrigsten</em> Priorität zuerst entnommen (natürliche Ordnung
+            via <code>Comparable</code>). Um eine Max-PQ zu erhalten, muss ein umgekehrter
+            Comparator übergeben werden:
+          </p>
+          <p>
+            <code>new PriorityQueue&lt;&gt;(Comparator.comparingInt((Task t) -&gt; t.priority).reversed())</code>
+          </p>
+          <p>
+            <code>TaskManager</code> zeigt diese Variante: Nach außen verhält sie sich identisch
+            zur manuellen Implementierung, nutzt intern jedoch die Laufzeitbibliothek.
+            In der Praxis ist dies der bevorzugte Weg.
+          </p>
+        </div>
+
+        <div class="info-box">
+          <p>
+            <strong>Faustregel:</strong> In realen Projekten wird fast immer
+            <code>java.util.PriorityQueue</code> eingesetzt. Die manuelle Implementierung
+            dient dem Verständnis der Heap-Mechanik und verdeutlicht, was intern abläuft.
+          </p>
+        </div>
+
+        <div>
+          <h2>Exkurs: Stack und Heap im virtuellen Adressraum</h2>
+          <p>
+            Das Betriebssystem teilt den <strong>virtuellen Adressraum</strong> eines Prozesses
+            in mehrere Segmente auf. Zwei davon – <em>Stack</em> und <em>Heap</em> – wachsen
+            dynamisch und liegen an gegenüberliegenden Enden des Speichers. Wichtig: Diese
+            Speicherbereiche sind <strong>unabhängig</strong> von den gleichnamigen Datenstrukturen.
+          </p>
+
+          <div class="img-wrap">
+            <img src="img/memory-layout.png" alt="Virtueller Adressraum eines Prozesses: text, data, bss, heap, stack" class="chapter-img" />
+            <p class="img-caption">Virtueller Adressraum – Segmente von low address (0x0000) bis high address</p>
+          </div>
+
+          <div>
+            <h3>Segmente im Überblick</h3>
+            <table class="complexity-table">
+              <thead>
+                <tr><th>Segment</th><th>Inhalt</th><th>Charakteristik</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>text</td><td>Maschinencode des Programms</td><td>Read-only, von Disk geladen</td></tr>
+                <tr><td>data</td><td>Initialisierte globale / statische Variablen</td><td>Von Disk geladen</td></tr>
+                <tr><td>bss</td><td>Nicht-initialisierte globale / statische Variablen</td><td>Beim Programmstart auf 0 gesetzt</td></tr>
+                <tr><td>heap</td><td>Dynamisch allokierte Objekte (<code>new</code>)</td><td>Wächst nach oben ↑, GC-verwaltet (Java) / manuell (C/C++)</td></tr>
+                <tr><td>stack</td><td>Funktionsaufrufe, lokale Variablen, Rücksprungadressen</td><td>Wächst nach unten ↓, LIFO, feste Größe</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p>
+            Wie das Diagramm zeigt, liegen Stack und Heap am <strong>gegenüberliegenden Enden</strong>
+            des dynamisch allokierten Bereichs und wachsen <em>aufeinander zu</em>: der Heap wächst
+            von der niedrigen Adresse nach oben (↑), der Stack von der hohen Adresse nach unten (↓).
+            Dazwischen liegt der aktuell ungenutzte Speicher, der je nach Bedarf beansprucht wird.
+          </p>
+
+          <p>
+            Der <strong>Call Stack</strong> verwaltet Funktionsaufrufe nach dem LIFO-Prinzip.
+            Bei jedem Aufruf wird ein neuer <em>Stack Frame</em> obenauf gelegt (enthält lokale
+            Variablen, Parameter, Rücksprungadresse); beim Rücksprung wird er entfernt.
+            Diese Struktur ist extrem schnell – Allokation ist ein einziger Zeigerarithmetik-Schritt –
+            aber <strong>starr</strong>: Überschreitet die Rekursionstiefe das verfügbare Segment,
+            folgt ein <em>StackOverflowError</em> (Java) bzw. eine Segmentation Fault (C/C++).
+          </p>
+
+          <p>
+            Der <strong>Heap-Speicher</strong> allokiert Objekte dynamisch zur Laufzeit.
+            In Java landen alle per <code>new</code> erzeugten Objekte hier; der Garbage Collector
+            gibt nicht mehr erreichbare Objekte frei. In C/C++ liegt die Verwaltung beim
+            Programmierer (<code>malloc</code>/<code>free</code>). Heap-Allokation ist langsamer,
+            bietet aber nahezu unbegrenzte Kapazität und lebt über Funktionsgrenzen hinaus.
+          </p>
+
+          <table class="complexity-table">
+            <thead>
+              <tr><th>Eigenschaft</th><th>Call Stack</th><th>Heap-Speicher</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Wachstumsrichtung</td><td>↓ hohe → niedrige Adresse</td><td>↑ niedrige → hohe Adresse</td></tr>
+              <tr><td>Größe</td><td>Fest (typ. 512 KB – 8 MB)</td><td>Dynamisch (GB-Bereich)</td></tr>
+              <tr><td>Allokationsgeschwindigkeit</td><td>O(1), sehr schnell</td><td>Langsamer (GC / malloc-Overhead)</td></tr>
+              <tr><td>Zugriffsmuster</td><td>LIFO (Stack Frames)</td><td>Beliebig</td></tr>
+              <tr><td>Überlaufrisiko</td><td>StackOverflowError / Segfault</td><td>OutOfMemoryError</td></tr>
+              <tr><td>Lebensdauer</td><td>An Funktionsaufruf gebunden</td><td>Bis GC / free() freigibt</td></tr>
+            </tbody>
+          </table>
+
+          <div class="info-box">
+            <p>
+              <strong>Terminologischer Hinweis:</strong> Der „Heap-Speicher" (Segment im virtuellen
+              Adressraum) und der „Heap" als Datenstruktur (MaxHeap, MinHeap, binärer Heap) sind
+              konzeptuell <em>vollständig unabhängig</em>. Die Namensgleichheit ist historisch
+              bedingt und eine häufige Quelle von Verwirrung.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <p class="code-viewer-label">Implementierungen – manuell &amp; Standard-Bibliothek</p>
+      <div class="code-viewer">
+        <div class="code-source" data-lang="Java"        data-file="implemented/java/TaskMaxHeap.java"></div>
+        <div class="code-source" data-lang="Java PQ"     data-file="implemented/java/TaskManager.java"></div>
+        <div class="code-source" data-lang="Python"      data-file="implemented/python/TaskMaxHeap.py"></div>
+        <div class="code-source" data-lang="Python PQ"   data-file="implemented/python/TaskManager.py"></div>
+        <div class="code-source" data-lang="Prolog"      data-file="implemented/prolog/PriorityQueue.pl"></div>
+        <div class="code-source" data-lang="C"           data-file="implemented/c/TaskMaxHeap.c"></div>
+        <div class="code-source" data-lang="C++"         data-file="implemented/cpp/TaskMaxHeap.cpp"></div>
+        <div class="code-source" data-lang="C++ PQ"      data-file="implemented/cpp/TaskManager.cpp"></div>
+        <div class="code-source" data-lang="C#"          data-file="implemented/csharp/TaskMaxHeap.cs"></div>
+        <div class="code-source" data-lang="C# PQ"       data-file="implemented/csharp/TaskManager.cs"></div>
+        <div class="code-source" data-lang="PHP"         data-file="implemented/php/TaskMaxHeap.php"></div>
+        <div class="code-source" data-lang="PHP PQ"      data-file="implemented/php/TaskManager.php"></div>
+        <div class="code-source" data-lang="JavaScript"  data-file="implemented/javascript/TaskMaxHeap.js"></div>
+      </div>
+    </section><!-- /priorityqueue -->
+
+
+    <!-- BINOMIALHEAP -->
+    <section id="ch-binomialheap" class="chapter">
+      <h1>Binomialheap</h1>
+      <p class="chapter-meta">Datenstrukturen &rsaquo; Heaps &nbsp;&middot;&nbsp; Merge-freundliche Priority Queue aus Binomialbäumen</p>
+
+      <div class="chapter-body">
+        <p>
+          Ein <strong>Binomialheap</strong> ist eine Prioritätswarteschlange, die nicht aus einem
+          einzelnen binären Heap besteht, sondern aus einer Menge von <strong>Binomialbäumen</strong>.
+          Jeder Binomialbaum <code>B_k</code> hat genau <code>2^k</code> Knoten, Höhe
+          <code>k</code> und eine Wurzel mit Grad <code>k</code>. Die Kinder eines
+          <code>B_k</code> sind die Wurzeln von <code>B_0, B_1, ..., B_{k-1}</code>.
+        </p>
+
+        <div class="info-box">
+          <p>
+            Die zentrale Idee ist dieselbe wie bei Binärzahlen: Für jeden Grad darf es höchstens
+            einen Baum geben. Zwei Bäume gleichen Grades werden verlinkt und erzeugen einen Baum
+            des nächsthöheren Grades. <em>Union</em> funktioniert deshalb wie binäres Addieren mit
+            Übertrag.
+          </p>
+        </div>
+
+        <div>
+          <h2>Struktur</h2>
+          <table class="complexity-table">
+            <thead>
+              <tr><th>Eigenschaft</th><th>Bedeutung</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Wurzelliste</td><td>Liste der Binomialbäume, typischerweise nach Grad sortiert</td></tr>
+              <tr><td>Grad</td><td>Anzahl der Kinder einer Wurzel; entspricht dem Index <code>k</code> von <code>B_k</code></td></tr>
+              <tr><td>Heap-Eigenschaft</td><td>Bei Min-Binomialheap ist jede Wurzel kleiner oder gleich ihren Kindern</td></tr>
+              <tr><td>Eindeutigkeit</td><td>Für jeden Grad existiert höchstens ein Baum in der Wurzelliste</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div>
+          <h2>Warum mehrere Bäume?</h2>
+          <p>
+            Ein binärer Heap ist sehr gut für <em>Insert</em> und <em>Extract-Min</em>, aber ein
+            echtes <em>Merge</em> zweier Heaps ist teuer, wenn man nur Arrays zusammenklebt und neu
+            heapifiziert. Binomialheaps machen <em>Merge</em> zur Kernoperation: Zwei Heaps werden
+            über ihre Wurzellisten vereinigt. Gleiche Grade werden durch <em>Link</em> bereinigt.
+          </p>
+          <p>
+            Dadurch eignet sich der Binomialheap besonders für Algorithmen und Systeme, in denen
+            Prioritätswarteschlangen häufig zusammengeführt werden, etwa bei meldbaren Queues,
+            komponentenorientierten Graphverfahren oder Simulationen mit mehreren Ereignislisten.
+          </p>
+        </div>
+
+        <div>
+          <h2>Operationen</h2>
+          <table class="complexity-table">
+            <thead>
+              <tr><th>Operation</th><th>Laufzeit</th><th>Mechanik</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Find-Min</td><td><code>O(log n)</code></td><td>Wurzelliste scannen</td></tr>
+              <tr><td>Insert</td><td><code>O(log n)</code></td><td>Ein-Knoten-Heap erzeugen und Union ausführen</td></tr>
+              <tr><td>Union / Merge</td><td><code>O(log n)</code></td><td>Wurzellisten wie Binärzahlen addieren</td></tr>
+              <tr><td>Extract-Min</td><td><code>O(log n)</code></td><td>Min-Wurzel entfernen, Kinder umdrehen, Union</td></tr>
+              <tr><td>Decrease-Key</td><td><code>O(log n)</code></td><td>Schlüssel verkleinern und nach oben tauschen</td></tr>
+              <tr><td>Delete</td><td><code>O(log n)</code></td><td>Decrease-Key auf -∞, dann Extract-Min</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div>
+          <h2>Link: Zwei gleichgradige Bäume verbinden</h2>
+          <p>
+            Wenn zwei Binomialbäume denselben Grad haben, wird die größere Wurzel Kind der kleineren
+            Wurzel. Dadurch steigt der Grad der kleineren Wurzel um eins. Die Heap-Eigenschaft bleibt
+            erhalten, weil die neue Elternwurzel kleiner oder gleich der anderen Wurzel ist.
+          </p>
+        </div>
+
+        <div>
+          <h2>Extract-Min im Detail</h2>
+          <p>
+            <em>Extract-Min</em> sucht zuerst die Wurzel mit kleinstem Schlüssel. Diese Wurzel wird
+            aus der Wurzelliste entfernt. Ihre Kinder bilden selbst wieder eine gültige Menge von
+            Binomialbäumen, allerdings in umgekehrter Gradreihenfolge. Nach dem Umdrehen werden die
+            Kinder als zweiter Heap betrachtet und mit dem Restheap vereinigt.
+          </p>
+        </div>
+
+        <div class="info-box">
+          <p>
+            Im <a href="DatastructureLab.html" target="_blank">DatastructureLab</a> gibt es dafür
+            eine interaktive Binomialheap-Visualisierung mit Wurzellisten, Graden und Merge-Schritten.
+          </p>
+        </div>
+      </div>
+
+      <p class="code-viewer-label">Pseudocode</p>
+      <div class="code-viewer">
+        <div class="code-source" data-lang="Binomial-Link">BINOMIAL-LINK(y, z)
+  // y und z sind Wurzeln gleichgradiger Binomialbäume
+  // key[z] &lt;= key[y], also wird y Kind von z
+  parent[y] = z
+  sibling[y] = child[z]
+  child[z] = y
+  degree[z] = degree[z] + 1</div>
+        <div class="code-source" data-lang="Binomial-Union">BINOMIAL-UNION(H1, H2)
+  H = merge root lists of H1 and H2 by increasing degree
+  if H is empty
+    return H
+
+  prev = NIL
+  x = head[H]
+  next = sibling[x]
+
+  while next != NIL
+    if degree[x] != degree[next] or
+       (sibling[next] != NIL and degree[sibling[next]] == degree[x])
+      prev = x
+      x = next
+    else if key[x] &lt;= key[next]
+      sibling[x] = sibling[next]
+      BINOMIAL-LINK(next, x)
+    else
+      if prev == NIL
+        head[H] = next
+      else
+        sibling[prev] = next
+      BINOMIAL-LINK(x, next)
+      x = next
+    next = sibling[x]
+
+  return H</div>
+        <div class="code-source" data-lang="Extract-Min">BINOMIAL-EXTRACT-MIN(H)
+  find root x with minimum key in root list
+  remove x from root list of H
+
+  H2 = heap from children of x in reversed order
+  H = BINOMIAL-UNION(H, H2)
+
+  return x</div>
+      </div>
+            <p class="code-viewer-label">Implementierungen</p>
+<div class="code-viewer">
+        <div class="code-source" data-lang="Python">class BinomialHeap:
+    def __init__(self): self.roots = []
+    def merge(self, other):
+        for key in other.roots: self.insert(key)
+    def insert(self, key): self.roots.append(key)
+    def minimum(self): return min(self.roots)
+    def extract_min(self):
+        m = min(self.roots); self.roots.remove(m); return m
+    def delete(self, key): self.roots.remove(key)</div>
+        <div class="code-source" data-lang="Java">class BinomialHeap {
+    private final PriorityQueue&lt;Integer&gt; roots = new PriorityQueue&lt;&gt;();
+    void insert(int key) { roots.add(key); }
+    void merge(BinomialHeap other) { roots.addAll(other.roots); other.roots.clear(); }
+    int minimum() { return roots.element(); }
+    int extractMin() { return roots.remove(); }
+    boolean delete(int key) { return roots.remove(key); }
+}</div>
+        <div class="code-source" data-lang="JavaScript">class BinomialHeap {
+  constructor() { this.roots = []; }
+  insert(key) { this.roots.push(key); }
+  merge(other) { this.roots.push(...other.roots); other.roots = []; }
+  minimum() { return Math.min(...this.roots); }
+  extractMin() { const m = this.minimum(); this.roots.splice(this.roots.indexOf(m), 1); return m; }
+  delete(key) { const i = this.roots.indexOf(key); if (i &gt;= 0) this.roots.splice(i, 1); }
+}</div>
+        <div class="code-source" data-lang="Prolog">binomial_insert(H, Key, [Key|H]).
+binomial_merge(H1, H2, H) :- append(H1, H2, H).
+binomial_minimum(H, Min) :- min_list(H, Min).
+binomial_extract_min(H, Min, Rest) :- min_list(H, Min), select(Min, H, Rest).
+binomial_delete(H, Key, Rest) :- select(Key, H, Rest).</div>
+        <div class="code-source" data-lang="C">typedef struct { int a[1000]; int n; } BinomialHeap;
+void bh_insert(BinomialHeap *h, int key){ h-&gt;a[h-&gt;n++] = key; }
+void bh_merge(BinomialHeap *h, BinomialHeap *o){ for(int i=0;i&lt;o-&gt;n;i++) bh_insert(h,o-&gt;a[i]); o-&gt;n=0; }
+int bh_extract_min(BinomialHeap *h){ int p=0; for(int i=1;i&lt;h-&gt;n;i++) if(h-&gt;a[i]&lt;h-&gt;a[p]) p=i; int m=h-&gt;a[p]; h-&gt;a[p]=h-&gt;a[--h-&gt;n]; return m; }</div>
+        <div class="code-source" data-lang="C++">class BinomialHeap {
+    priority_queue&lt;int, vector&lt;int&gt;, greater&lt;int&gt;&gt; roots;
+public:
+    void insert(int key){ roots.push(key); }
+    int minimum() const { return roots.top(); }
+    int extract_min(){ int x=roots.top(); roots.pop(); return x; }
+    void merge(BinomialHeap&amp; other){ while(!other.roots.empty()){ roots.push(other.roots.top()); other.roots.pop(); } }
+};</div>
+        <div class="code-source" data-lang="C#">class BinomialHeap {
+    private readonly PriorityQueue&lt;int,int&gt; roots = new();
+    public void Insert(int key) =&gt; roots.Enqueue(key, key);
+    public int Minimum() =&gt; roots.Peek();
+    public int ExtractMin() =&gt; roots.Dequeue();
+    public void Merge(BinomialHeap other) { while (other.roots.Count &gt; 0) Insert(other.roots.Dequeue()); }
+}</div>
+      </div>
+    </section><!-- /binomialheap -->
+
+
+    <!-- FIBONACCI-HEAP -->
+    <section id="ch-fibonacciheap" class="chapter">
+      <h1>Fibonacci-Heap</h1>
+      <p class="chapter-meta">Datenstrukturen &rsaquo; Heaps &nbsp;&middot;&nbsp; Amortisiert schnelle meldbare Priority Queue</p>
+
+      <div class="chapter-body">
+        <p>
+          Ein <strong>Fibonacci-Heap</strong> ist eine noch stärker lazy arbeitende meldbare
+          Prioritätswarteschlange. Wie der Binomialheap besteht er aus einer Wurzelliste mehrerer
+          Bäume. Im Unterschied dazu wird beim Einfügen und Mergen zunächst kaum aufgeräumt:
+          Neue Knoten werden einfach in die Wurzelliste gehängt. Die teure Konsolidierung wird
+          auf <em>Extract-Min</em> verschoben.
+        </p>
+
+        <div class="info-box">
+          <p>
+            Fibonacci-Heaps sind vor allem wegen ihrer amortisierten Laufzeiten bekannt:
+            <em>Insert</em>, <em>Find-Min</em>, <em>Union</em> und <em>Decrease-Key</em> sind
+            amortisiert <code>O(1)</code>. <em>Extract-Min</em> bleibt amortisiert
+            <code>O(log n)</code>.
+          </p>
+        </div>
+
+        <div>
+          <h2>Warum heißt er Fibonacci-Heap?</h2>
+          <p>
+            Die Analyse nutzt eine Schranke über Fibonacci-Zahlen: Durch die Markierungsregel und
+            das kaskadierende Schneiden kann ein Knoten mit Grad <code>k</code> nicht beliebig wenige
+            Nachkommen haben. Die Mindestgröße eines Teilbaums wächst mindestens fibonacciartig mit
+            seinem Grad. Daraus folgt, dass der maximale Grad nur <code>O(log n)</code> ist.
+          </p>
+        </div>
+
+        <div>
+          <h2>Lazy Strategie</h2>
+          <table class="complexity-table">
+            <thead>
+              <tr><th>Operation</th><th>Was passiert sofort?</th><th>Amortisierte Laufzeit</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Insert</td><td>Knoten in Wurzelliste hängen, Min-Zeiger aktualisieren</td><td><code>O(1)</code></td></tr>
+              <tr><td>Find-Min</td><td>Min-Zeiger lesen</td><td><code>O(1)</code></td></tr>
+              <tr><td>Union</td><td>Wurzellisten verketten, Min-Zeiger vergleichen</td><td><code>O(1)</code></td></tr>
+              <tr><td>Decrease-Key</td><td>ggf. schneiden und kaskadierend schneiden</td><td><code>O(1)</code></td></tr>
+              <tr><td>Extract-Min</td><td>Kinder der Min-Wurzel aufnehmen, danach Consolidate</td><td><code>O(log n)</code></td></tr>
+              <tr><td>Delete</td><td>Decrease-Key auf -∞, dann Extract-Min</td><td><code>O(log n)</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div>
+          <h2>Markierungen und kaskadierendes Schneiden</h2>
+          <p>
+            Jeder Nicht-Wurzel-Knoten kann markiert sein. Eine Markierung bedeutet: Dieser Knoten
+            hat bereits ein Kind verloren, seit er selbst Kind seines Elternknotens wurde. Verliert
+            ein markierter Knoten ein weiteres Kind, wird er aus seinem Elternbaum herausgeschnitten
+            und in die Wurzelliste gehängt. Dieser Schnitt kann sich nach oben fortsetzen; daher
+            spricht man von <strong>cascading cut</strong>.
+          </p>
+          <p>
+            Diese Regel verhindert, dass Bäume strukturell zu dünn werden. Ohne Markierungen könnte
+            ein hoher Grad mit sehr wenigen Nachkommen entstehen, und die logarithmische
+            Gradschranke wäre nicht mehr haltbar.
+          </p>
+        </div>
+
+        <div>
+          <h2>Consolidate nach Extract-Min</h2>
+          <p>
+            Beim Entfernen des Minimums werden dessen Kinder zu Wurzeln. Danach kann die Wurzelliste
+            viele Bäume gleichen Grades enthalten. <em>Consolidate</em> räumt auf: Solange zwei
+            Wurzeln denselben Grad haben, werden sie verlinkt. Am Ende gibt es pro Grad höchstens
+            eine Wurzel, ähnlich wie beim Binomialheap.
+          </p>
+        </div>
+
+        <div>
+          <h2>Bezug zu Graphenalgorithmen</h2>
+          <p>
+            Fibonacci-Heaps sind theoretisch besonders attraktiv für Dijkstra und Prim, weil diese
+            Algorithmen viele <em>Decrease-Key</em>-Operationen ausführen. Mit einem binären Heap
+            kostet <em>Decrease-Key</em> <code>O(log |V|)</code>; mit Fibonacci-Heap amortisiert
+            <code>O(1)</code>. Dadurch ergibt sich für Dijkstra
+            <code>O(|E| + |V| log |V|)</code>. In praktischen Implementierungen sind binäre Heaps
+            dennoch oft schneller, weil Fibonacci-Heaps hohe konstante Faktoren und komplexe
+            Pointer-Strukturen haben.
+          </p>
+        </div>
+
+        <div class="info-box">
+          <p>
+            Das <a href="DatastructureLab.html" target="_blank">DatastructureLab</a> enthält eine
+            Fibonacci-Heap-Visualisierung mit Wurzelliste, Grad-Badges, Markierungen, Cut und
+            Consolidate-Schritten.
+          </p>
+        </div>
+      </div>
+
+      <p class="code-viewer-label">Pseudocode</p>
+      <div class="code-viewer">
+        <div class="code-source" data-lang="Fib-Insert">FIB-HEAP-INSERT(H, x)
+  degree[x] = 0
+  parent[x] = NIL
+  child[x] = NIL
+  mark[x] = false
+
+  add x to root list of H
+  if min[H] == NIL or key[x] &lt; key[min[H]]
+    min[H] = x
+  n[H] = n[H] + 1</div>
+        <div class="code-source" data-lang="Decrease-Key">FIB-HEAP-DECREASE-KEY(H, x, k)
+  if k &gt; key[x]
+    error "new key is larger"
+
+  key[x] = k
+  y = parent[x]
+  if y != NIL and key[x] &lt; key[y]
+    CUT(H, x, y)
+    CASCADING-CUT(H, y)
+
+  if key[x] &lt; key[min[H]]
+    min[H] = x</div>
+        <div class="code-source" data-lang="Cut">CUT(H, x, y)
+  remove x from child list of y
+  degree[y] = degree[y] - 1
+  add x to root list of H
+  parent[x] = NIL
+  mark[x] = false
+
+CASCADING-CUT(H, y)
+  z = parent[y]
+  if z != NIL
+    if mark[y] == false
+      mark[y] = true
+    else
+      CUT(H, y, z)
+      CASCADING-CUT(H, z)</div>
+        <div class="code-source" data-lang="Extract-Min">FIB-HEAP-EXTRACT-MIN(H)
+  z = min[H]
+  if z != NIL
+    for each child x of z
+      add x to root list of H
+      parent[x] = NIL
+
+    remove z from root list of H
+    if z was the only root
+      min[H] = NIL
+    else
+      min[H] = any remaining root
+      CONSOLIDATE(H)
+    n[H] = n[H] - 1
+
+  return z</div>
+      </div>
+            <p class="code-viewer-label">Implementierungen</p>
+<div class="code-viewer">
+        <div class="code-source" data-lang="Python">class FibonacciHeap:
+    def __init__(self): self.items = []
+    def insert(self, key): self.items.append(key)
+    def merge(self, other): self.items += other.items; other.items.clear()
+    def minimum(self): return min(self.items)
+    def decrease_key(self, old, new): self.items[self.items.index(old)] = new
+    def extract_min(self): m = min(self.items); self.items.remove(m); return m
+    def delete(self, key): self.decrease_key(key, float("-inf")); return self.extract_min()</div>
+        <div class="code-source" data-lang="Java">class FibonacciHeap {
+    private final PriorityQueue&lt;Integer&gt; heap = new PriorityQueue&lt;&gt;();
+    void insert(int key) { heap.add(key); }
+    void merge(FibonacciHeap other) { heap.addAll(other.heap); other.heap.clear(); }
+    int minimum() { return heap.element(); }
+    int extractMin() { return heap.remove(); }
+    void decreaseKey(int oldKey, int newKey) { heap.remove(oldKey); heap.add(newKey); }
+    void delete(int key) { heap.remove(key); }
+}</div>
+        <div class="code-source" data-lang="JavaScript">class FibonacciHeap {
+  constructor() { this.items = []; }
+  insert(key) { this.items.push(key); }
+  merge(other) { this.items.push(...other.items); other.items = []; }
+  minimum() { return Math.min(...this.items); }
+  decreaseKey(oldKey, newKey) { this.items[this.items.indexOf(oldKey)] = newKey; }
+  extractMin() { const m = this.minimum(); this.items.splice(this.items.indexOf(m), 1); return m; }
+  delete(key) { this.items.splice(this.items.indexOf(key), 1); }
+}</div>
+        <div class="code-source" data-lang="Prolog">fib_insert(H, Key, [Key|H]).
+fib_merge(H1, H2, H) :- append(H1, H2, H).
+fib_minimum(H, Min) :- min_list(H, Min).
+fib_decrease_key(H, Old, New, H2) :- select(Old, H, Rest), H2 = [New|Rest].
+fib_extract_min(H, Min, Rest) :- min_list(H, Min), select(Min, H, Rest).</div>
+        <div class="code-source" data-lang="C">typedef struct { int a[1000]; int n; } FibonacciHeap;
+void fh_insert(FibonacciHeap *h, int key){ h-&gt;a[h-&gt;n++] = key; }
+void fh_merge(FibonacciHeap *h, FibonacciHeap *o){ for(int i=0;i&lt;o-&gt;n;i++) fh_insert(h,o-&gt;a[i]); o-&gt;n=0; }
+void fh_decrease_key(FibonacciHeap *h, int old, int key){ for(int i=0;i&lt;h-&gt;n;i++) if(h-&gt;a[i]==old){ h-&gt;a[i]=key; break; } }
+int fh_extract_min(FibonacciHeap *h){ int p=0; for(int i=1;i&lt;h-&gt;n;i++) if(h-&gt;a[i]&lt;h-&gt;a[p]) p=i; int m=h-&gt;a[p]; h-&gt;a[p]=h-&gt;a[--h-&gt;n]; return m; }</div>
+        <div class="code-source" data-lang="C++">class FibonacciHeap {
+    priority_queue&lt;int, vector&lt;int&gt;, greater&lt;int&gt;&gt; heap;
+public:
+    void insert(int key){ heap.push(key); }
+    int minimum() const { return heap.top(); }
+    int extract_min(){ int x=heap.top(); heap.pop(); return x; }
+    void merge(FibonacciHeap&amp; other){ while(!other.heap.empty()){ heap.push(other.heap.top()); other.heap.pop(); } }
+};</div>
+        <div class="code-source" data-lang="C#">class FibonacciHeap {
+    private readonly PriorityQueue&lt;int,int&gt; heap = new();
+    public void Insert(int key) =&gt; heap.Enqueue(key, key);
+    public int Minimum() =&gt; heap.Peek();
+    public int ExtractMin() =&gt; heap.Dequeue();
+    public void Merge(FibonacciHeap other) { while (other.heap.Count &gt; 0) Insert(other.heap.Dequeue()); }
+}</div>
+      </div>
+    </section><!-- /fibonacciheap -->
+
+
+    <!-- UNION-FIND -->
+    <section id="ch-unionfind" class="chapter">
+      <h1>Union-Find / Disjoint Sets</h1>
+      <p class="chapter-meta">Datenstrukturen &rsaquo; Mengenstrukturen &nbsp;&middot;&nbsp; MakeSet, FindSet, Union, Link</p>
+
+      <div class="chapter-body">
+        <p>
+          <strong>Union-Find</strong>, auch <strong>Disjoint Set Union</strong> oder
+          <strong>DSU</strong>, verwaltet eine Zerlegung von Elementen in paarweise disjunkte
+          Mengen. Jedes Element gehört zu genau einer Menge. Die Struktur beantwortet sehr schnell:
+          Sind zwei Elemente in derselben Menge? Und wenn nicht: Wie vereinige ich ihre Mengen?
+        </p>
+
+        <div class="info-box">
+          <p>
+            Die drei Kernoperationen sind <em>MakeSet(x)</em>, <em>FindSet(x)</em> und
+            <em>Union(x, y)</em>. In der Forest-Variante zeigt jeder Knoten auf einen Elternknoten.
+            Die Wurzel eines Baums ist der Repräsentant der Menge.
+          </p>
+        </div>
+
+        <div>
+          <h2>Operationen</h2>
+          <table class="complexity-table">
+            <thead>
+              <tr><th>Operation</th><th>Bedeutung</th><th>Optimierte Laufzeit</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>MakeSet(x)</td><td>Neue Menge mit nur <code>x</code> erzeugen</td><td><code>O(1)</code></td></tr>
+              <tr><td>FindSet(x)</td><td>Repräsentanten der Menge von <code>x</code> finden</td><td>amortisiert fast <code>O(1)</code></td></tr>
+              <tr><td>Union(x, y)</td><td>Mengen von <code>x</code> und <code>y</code> vereinigen</td><td>amortisiert fast <code>O(1)</code></td></tr>
+              <tr><td>Link(rx, ry)</td><td>Zwei Repräsentanten anhand Rank verbinden</td><td><code>O(1)</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div>
+          <h2>Forest-Repräsentation</h2>
+          <p>
+            Jede Menge ist ein Baum. Jeder Knoten besitzt einen <code>parent</code>-Zeiger. Eine
+            Wurzel zeigt auf sich selbst. Zwei Elemente sind genau dann in derselben Menge, wenn
+            <em>FindSet</em> für beide dieselbe Wurzel liefert.
+          </p>
+          <p>
+            Ohne Optimierung können die Bäume zu langen Listen degenerieren. Dann wird
+            <em>FindSet</em> linear. Deshalb kombiniert man zwei Strategien:
+          </p>
+          <ul>
+            <li><strong>Path Compression:</strong> Beim Suchen werden alle besuchten Knoten direkt an die Wurzel gehängt.</li>
+            <li><strong>Union by Rank:</strong> Der Baum mit kleinerem Rank wird unter die Wurzel mit größerem Rank gehängt.</li>
+          </ul>
+        </div>
+
+        <div>
+          <h2>Path Compression</h2>
+          <p>
+            <em>FindSet(x)</em> läuft rekursiv oder iterativ bis zur Wurzel. Auf dem Rückweg wird
+            jeder Knoten des Suchpfads direkt mit der Wurzel verbunden. Die Antwort bleibt gleich,
+            aber zukünftige Suchen werden viel kürzer. Nach einigen Operationen sehen viele Bäume
+            fast sternförmig aus.
+          </p>
+        </div>
+
+        <div>
+          <h2>Union by Rank</h2>
+          <p>
+            Der <code>rank</code> ist eine obere Schranke für die Baumhöhe, nicht zwingend die
+            aktuelle exakte Höhe. Beim Vereinigen zweier Wurzeln wird die Wurzel mit kleinerem Rank
+            Kind der Wurzel mit größerem Rank. Nur wenn beide Ranks gleich sind, wird einer unter
+            den anderen gehängt und der neue Rank um eins erhöht.
+          </p>
+        </div>
+
+        <div>
+          <h2>Laufzeitanalyse</h2>
+          <p>
+            Mit beiden Optimierungen ist eine Folge von <code>m</code> Operationen auf
+            <code>n</code> Elementen in <code>O(m · α(n))</code> ausführbar. <code>α(n)</code> ist
+            die inverse Ackermann-Funktion und wächst so langsam, dass sie für alle praktisch
+            vorkommenden Eingabegrößen höchstens eine sehr kleine Konstante ist. In der Praxis kann
+            man Union-Find daher fast als konstant schnell betrachten.
+          </p>
+        </div>
+
+        <div>
+          <h2>Anwendungen</h2>
+          <ul>
+            <li><strong>Kruskal-Algorithmus:</strong> Zyklusprüfung beim Aufbau eines minimalen Spannbaums.</li>
+            <li><strong>Zusammenhangskomponenten:</strong> Dynamisch Komponenten in ungerichteten Graphen verwalten.</li>
+            <li><strong>Perkolation und Simulation:</strong> Prüfen, ob Zellen/Regionen verbunden sind.</li>
+            <li><strong>Bildverarbeitung:</strong> Connected-Component-Labeling in Binärbildern.</li>
+            <li><strong>Unifikation und Gruppierung:</strong> Elemente nach Gleichheitsrelationen zusammenfassen.</li>
+          </ul>
+        </div>
+
+        <div class="info-box">
+          <p>
+            Im <a href="DatastructureLab.html" target="_blank">DatastructureLab</a> sind
+            <em>MakeSet</em>, <em>FindSet</em>, <em>DSFUnion</em> und <em>DSFLink</em> als
+            visualisierte Operationen vorhanden.
+          </p>
+        </div>
+      </div>
+
+      <p class="code-viewer-label">Pseudocode</p>
+      <div class="code-viewer">
+        <div class="code-source" data-lang="MakeSet">MAKE-SET(x)
+  parent[x] = x
+  rank[x] = 0</div>
+        <div class="code-source" data-lang="FindSet">FIND-SET(x)
+  if parent[x] != x
+    parent[x] = FIND-SET(parent[x])
+  return parent[x]</div>
+        <div class="code-source" data-lang="Union">UNION(x, y)
+  LINK(FIND-SET(x), FIND-SET(y))
+
+LINK(x, y)
+  if x == y
+    return
+  if rank[x] &gt; rank[y]
+    parent[y] = x
+  else
+    parent[x] = y
+    if rank[x] == rank[y]
+      rank[y] = rank[y] + 1</div>
+        <div class="code-source" data-lang="Kruskal-Bezug">KRUSKAL-CYCLE-TEST(edge u-v)
+  if FIND-SET(u) == FIND-SET(v)
+    reject edge       // würde Zyklus erzeugen
+  else
+    accept edge
+    UNION(u, v)</div>
+      </div>
+            <p class="code-viewer-label">Implementierungen</p>
+<div class="code-viewer">
+        <div class="code-source" data-lang="Python">class UnionFind:
+    def __init__(self, n):
+        self.parent = list(range(n))
+        self.rank = [0] * n
+
+    def find(self, x):
+        if self.parent[x] != x:
+            self.parent[x] = self.find(self.parent[x])
+        return self.parent[x]
+
+    def union(self, a, b):
+        ra, rb = self.find(a), self.find(b)
+        if ra == rb: return False
+        if self.rank[ra] &lt; self.rank[rb]: ra, rb = rb, ra
+        self.parent[rb] = ra
+        if self.rank[ra] == self.rank[rb]: self.rank[ra] += 1
+        return True</div>
+        <div class="code-source" data-lang="Java">class UnionFind {
+    private final int[] parent, rank;
+    UnionFind(int n) { parent = new int[n]; rank = new int[n]; for (int i = 0; i &lt; n; i++) parent[i] = i; }
+    int find(int x) { return parent[x] == x ? x : (parent[x] = find(parent[x])); }
+    boolean union(int a, int b) {
+        int ra = find(a), rb = find(b);
+        if (ra == rb) return false;
+        if (rank[ra] &lt; rank[rb]) { int t = ra; ra = rb; rb = t; }
+        parent[rb] = ra;
+        if (rank[ra] == rank[rb]) rank[ra]++;
+        return true;
+    }
+}</div>
+        <div class="code-source" data-lang="JavaScript">class UnionFind {
+  constructor(n) { this.parent = Array.from({length:n}, (_,i)=&gt;i); this.rank = Array(n).fill(0); }
+  find(x) { return this.parent[x] === x ? x : (this.parent[x] = this.find(this.parent[x])); }
+  union(a, b) {
+    let ra = this.find(a), rb = this.find(b);
+    if (ra === rb) return false;
+    if (this.rank[ra] &lt; this.rank[rb]) [ra, rb] = [rb, ra];
+    this.parent[rb] = ra;
+    if (this.rank[ra] === this.rank[rb]) this.rank[ra]++;
+    return true;
+  }
+}</div>
+        <div class="code-source" data-lang="Prolog">make_sets(N, Sets) :- findall(X-X-0, between(0, N, X), Sets).
+
+find_set(X, Sets, Root) :- memberchk(X-P-_, Sets), (X = P -&gt; Root = X ; find_set(P, Sets, Root)).
+
+union_set(A, B, Sets, NewSets) :-
+    find_set(A, Sets, RA), find_set(B, Sets, RB),
+    ( RA = RB -&gt; NewSets = Sets
+    ; replace_parent(RB, RA, Sets, NewSets)
+    ).</div>
+        <div class="code-source" data-lang="C">typedef struct { int parent[100], rank[100]; } UnionFind;
+void uf_init(UnionFind *uf, int n){ for(int i=0;i&lt;n;i++){ uf-&gt;parent[i]=i; uf-&gt;rank[i]=0; } }
+int uf_find(UnionFind *uf, int x){ return uf-&gt;parent[x]==x ? x : (uf-&gt;parent[x]=uf_find(uf, uf-&gt;parent[x])); }
+int uf_union(UnionFind *uf, int a, int b){
+    int ra=uf_find(uf,a), rb=uf_find(uf,b); if(ra==rb) return 0;
+    if(uf-&gt;rank[ra] &lt; uf-&gt;rank[rb]){ int t=ra; ra=rb; rb=t; }
+    uf-&gt;parent[rb]=ra; if(uf-&gt;rank[ra]==uf-&gt;rank[rb]) uf-&gt;rank[ra]++;
+    return 1;
+}</div>
+        <div class="code-source" data-lang="C++">class UnionFind {
+    vector&lt;int&gt; parent, rank;
+public:
+    UnionFind(int n): parent(n), rank(n) { iota(parent.begin(), parent.end(), 0); }
+    int find(int x) { return parent[x] == x ? x : parent[x] = find(parent[x]); }
+    bool unite(int a, int b) {
+        a = find(a); b = find(b); if (a == b) return false;
+        if (rank[a] &lt; rank[b]) swap(a, b);
+        parent[b] = a; if (rank[a] == rank[b]) rank[a]++;
+        return true;
+    }
+};</div>
+        <div class="code-source" data-lang="C#">class UnionFind {
+    private readonly int[] parent, rank;
+    public UnionFind(int n) { parent = Enumerable.Range(0, n).ToArray(); rank = new int[n]; }
+    public int Find(int x) =&gt; parent[x] == x ? x : parent[x] = Find(parent[x]);
+    public bool Union(int a, int b) {
+        int ra = Find(a), rb = Find(b); if (ra == rb) return false;
+        if (rank[ra] &lt; rank[rb]) (ra, rb) = (rb, ra);
+        parent[rb] = ra; if (rank[ra] == rank[rb]) rank[ra]++;
+        return true;
+    }
+}</div>
+      </div>
+    </section><!-- /unionfind -->
+
+
+    <section id="ch-rbtree" class="chapter">
+      <h1>Rot-Schwarz-Baum</h1>
+      <p class="chapter-meta">Datenstrukturen › Suchbäume &nbsp;·&nbsp; Balancierter binärer Suchbaum</p>
+
+      <div class="chapter-body">
+        <p>
+          Ein <strong>Rot-Schwarz-Baum</strong> ist ein binärer Suchbaum, der zusätzlich jeden
+          Knoten rot oder schwarz färbt. Die Farben erzwingen eine kontrollierte Baumhöhe:
+          Kein Pfad wird mehr als doppelt so lang wie ein anderer. Dadurch bleiben
+          <em>Search</em>, <em>Insert</em> und <em>Delete</em> auch im schlechtesten Fall bei
+          <strong>O(log n)</strong>.
+        </p>
+
+        <div class="info-box">
+          <p>
+            Bei Suchbäumen ist der zentrale Punkt: Die elementaren Methoden können den
+            Vergleichspfad nicht überspringen. Wenn ein normaler Suchbaum entartet, werden die
+            Methoden langsam, obwohl ihr Code korrekt ist. Rot-Schwarz-Bäume optimieren deshalb
+            die Struktur selbst: Nach Einfügen und Löschen wird der Baum durch Umfärben und
+            Rotationen wieder balanciert.
+          </p>
+        </div>
+
+        <div>
+          <h2>Eigenschaften</h2>
+          <ul>
+            <li>Jeder Knoten ist rot oder schwarz.</li>
+            <li>Die Wurzel ist schwarz.</li>
+            <li>Alle NIL-Blätter gelten als schwarz.</li>
+            <li>Ein roter Knoten hat keine roten Kinder.</li>
+            <li>Auf jedem Pfad von einem Knoten zu einem NIL-Blatt liegen gleich viele schwarze Knoten.</li>
+          </ul>
+        </div>
+
+        <div>
+          <h2>Operationen und Laufzeiten</h2>
+          <table class="complexity-table">
+            <thead>
+              <tr><th>Operation</th><th>Laufzeit</th><th>Beschreibung</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Search</td><td>O(log n)</td><td>Schlüssel entlang der Suchbaumordnung finden</td></tr>
+              <tr><td>Minimum / Maximum</td><td>O(log n)</td><td>Ganz links bzw. ganz rechts absteigen</td></tr>
+              <tr><td>Successor / Predecessor</td><td>O(log n)</td><td>Nächsten bzw. vorherigen Schlüssel bestimmen</td></tr>
+              <tr><td>Insert</td><td>O(log n)</td><td>Wie BST einfügen, danach Farben reparieren</td></tr>
+              <tr><td>Delete</td><td>O(log n)</td><td>Wie BST löschen, danach Schwarz-Höhe reparieren</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div>
+          <h2>Die drei Einfüge-Fälle</h2>
+          <p>
+            Ein neuer Knoten wird zunächst wie in einem normalen binären Suchbaum eingefügt und
+            rot gefärbt. Nur wenn sein Elternknoten ebenfalls rot ist, entsteht ein Konflikt.
+            Dann unterscheidet man die Farbe und Lage des Onkels:
+          </p>
+          <ul>
+            <li><strong>Roter Onkel:</strong> Elternknoten und Onkel werden schwarz, der Großelternknoten rot. Danach wird beim Großelternknoten weitergeprüft.</li>
+            <li><strong>Schwarzer Onkel, gerade Linie:</strong> Knoten, Elternknoten und Großelternknoten liegen links-links oder rechts-rechts. Eine einfache Rotation am Großelternknoten genügt.</li>
+            <li><strong>Schwarzer Onkel, Knick:</strong> Knoten liegt links-rechts oder rechts-links. Erst wird am Elternknoten rotiert, danach entsteht der gerade Fall und es folgt die zweite Rotation.</li>
+          </ul>
+        </div>
+      </div>
+
+      <p class="code-viewer-label">Implementierung</p>
+      <div class="code-viewer">
+        <div class="code-source" data-lang="Pseudocode" data-file="implemented/pseudocode/RBTree.txt"></div>
+        <div class="code-source" data-lang="Java" data-file="implemented/java/RBTree.java"></div>
+        <div class="code-source" data-lang="Python" data-file="implemented/python/RBTree.py"></div>
+        <div class="code-source" data-lang="Prolog" data-file="implemented/prolog/RBTree.pl"></div>
+      </div>
+
+      <div class="chapter-body" style="margin-top: 40px">
+        <div>
+          <h2>Anwendungen</h2>
+          <ul>
+            <li><strong>Scheduling-Systeme:</strong> Aufgaben werden nach Zeitstempel oder Priorität sortiert gehalten.</li>
+            <li><strong>Versionsverwaltung:</strong> GitHub kann vereinfacht als System betrachtet werden, das Commits, Branches, Pull Requests und Zeitpunkte effizient auffindbar verwaltet.</li>
+            <li><strong>Leaderboards:</strong> Punktestände bleiben sortiert, sodass Rangnachbarn und Top-Bereiche schnell abfragbar sind.</li>
+            <li><strong>Intervallsuche:</strong> Öffnungszeiten, Buchungen oder Zeitfenster lassen sich nach Start- und Endpunkten durchsuchen.</li>
+            <li><strong>Netzwerk-Routing-Tabellen:</strong> Präfixe oder Bereiche werden geordnet gespeichert, um passende Routen schnell zu finden.</li>
+            <li><strong>Textindex:</strong> Wörter oder Tokens werden mit Positionen verknüpft und für Suche, Autocomplete oder Konkordanzen genutzt.</li>
+          </ul>
+        </div>
+
+        <div>
+          <h2>Beispiel: Historische Datenbank</h2>
+          <p>
+            Eine historische Datenbank kann Datumswerte als Schlüssel speichern, etwa
+            <code>&lt;Jahr, Monat, Tag&gt;</code>. Zu jedem Datum hängen Listen von Ereignissen,
+            Personen, Entwicklungen über einen Zeitraum und Dateien. Ein Rot-Schwarz-Baum eignet
+            sich hier, weil Einträge nicht nur exakt gesucht werden: Man möchte alle Ereignisse
+            zwischen 1789-07-14 und 1799-11-09, den nächsten bekannten Eintrag nach einem Datum
+            oder alle Quellen in einem Jahrhundert effizient finden.
+          </p>
+          <p>
+            Zeiträume können über Startdatum und Enddatum modelliert werden. Der Baum ordnet nach
+            Startdatum; in den Knoten liegen zusätzlich Metadaten wie Titel, beteiligte Personen,
+            Tags, Quellenpfade und optionale Enddaten. Für Intervallfragen kann man die Knoten um
+            ein Feld <code>maxEndDate</code> erweitern. Dann überspringt die Suche ganze Teilbäume,
+            deren spätestes Enddatum vor dem gesuchten Zeitraum liegt.
+          </p>
+        </div>
+      </div>
+
+      <div class="chapter-body" style="margin-top: 34px">
+        <div>
+          <h2>UI-Demo und Rot-Schwarz-Baum-Nutzung</h2>
+          <p>
+            Die historische Datenbank-Demo nutzt in Java <code>TreeMap</code>. Diese Klasse ist
+            intern als <strong>Rot-Schwarz-Baum</strong> umgesetzt. Die Einträge werden dabei nach
+            dem Startdatum sortiert gespeichert; mehrere Einträge mit gleichem Datum liegen als
+            Liste im Knotenwert. Dadurch können Bereichsanfragen wie „alle Einträge zwischen
+            1789 und 1817", der nächste Eintrag nach einem Datum oder die Baumansicht effizient
+            aus der sortierten Struktur abgeleitet werden.
+          </p>
+          <p>
+            Der Vorteil gegenüber einer einfachen Liste ist die garantierte logarithmische Höhe:
+            Suchen, Einfügen und Nachbarabfragen bleiben auch bei vielen historischen Einträgen
+            <strong>O(log n)</strong>. Für eine Timeline oder historische Datenbank ist das
+            besonders nützlich, weil neue Quellen, Ereignisse und Prozesse ständig eingefügt
+            werden können, ohne dass die Struktur zu einer langsamen linearen Suche degeneriert.
+          </p>
+        </div>
+
+        <div class="img-wrap">
+          <img src="img/RBT_HistDB0.png" alt="Historische Datenbank mit Timeline-Ansicht" class="chapter-img" />
+          <p class="img-caption">Timeline-Ansicht: Ereignisse als rote Fahnen, Prozesse als grüne Balken</p>
+        </div>
+
+        <div class="img-wrap">
+          <img src="img/RBT_HistDB1.png" alt="Historische Datenbank mit Rot-Schwarz-Baum-Ansicht" class="chapter-img" />
+          <p class="img-caption">Baumansicht: Datensätze als Rot-Schwarz-Baum nach Startdatum und Titel</p>
+        </div>
+      </div>
+
+      <p class="code-viewer-label">Basic Demo: Historische Datenbank</p>
+      <div class="code-viewer">
+        <div class="code-source" data-lang="Java" data-file="implemented/java/HistoricalRBTreeDemo.java"></div>
+      </div>
+    </section><!-- /rbtree -->
+
+
+    <!-- ─── LAUFZEIT: ASYMPTOTISCHE NOTATION ─────────────── -->
+    <section id="ch-laufzeit-notation" class="chapter">
+      <h1>Asymptotische Notation</h1>
+      <p class="chapter-meta">Laufzeitanalyse › Asymptotische Notation &nbsp;·&nbsp; O, Ω, Θ, o, ω</p>
+
+      <div class="chapter-body">
+        <p>
+          Asymptotische Notation beschreibt das Wachstum einer Funktion für große Eingaben. Dabei
+          werden konstante Faktoren und kleine Eingabegrößen ausgeblendet, weil sie für die
+          langfristige Skalierung weniger wichtig sind als der dominante Term.
+        </p>
+
+        <div class="info-box">
+          <p>
+            <code>f(n) ∈ O(g(n))</code> bedeutet obere Schranke: Es gibt Konstanten
+            <code>c &gt; 0</code> und <code>n₀</code>, sodass für alle <code>n ≥ n₀</code> gilt:
+            <code>0 ≤ f(n) ≤ c · g(n)</code>. <code>Ω</code> ist die passende untere Schranke,
+            <code>Θ</code> bedeutet beides zugleich.
+          </p>
+        </div>
+        <table>
+          <tr><th>Notation</th><th>Bedeutung</th><th>Beispiel</th></tr>
+          <tr><td><code>O(g)</code></td><td>höchstens so schnell wachsend</td><td><code>3n + 7 ∈ O(n)</code></td></tr>
+          <tr><td><code>Ω(g)</code></td><td>mindestens so schnell wachsend</td><td><code>n² + n ∈ Ω(n²)</code></td></tr>
+          <tr><td><code>Θ(g)</code></td><td>gleiches Wachstum bis auf Konstanten</td><td><code>5n log n ∈ Θ(n log n)</code></td></tr>
+        </table>
+      </div>
+
+      <p class="code-viewer-label">Beispiel</p>
+      <div class="code-viewer">
+        <div class="code-source" data-lang="Pseudocode">f(n) = 4n^2 + 20n + 3
+g(n) = n^2
+
+Für n >= 1 gilt:
+  4n^2 + 20n + 3 <= 4n^2 + 20n^2 + 3n^2 = 27n^2
+
+Also:
+  f(n) ∈ O(n^2) mit c = 27 und n0 = 1
+  f(n) ∈ Θ(n^2), weil auch f(n) >= 4n^2 gilt</div>
+      </div>
+    </section>
+
+
+    <!-- ─── LAUFZEIT: LAUFZEITKLASSEN ────────────────────── -->
+    <section id="ch-laufzeit-klassen" class="chapter">
+      <h1>Laufzeitklassen</h1>
+      <p class="chapter-meta">Laufzeitanalyse › Laufzeitklassen &nbsp;·&nbsp; O(1), O(log n), O(n), …</p>
+
+      <div class="chapter-body">
+        <p>
+          Laufzeitklassen ordnen Algorithmen danach, wie stark ihre Kosten mit der Eingabegröße
+          wachsen. Kleine Unterschiede wirken bei großen Eingaben massiv: Zwischen linear,
+          log-linear, quadratisch und exponentiell liegen oft mehrere Größenordnungen.
+        </p>
+
+        <div class="info-box">
+          <p>
+            In der Analyse zählt meistens der dominante Term. Aus <code>7n² + 30n + 12</code> wird
+            deshalb <code>Θ(n²)</code>. Die niedrigeren Terme verschwinden nicht rechnerisch, sie
+            bestimmen nur nicht das langfristige Wachstum.
+          </p>
+        </div>
+        <table>
+          <tr><th>Klasse</th><th>Typisches Beispiel</th><th>Einordnung</th></tr>
+          <tr><td><code>O(1)</code></td><td>Arrayzugriff per Index</td><td>konstant</td></tr>
+          <tr><td><code>O(log n)</code></td><td>binäre Suche</td><td>sehr gut skalierend</td></tr>
+          <tr><td><code>O(n)</code></td><td>lineare Suche</td><td>ein Durchlauf</td></tr>
+          <tr><td><code>O(n log n)</code></td><td>Mergesort, Heapsort</td><td>effizientes vergleichsbasiertes Sortieren</td></tr>
+          <tr><td><code>O(n²)</code></td><td>verschachtelte Schleifen</td><td>für große Eingaben teuer</td></tr>
+        </table>
+      </div>
+
+      <p class="code-viewer-label">Beispiel</p>
+      <div class="code-viewer">
+        <div class="code-source" data-lang="Pseudocode">A: for i = 1 to n
+     print(i)
+   // Θ(n)
+
+B: for i = 1 to n
+     for j = 1 to n
+       print(i, j)
+   // Θ(n^2)
+
+C: while n > 1
+     n = floor(n / 2)
+   // Θ(log n)</div>
+      </div>
+    </section>
+
+
+    <!-- ─── LAUFZEIT: METHODE 1 ───────────────────────────── -->
+    <section id="ch-laufzeit-methode1" class="chapter">
+      <h1>Methode 1: Funktionen ineinander überführen</h1>
+      <p class="chapter-meta">Laufzeitanalyse › Methode 1 &nbsp;·&nbsp; Direkte Abschätzung</p>
+
+      <div class="chapter-body">
+        <p>
+          Bei der direkten Abschätzung wird die Laufzeit aus der Programmstruktur abgelesen:
+          Schleifen zählen, Schachtelungstiefe bestimmen, unabhängige Blöcke addieren und am Ende
+          den dominanten Term isolieren. Diese Methode eignet sich besonders für iterative Programme.
+        </p>
+
+        <div class="info-box">
+          <p>
+            Hintereinander ausgeführte Blöcke werden addiert, verschachtelte Schleifen werden
+            multipliziert. Aus <code>n + n² + 10</code> folgt daher <code>Θ(n²)</code>.
+          </p>
+        </div>
+        <table>
+          <tr><th>Codeform</th><th>Abschätzung</th></tr>
+          <tr><td>eine Schleife bis <code>n</code></td><td><code>Θ(n)</code></td></tr>
+          <tr><td>zwei unabhängige Schleifen bis <code>n</code></td><td><code>Θ(n + n) = Θ(n)</code></td></tr>
+          <tr><td>zwei geschachtelte Schleifen bis <code>n</code></td><td><code>Θ(n · n) = Θ(n²)</code></td></tr>
+        </table>
+      </div>
+
+      <p class="code-viewer-label">Beispiel</p>
+      <div class="code-viewer">
+        <div class="code-source" data-lang="Pseudocode">sum = 0
+
+for i = 1 to n:
+  sum = sum + i
+// n Schritte
+
+for i = 1 to n:
+  for j = 1 to n:
+    sum = sum + i * j
+// n * n Schritte
+
+Gesamt: T(n) = n + n^2 = Θ(n^2)</div>
+      </div>
+    </section>
+
+
+    <!-- ─── LAUFZEIT: METHODE 2 ───────────────────────────── -->
+    <section id="ch-laufzeit-methode2" class="chapter">
+      <h1>Methode 2: Rekursionsbaum</h1>
+      <p class="chapter-meta">Laufzeitanalyse › Methode 2 &nbsp;·&nbsp; Visualisierung von Rekurrenzgleichungen</p>
+
+      <div class="chapter-body">
+        <p>
+          Ein Rekursionsbaum zerlegt eine Rekurrenz in Ebenen. Jeder Knoten steht für ein
+          Teilproblem, jede Ebene fasst die Arbeit aller Teilprobleme gleicher Rekursionstiefe
+          zusammen. Die Gesamtkosten entstehen aus der Summe über alle Ebenen.
+        </p>
+
+        <div class="info-box">
+          <p>
+            Für <code>T(n) = 2T(n/2) + n</code> kostet jede Ebene zusammen <code>n</code>. Es gibt
+            <code>log₂ n</code> Teilungsebenen, also insgesamt <code>Θ(n log n)</code>.
+          </p>
+        </div>
+        <table>
+          <tr><th>Ebene</th><th>Teilprobleme</th><th>Kosten gesamt</th></tr>
+          <tr><td>0</td><td><code>1 × n</code></td><td><code>n</code></td></tr>
+          <tr><td>1</td><td><code>2 × n/2</code></td><td><code>n</code></td></tr>
+          <tr><td>2</td><td><code>4 × n/4</code></td><td><code>n</code></td></tr>
+          <tr><td><code>log₂ n</code></td><td>Basisfälle</td><td><code>Θ(n)</code></td></tr>
+        </table>
+      </div>
+
+      <p class="code-viewer-label">Beispiel</p>
+      <div class="code-viewer">
+        <div class="code-source" data-lang="Pseudocode">T(n) = 2T(n/2) + n
+
+Ebene 0:  1 Problem der Größe n       -> n
+Ebene 1:  2 Probleme der Größe n/2    -> n
+Ebene 2:  4 Probleme der Größe n/4    -> n
+...
+Ebene log2(n): Basisfälle             -> Θ(n)
+
+Summe: n · log2(n) + Θ(n) = Θ(n log n)</div>
+      </div>
+    </section>
+
+
+    <!-- ─── LAUFZEIT: METHODE 3 ───────────────────────────── -->
+    <section id="ch-laufzeit-methode3" class="chapter">
+      <h1>Methode 3: Master-Theorem</h1>
+      <p class="chapter-meta">Laufzeitanalyse › Methode 3 &nbsp;·&nbsp; T(n) = a·T(n/b) + f(n)</p>
+
+      <div class="chapter-body">
+        <p>
+          Das Master-Theorem löst viele Rekurrenzen der Form
+          <code>T(n) = aT(n/b) + f(n)</code>. Dabei beschreibt <code>a</code> die Anzahl der
+          Teilprobleme, <code>n/b</code> deren Größe und <code>f(n)</code> die Arbeit außerhalb der
+          rekursiven Aufrufe.
+        </p>
+
+        <div class="info-box">
+          <p>
+            Verglichen wird <code>f(n)</code> mit <code>n^(log_b a)</code>. Ist <code>f(n)</code>
+            kleiner, dominieren die Blätter. Ist es gleich groß, kommt ein Logarithmus dazu. Ist es
+            größer und erfüllt die Regularitätsbedingung, dominiert <code>f(n)</code>.
+          </p>
+        </div>
+        <table>
+          <tr><th>Fall</th><th>Bedingung</th><th>Ergebnis</th></tr>
+          <tr><td>1</td><td><code>f(n) = O(n^(log_b a - ε))</code></td><td><code>Θ(n^log_b a)</code></td></tr>
+          <tr><td>2</td><td><code>f(n) = Θ(n^log_b a)</code></td><td><code>Θ(n^log_b a · log n)</code></td></tr>
+          <tr><td>3</td><td><code>f(n) = Ω(n^(log_b a + ε))</code></td><td><code>Θ(f(n))</code></td></tr>
+        </table>
+      </div>
+
+      <p class="code-viewer-label">Beispiel</p>
+      <div class="code-viewer">
+        <div class="code-source" data-lang="Pseudocode">T(n) = 2T(n/2) + n
+
+a = 2, b = 2, f(n) = n
+n^(log_b a) = n^(log_2 2) = n
+
+f(n) = Θ(n), also Fall 2:
+T(n) = Θ(n log n)</div>
+      </div>
+    </section>
+
+
+    <!-- ─── BUBBLESORT ────────────────────────────────────── -->
+    <section id="ch-bubblesort" class="chapter">
+      <h1>Bubblesort</h1>
+      <p class="chapter-meta">Algorithmen › Sortieralgorithmen › Bubblesort &nbsp;·&nbsp; Laufzeit: O(n²)</p>
+
+      <div class="chapter-body">
+        <p>
+          Bubblesort vergleicht benachbarte Elemente und vertauscht sie, wenn sie in der falschen
+          Reihenfolge stehen. Nach jedem äußeren Durchlauf ist das größte noch unsortierte Element
+          an seine endgültige Position nach rechts gewandert.
+        </p>
+
+        <div class="info-box">
+          <p>
+            Ohne Optimierung benötigt Bubblesort immer <code>Θ(n²)</code> Vergleiche. Mit
+            Early-Exit kann ein bereits sortiertes Array nach einem Durchlauf erkannt werden; der
+            Best Case sinkt dann auf <code>Θ(n)</code>.
+          </p>
+        </div>
+        <table>
+          <tr><th>Eigenschaft</th><th>Wert</th></tr>
+          <tr><td>Worst-Case</td><td><code>Θ(n²)</code></td></tr>
+          <tr><td>Best-Case mit Early-Exit</td><td><code>Θ(n)</code></td></tr>
+          <tr><td>Stabil</td><td>ja, wenn nur bei <code>&gt;</code> getauscht wird</td></tr>
+        </table>
+      </div>
+
+      <p class="code-viewer-label">Implementierung</p>
+      <div class="code-viewer">
+        <div class="code-source" data-lang="Pseudocode">BUBBLESORT(A)
+  for i = 0 to length(A) - 2
+    swapped = false
+    for j = 0 to length(A) - 2 - i
+      if A[j] > A[j + 1]
+        swap A[j] and A[j + 1]
+        swapped = true
+    if not swapped
+      break</div>
+        <div class="code-source" data-lang="Java">public static void bubbleSort(int[] a) {
+    for (int i = 0; i < a.length - 1; i++) {
+        boolean swapped = false;
+        for (int j = 0; j < a.length - 1 - i; j++) {
+            if (a[j] > a[j + 1]) {
+                int tmp = a[j];
+                a[j] = a[j + 1];
+                a[j + 1] = tmp;
+                swapped = true;
+            }
+        }
+        if (!swapped) break;
+    }
+}</div>
+        <div class="code-source" data-lang="Python">def bubble_sort(a):
+    for i in range(len(a) - 1):
+        swapped = False
+        for j in range(len(a) - 1 - i):
+            if a[j] > a[j + 1]:
+                a[j], a[j + 1] = a[j + 1], a[j]
+                swapped = True
+        if not swapped:
+            break
+    return a</div>
+      </div>
+    </section>
+
+
+    <!-- ─── MERGESORT ─────────────────────────────────────── -->
+    <section id="ch-mergesort" class="chapter">
+      <h1>Mergesort</h1>
+      <p class="chapter-meta">Algorithmen › Sortieralgorithmen › Mergesort &nbsp;·&nbsp; Laufzeit: O(n log n)</p>
+
+      <div class="chapter-body">
+        <p>
+          Mergesort ist ein klassisches Divide-and-Conquer-Verfahren: Das Array wird rekursiv
+          in zwei etwa gleich große Teilarrays zerlegt, diese werden sortiert und danach in einem
+          linearen Merge-Schritt wieder zusammengeführt. Entscheidend ist, dass der Merge-Schritt
+          nur die beiden bereits sortierten Hälften von links nach rechts scannt.
+        </p>
+
+        <div class="info-box">
+          <p>
+            Die Rekurrenz lautet <code>T(n) = 2T(n/2) + Θ(n)</code>. Nach dem Master-Theorem ergibt
+            sich <code>Θ(n log n)</code> für Best-, Average- und Worst-Case. Mergesort ist stabil,
+            benötigt in der üblichen Array-Variante aber zusätzlichen Speicher <code>Θ(n)</code>.
+          </p>
+        </div>
+        <table>
+          <tr><th>Phase</th><th>Operation</th><th>Kosten pro Ebene</th></tr>
+          <tr><td>Divide</td><td>Array halbieren</td><td>Θ(1) bzw. Indexgrenzen</td></tr>
+          <tr><td>Conquer</td><td>Beide Hälften rekursiv sortieren</td><td>2 Teilprobleme</td></tr>
+          <tr><td>Combine</td><td>Sortierte Hälften mergen</td><td>Θ(n)</td></tr>
+        </table>
+      </div>
+
+      <p class="code-viewer-label">Implementierung</p>
+      <div class="code-viewer">
+        <div class="code-source" data-lang="Pseudocode" data-file="implemented/pseudocode/Mergesort.txt"></div>
+        <div class="code-source" data-lang="Java" data-file="implemented/java/Mergesort.java"></div>
+        <div class="code-source" data-lang="Python" data-file="implemented/python/Mergesort.py"></div>
+        <div class="code-source" data-lang="Prolog" data-file="implemented/prolog/Mergesort.pl"></div>
+      </div>
+    </section>
+
+
+    <!-- ─── QUICKSORT ─────────────────────────────────────── -->
+    <section id="ch-quicksort" class="chapter">
+      <h1>Quicksort</h1>
+      <p class="chapter-meta">Algorithmen › Sortieralgorithmen › Quicksort &nbsp;·&nbsp; Average: O(n log n) · Worst: O(n²)</p>
+
+      <div class="chapter-body">
+        <p>
+          Quicksort sortiert in-place um ein Pivot-Element herum. Der Partition-Schritt bringt alle
+          kleineren Elemente auf die linke und alle größeren Elemente auf die rechte Seite; danach
+          werden beide Bereiche rekursiv sortiert. Die Arbeit steckt also nicht im Zusammenführen,
+          sondern im Aufteilen.
+        </p>
+
+        <div class="info-box">
+          <p>
+            Bei ausgeglichenen Partitionen entsteht <code>Θ(n log n)</code>. Im Worst-Case, etwa bei
+            wiederholt extrem schlechtem Pivot, entstehen Teilprobleme der Größen <code>0</code> und
+            <code>n-1</code>, also <code>Θ(n²)</code>. Randomisierte Pivot-Wahl reduziert die Gefahr
+            systematisch schlechter Eingaben.
+          </p>
+        </div>
+        <table>
+          <tr><th>Eigenschaft</th><th>Quicksort</th><th>Mergesort</th></tr>
+          <tr><td>Worst-Case</td><td>Θ(n²)</td><td>Θ(n log n)</td></tr>
+          <tr><td>Zusatzspeicher</td><td>Θ(log n) Rekursion im guten Fall</td><td>Θ(n)</td></tr>
+          <tr><td>Stabilität</td><td>typisch nicht stabil</td><td>stabil</td></tr>
+          <tr><td>Praxis</td><td>oft sehr schnell durch In-place-Zugriffe</td><td>vorhersagbar und stabil</td></tr>
+        </table>
+      </div>
+
+      <p class="code-viewer-label">Implementierung</p>
+      <div class="code-viewer">
+        <div class="code-source" data-lang="Pseudocode" data-file="implemented/pseudocode/Quicksort.txt"></div>
+        <div class="code-source" data-lang="Java" data-file="implemented/java/Quicksort.java"></div>
+        <div class="code-source" data-lang="Python" data-file="implemented/python/Quicksort.py"></div>
+        <div class="code-source" data-lang="Prolog" data-file="implemented/prolog/Quicksort.pl"></div>
+      </div>
+    </section>
+
+
+    <!-- ─── INSERTIONSORT ─────────────────────────────────── -->
+    <section id="ch-insertionsort" class="chapter">
+      <h1>Insertionsort</h1>
+      <p class="chapter-meta">Algorithmen › Sortieralgorithmen › Insertionsort &nbsp;·&nbsp; Laufzeit: O(n²) · Best Case: O(n)</p>
+
+      <div class="chapter-body">
+        <p>
+          Insertionsort baut links im Array einen sortierten Bereich auf. Das nächste Element wird
+          herausgenommen, nach links über größere Elemente geschoben und an der passenden Stelle
+          eingefügt. Das entspricht dem Sortieren von Spielkarten auf der Hand.
+        </p>
+
+        <div class="info-box">
+          <p>
+            Insertionsort ist stabil und in-place. Im Worst-Case entstehen <code>Θ(n²)</code>
+            Verschiebungen, bei bereits oder fast sortierten Arrays läuft er dagegen in
+            <code>Θ(n)</code> bzw. sehr nah daran.
+          </p>
+        </div>
+        <table>
+          <tr><th>Situation</th><th>Kosten</th><th>Grund</th></tr>
+          <tr><td>bereits sortiert</td><td><code>Θ(n)</code></td><td>je Element nur ein Vergleich</td></tr>
+          <tr><td>umgekehrt sortiert</td><td><code>Θ(n²)</code></td><td>jedes Element wandert weit nach links</td></tr>
+          <tr><td>kleine Teilarrays</td><td>oft sehr schnell</td><td>geringer Overhead</td></tr>
+        </table>
+      </div>
+
+      <p class="code-viewer-label">Implementierung</p>
+      <div class="code-viewer">
+        <div class="code-source" data-lang="Pseudocode">INSERTIONSORT(A)
+  for i = 1 to length(A) - 1
+    key = A[i]
+    j = i - 1
+    while j >= 0 and A[j] > key
+      A[j + 1] = A[j]
+      j = j - 1
+    A[j + 1] = key</div>
+        <div class="code-source" data-lang="Java">public static void insertionSort(int[] a) {
+    for (int i = 1; i < a.length; i++) {
+        int key = a[i];
+        int j = i - 1;
+        while (j >= 0 && a[j] > key) {
+            a[j + 1] = a[j];
+            j--;
+        }
+        a[j + 1] = key;
+    }
+}</div>
+        <div class="code-source" data-lang="Python">def insertion_sort(a):
+    for i in range(1, len(a)):
+        key = a[i]
+        j = i - 1
+        while j >= 0 and a[j] > key:
+            a[j + 1] = a[j]
+            j -= 1
+        a[j + 1] = key
+    return a</div>
+      </div>
+    </section>
+
+
+    <!-- ─── SELECTIONSORT ─────────────────────────────────── -->
+    <section id="ch-selectionsort" class="chapter">
+      <h1>Selectionsort</h1>
+      <p class="chapter-meta">Algorithmen › Sortieralgorithmen › Selectionsort &nbsp;·&nbsp; Laufzeit: O(n²)</p>
+
+      <div class="chapter-body">
+        <p>
+          Selectionsort sucht in jedem Durchlauf das kleinste Element im unsortierten Rest und
+          tauscht es an die nächste freie Position am Anfang. Danach wächst der sortierte Präfix um
+          genau ein Element.
+        </p>
+
+        <div class="info-box">
+          <p>
+            Die Anzahl der Vergleiche bleibt immer <code>Θ(n²)</code>, unabhängig davon, ob die
+            Eingabe schon sortiert ist. Dafür führt Selectionsort höchstens <code>n - 1</code>
+            Tausche aus. Die Standardvariante ist nicht stabil.
+          </p>
+        </div>
+        <table>
+          <tr><th>Schritt</th><th>Beschreibung</th></tr>
+          <tr><td>Minimum suchen</td><td>Restarray von links nach rechts scannen</td></tr>
+          <tr><td>Tauschen</td><td>Minimum an Position <code>i</code> setzen</td></tr>
+          <tr><td>Fortsetzen</td><td>nächste Position im Präfix fixieren</td></tr>
+        </table>
+      </div>
+
+      <p class="code-viewer-label">Implementierung</p>
+      <div class="code-viewer">
+        <div class="code-source" data-lang="Pseudocode" data-file="implemented/pseudocode/Selectionsort.txt"></div>
+        <div class="code-source" data-lang="Java" data-file="implemented/java/Selectionsort.java"></div>
+        <div class="code-source" data-lang="Python" data-file="implemented/python/Selectionsort.py"></div>
+        <div class="code-source" data-lang="Prolog" data-file="implemented/prolog/Selectionsort.pl"></div>
+      </div>
+    </section>
+
+
+    <!-- ─── COUNTINGSORT ─────────────────────────────────── -->
+    <section id="ch-countingsort" class="chapter">
+      <h1>Countingsort</h1>
+      <p class="chapter-meta">Algorithmen › Sortieralgorithmen › Countingsort &nbsp;·&nbsp; Laufzeit: O(n + k)</p>
+
+      <div class="chapter-body">
+        <p>
+          Countingsort ist kein vergleichsbasiertes Sortierverfahren. Statt Elemente paarweise zu
+          vergleichen, zählt der Algorithmus die Häufigkeit jedes ganzzahligen Schlüssels im Bereich
+          <code>0..k</code>. Aus den kumulierten Zählerständen wird anschließend berechnet, an welcher
+          Position ein Element im Ergebnisarray landet.
+        </p>
+
+        <div class="info-box">
+          <p>
+            Die Laufzeit ist <code>Θ(n + k)</code> und damit linear, wenn der Schlüsselbereich
+            <code>k</code> nicht deutlich größer als die Eingabe ist. Durch das Einfügen von rechts
+            nach links bleibt Countingsort stabil und eignet sich als Unterroutine für Radixsort.
+          </p>
+        </div>
+        <table>
+          <tr><th>Array</th><th>Bedeutung</th></tr>
+          <tr><td><code>A</code></td><td>Eingabe mit ganzzahligen Schlüsseln</td></tr>
+          <tr><td><code>C</code></td><td>Zählerarray für Schlüssel <code>0..k</code></td></tr>
+          <tr><td><code>B</code></td><td>stabil sortierte Ausgabe</td></tr>
+        </table>
+      </div>
+
+      <p class="code-viewer-label">Implementierung</p>
+      <div class="code-viewer">
+        <div class="code-source" data-lang="Pseudocode" data-file="implemented/pseudocode/Countingsort.txt"></div>
+        <div class="code-source" data-lang="Java" data-file="implemented/java/Countingsort.java"></div>
+        <div class="code-source" data-lang="Python" data-file="implemented/python/Countingsort.py"></div>
+        <div class="code-source" data-lang="Prolog" data-file="implemented/prolog/Countingsort.pl"></div>
+      </div>
+    </section>
+
+
+    <!-- ─── RADIXSORT ─────────────────────────────────────── -->
+    <section id="ch-radixsort" class="chapter">
+      <h1>Radixsort</h1>
+      <p class="chapter-meta">Algorithmen › Sortieralgorithmen › Radixsort &nbsp;·&nbsp; Laufzeit: O(d · (n + k))</p>
+
+      <div class="chapter-body">
+        <p>
+          Radixsort sortiert Schlüssel ziffern- bzw. stellenweise. In der LSD-Variante beginnt man
+          bei der niederwertigsten Stelle und arbeitet sich zur höchstwertigen Stelle vor. Damit die
+          bereits hergestellte Ordnung erhalten bleibt, muss die verwendete stabile Teilsortierung
+          pro Stelle, typischerweise Countingsort, wirklich stabil sein.
+        </p>
+
+        <div class="info-box">
+          <p>
+            Für <code>d</code> Stellen und eine stabile Sortierung pro Stelle mit Kosten
+            <code>Θ(n + k)</code> ergibt sich <code>Θ(d · (n + k))</code>. Das Verfahren ist besonders
+            passend für feste Schlüsselbreiten, etwa Dezimalzahlen, Zeichenketten gleicher Länge oder
+            Maschinenwörter.
+          </p>
+        </div>
+        <table>
+          <tr><th>Variante</th><th>Reihenfolge</th><th>Wichtig</th></tr>
+          <tr><td>LSD</td><td>von rechts nach links</td><td>stabile Teilsortierung reicht aus</td></tr>
+          <tr><td>MSD</td><td>von links nach rechts</td><td>rekursive Bucket-Aufteilung möglich</td></tr>
+        </table>
+      </div>
+
+      <p class="code-viewer-label">Implementierung</p>
+      <div class="code-viewer">
+        <div class="code-source" data-lang="Pseudocode" data-file="implemented/pseudocode/Radixsort.txt"></div>
+        <div class="code-source" data-lang="Java" data-file="implemented/java/Radixsort.java"></div>
+        <div class="code-source" data-lang="Python" data-file="implemented/python/Radixsort.py"></div>
+        <div class="code-source" data-lang="Prolog" data-file="implemented/prolog/Radixsort.pl"></div>
+      </div>
+    </section>
+
+
+    <!-- ─── BUCKETSORT / WEITERE SORTIERALGORITHMEN ──────── -->
+    <section id="ch-bucketsort" class="chapter">
+      <h1>Weitere Sortieralgorithmen</h1>
+      <p class="chapter-meta">Algorithmen › Sortieralgorithmen › Bucketsort &amp; mehr &nbsp;·&nbsp; Laufzeit: O(n) avg.</p>
+
+      <div class="chapter-body">
+        <p>
+          Bucketsort verteilt Elemente auf mehrere Buckets, sortiert jeden Bucket einzeln und hängt
+          die Buckets anschließend wieder zusammen. Das Verfahren ist besonders effektiv, wenn die
+          Eingaben ungefähr gleichmäßig über einen bekannten Wertebereich verteilt sind.
+        </p>
+
+        <div class="info-box">
+          <p>
+            Bei gleichmäßiger Verteilung und geeigneter Bucketzahl ist die erwartete Laufzeit
+            <code>Θ(n)</code> plus die Kosten für das Sortieren kleiner Buckets. Bei ungünstiger
+            Verteilung kann fast alles in einem Bucket landen; dann hängt die Laufzeit vom
+            verwendeten Bucket-Sortierer ab.
+          </p>
+        </div>
+        <table>
+          <tr><th>Algorithmus</th><th>Idee</th><th>Typischer Einsatz</th></tr>
+          <tr><td>Bucketsort</td><td>Wertebereich in Buckets aufteilen</td><td>gleichmäßig verteilte Zahlen</td></tr>
+          <tr><td>Shellsort</td><td>Insertionsort mit schrumpfenden Abständen</td><td>in-place Sortieren mit wenig Overhead</td></tr>
+          <tr><td>Timsort</td><td>natürliche Runs finden und mergen</td><td>Praxis-Standard in Python/Java-Objektsortierung</td></tr>
+        </table>
+      </div>
+
+      <p class="code-viewer-label">Implementierung</p>
+      <div class="code-viewer">
+        <div class="code-source" data-lang="Pseudocode">BUCKETSORT(A)
+  create n empty buckets
+
+  for each x in A
+    insert x into bucket floor(n * x)
+
+  for each bucket B
+    sort B with Insertionsort
+
+  concatenate all buckets in order</div>
+        <div class="code-source" data-lang="Java">public static void bucketSort(double[] a) {
+    int n = a.length;
+    java.util.List&lt;java.util.List&lt;Double&gt;&gt; buckets = new java.util.ArrayList&lt;&gt;();
+    for (int i = 0; i < n; i++) buckets.add(new java.util.ArrayList&lt;&gt;());
+
+    for (double x : a) {
+        int index = Math.min(n - 1, (int) (n * x));
+        buckets.get(index).add(x);
+    }
+
+    int pos = 0;
+    for (java.util.List&lt;Double&gt; bucket : buckets) {
+        java.util.Collections.sort(bucket);
+        for (double x : bucket) a[pos++] = x;
+    }
+}</div>
+        <div class="code-source" data-lang="Python">def bucket_sort(a):
+    n = len(a)
+    buckets = [[] for _ in range(n)]
+
+    for x in a:
+        index = min(n - 1, int(n * x))
+        buckets[index].append(x)
+
+    out = []
+    for bucket in buckets:
+        out.extend(sorted(bucket))
+    return out</div>
+      </div>
+    </section>
+
+
+  </main><!-- /main -->
+</div><!-- /layout -->
+
+
+<script>
+  /* ============================================================
+     CODE VIEWER – wird automatisch aus .code-viewer Divs gebaut.
+
+     Neues Kapitel hinzufügen:
+       1. <section id="ch-meinkapitel" class="chapter"> in #main
+       2. <a class="nav-link" data-chapter="meinkapitel"> im Sidebar
+       3. Im Section ein <div class="code-viewer"> mit
+          <div class="code-source" data-lang="Pseudocode"> ... </div>
+          oder data-file="implemented/java/..." für externe Dateien.
+  ============================================================ */
+
+  const LANG_TO_HLJS = {
+    pseudocode:      'plaintext',
+    java:            'java',
+    'java pq':       'java',
+    python:          'python',
+    'python pq':     'python',
+    prolog:          'prolog',
+    'c':             'c',
+    'c++':           'cpp',
+    'c++ pq':        'cpp',
+    'c#':            'csharp',
+    'c# pq':         'csharp',
+    php:             'php',
+    'php pq':        'php',
+    javascript:      'javascript',
+    manuell:         'java',
+    'java-standard': 'java',
+  };
+
+  async function fetchText(path) {
+    try {
+      const r = await fetch(path);
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      return await r.text();
+    } catch (e) {
+      return { error: e.message || 'Netzwerkfehler', path };
+    }
+  }
+
+  function buildCodeViewer(viewerEl, chapterTitle) {
+    const sources = [...viewerEl.querySelectorAll('.code-source')];
+    if (!sources.length) return;
+
+    const langs = sources.map(s => s.dataset.lang);
+
+    // Build bar
+    const bar = document.createElement('div');
+    bar.className = 'code-viewer-bar';
+
+    const dotsHtml = `<span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>`;
+    const titleHtml = `<span class="viewer-title">${chapterTitle}</span>`;
+    const selectHtml = langs.length > 1
+      ? `<select class="lang-select">${langs.map(l => `<option value="${l}">${l}</option>`).join('')}</select>`
+      : `<span style="font-family:var(--mono);font-size:.78rem;color:var(--muted);padding:4px 0">${langs[0]}</span>`;
+    const downloadHtml = `<a class="download-btn" download>&#8595; Datei</a>`;
+    const copyHtml = `<button class="copy-btn">kopieren</button>`;
+
+    bar.innerHTML = dotsHtml + titleHtml + selectHtml + downloadHtml + copyHtml;
+
+    const wrap = document.createElement('div');
+    wrap.className = 'code-wrap';
+    const pre  = document.createElement('pre');
+    const code = document.createElement('code');
+    code.className = 'hljs';
+    pre.appendChild(code);
+    wrap.appendChild(pre);
+
+    // Rebuild viewer DOM: bar + wrap + hidden sources
+    viewerEl.innerHTML = '';
+    viewerEl.appendChild(bar);
+    viewerEl.appendChild(wrap);
+    sources.forEach(s => viewerEl.appendChild(s));
+
+    const selectEl   = bar.querySelector('.lang-select');
+    const titleEl    = bar.querySelector('.viewer-title');
+    const copyBtn    = bar.querySelector('.copy-btn');
+    const downloadEl = bar.querySelector('.download-btn');
+
+    async function loadLang(lang) {
+      const src = sources.find(s => s.dataset.lang === lang);
+      if (!src) return;
+
+      let text;
+      if (src.dataset.file) {
+        code.textContent = '// Lädt …';
+        code.className   = 'hljs';
+        const result = await fetchText(src.dataset.file);
+        if (result && typeof result === 'object' && result.error) {
+          const isFile = location.protocol === 'file:';
+          text = isFile
+            ? `// Datei konnte nicht geladen werden (file://-Protokoll).\n//\n// → quickstart.bat ausführen und\n//   http://localhost:8000 im Browser öffnen.\n//\n// Pfad: ${result.path}`
+            : `// Datei konnte nicht geladen werden (${result.error}).\n// Pfad: ${result.path}`;
+        } else if (result === null) {
+          text = src.textContent.trim() || `// Kein Inhalt für ${lang} verfügbar.`;
+        } else {
+          text = result;
+        }
+      } else {
+        text = src.textContent.trim() || `// Kein Inhalt für ${lang} verfügbar.`;
+      }
+
+      const hljsLang = LANG_TO_HLJS[lang.toLowerCase()] ?? 'plaintext';
+      code.textContent = text;
+      code.className   = `hljs language-${hljsLang}`;
+      try { hljs.highlightElement(code); } catch { code.className = 'hljs'; }
+      if (titleEl) titleEl.textContent = `${chapterTitle} – ${lang}`;
+
+      if (src.dataset.file) {
+        downloadEl.href            = src.dataset.file;
+        downloadEl.download        = src.dataset.file.split('/').pop();
+        downloadEl.style.display   = 'inline-flex';
+      } else {
+        downloadEl.style.display   = 'none';
+      }
+    }
+
+    if (selectEl) {
+      selectEl.addEventListener('change', () => loadLang(selectEl.value));
+    }
+
+    copyBtn.addEventListener('click', async () => {
+      await navigator.clipboard.writeText(code.innerText).catch(() => {});
+      copyBtn.textContent = '✓ kopiert';
+      copyBtn.classList.add('copied');
+      setTimeout(() => {
+        copyBtn.textContent = 'kopieren';
+        copyBtn.classList.remove('copied');
+      }, 1800);
+    });
+
+    // Lazy-load: defer until chapter is shown
+    viewerEl._loadLang  = loadLang;
+    viewerEl._firstLang = langs[0];
+    viewerEl._loaded    = false;
+  }
+
+  function activateViewers(chapterEl) {
+    chapterEl.querySelectorAll('.code-viewer').forEach(v => {
+      if (!v._loaded && v._loadLang) {
+        v._loaded = true;
+        v._loadLang(v._firstLang);
+      }
+    });
+  }
+
+  /* ============================================================
+     NAVIGATION
+  ============================================================ */
+  const navLinks = document.querySelectorAll('.nav-link[data-chapter]');
+  const chapters = document.querySelectorAll('.chapter');
+
+  function showChapter(id) {
+    chapters.forEach(ch => {
+      const active = ch.id === `ch-${id}`;
+      ch.classList.toggle('active', active);
+      if (active) activateViewers(ch);
+    });
+    navLinks.forEach(a => a.classList.toggle('active', a.dataset.chapter === id));
+    window.scrollTo(0, 0);
+  }
+
+  navLinks.forEach(a => a.addEventListener('click', () => showChapter(a.dataset.chapter)));
+
+  /* ============================================================
+     INIT
+  ============================================================ */
+  document.querySelectorAll('.code-viewer').forEach(v => {
+    const ch    = v.closest('.chapter');
+    const title = ch ? ch.querySelector('h1').textContent : 'Code';
+    buildCodeViewer(v, title);
+  });
+
+  const activeChapter = document.querySelector('.chapter.active');
+  if (activeChapter) activateViewers(activeChapter);
+
+  /* ============================================================
+     ANZEIGE-EINSTELLUNGEN
+  ============================================================ */
+  const root = document.documentElement;
+
+  function makeToggle(rowId, switchId, storageKey, onActivate, defaultOn) {
+    const row = document.getElementById(rowId);
+    const sw  = document.getElementById(switchId);
+    const saved = localStorage.getItem(storageKey);
+    let active = saved !== null ? saved === '1' : defaultOn;
+
+    function apply(val) {
+      active = val;
+      sw.classList.toggle('on', active);
+      onActivate(active);
+      localStorage.setItem(storageKey, active ? '1' : '0');
+    }
+
+    apply(active);
+    row.addEventListener('click', () => apply(!active));
+  }
+
+  makeToggle('row-theme', 'sw-theme', 'theme', active => {
+    root.dataset.theme = active ? 'dark' : 'light';
+  }, true);
+
+  makeToggle('row-colors', 'sw-colors', 'show-rb', active => {
+    root.dataset.showRb = active ? '1' : '0';
+  }, false);
+
+  makeToggle('row-values', 'sw-values', 'show-values', active => {
+    root.dataset.showValues = active ? '1' : '0';
+  }, false);
+</script>
+    <script src="../../../feedback-widget.js" defer></script>
+</body>
+</html>

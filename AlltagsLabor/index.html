@@ -1,0 +1,1564 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AlltagsLabor</title>
+  <meta name="description" content="AlltagsLabor: eine offene Sammlung alltagsnaher Experimente und Lernmaterialien fuer Schule, Projektarbeit und eigenes Forschen." />
+    <link rel="icon" type="image/png" href="../../../media/favicon.png">
+<script>
+    window.MathJax = {
+      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+      startup: { typeset: false }
+    };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f5f7f2;
+      --ink: #1f2933;
+      --muted: #59636e;
+      --panel: #ffffff;
+      --panel-soft: #eef4e8;
+      --line: #d9e0d4;
+      --green: #2f7d5b;
+      --green-dark: #19553d;
+      --blue: #2c6ca3;
+      --amber: #b46b13;
+      --red: #a33c2c;
+      --shadow: 0 18px 45px rgba(31, 41, 51, .11);
+      --max: 1180px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      background:
+        linear-gradient(180deg, rgba(245, 247, 242, .82), rgba(245, 247, 242, 1)),
+        url("icon2.png");
+      background-position: center;
+      background-repeat: no-repeat;
+      background-size: min(46vw, 460px);
+      background-attachment: fixed;
+      background-color: var(--bg);
+      color: var(--ink);
+      line-height: 1.62;
+    }
+
+    a { color: inherit; }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      border-bottom: 1px solid rgba(217, 224, 212, .9);
+      background: rgba(255, 255, 255, .92);
+      backdrop-filter: blur(14px);
+    }
+
+    .topbar-inner {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 11px;
+      min-width: 0;
+      text-decoration: none;
+      font-weight: 850;
+    }
+
+    .brand img {
+      width: 36px;
+      height: 36px;
+      border-radius: 9px;
+      box-shadow: 0 5px 16px rgba(47, 125, 91, .22);
+    }
+
+    .brand span {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .language-picker {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      padding: 5px 8px 5px 10px;
+      color: var(--ink);
+      font-weight: 800;
+    }
+
+    .language-picker::before {
+      content: "";
+      width: 17px;
+      height: 13px;
+      border: 2px solid var(--green-dark);
+      border-radius: 8px;
+      box-shadow: inset 0 0 0 2px rgba(47, 125, 91, .08);
+      position: relative;
+      flex: 0 0 auto;
+    }
+
+    .language-picker::after {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-left: 2px solid var(--green-dark);
+      border-bottom: 2px solid var(--green-dark);
+      background: #fff;
+      transform: rotate(-28deg);
+      position: absolute;
+      left: 17px;
+      bottom: 8px;
+    }
+
+    .language-picker select {
+      min-height: 30px;
+      border: 0;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      outline: 0;
+    }
+
+    .language-block {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+      max-width: 440px;
+    }
+
+    .translation-note {
+      margin: 0;
+      color: var(--muted);
+      font-size: .74rem;
+      line-height: 1.35;
+      text-align: right;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+      padding: 8px 12px;
+      font-weight: 750;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .btn:hover { border-color: var(--green); color: var(--green-dark); }
+    .btn.primary {
+      border-color: var(--green);
+      background: var(--green);
+      color: #fff;
+    }
+    .btn.ghost { background: rgba(255, 255, 255, .62); }
+
+    .hero {
+      min-height: 74vh;
+      display: grid;
+      align-items: end;
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 76px 20px 38px;
+    }
+
+    .hero-content {
+      max-width: 790px;
+      padding-bottom: 22px;
+    }
+
+    .kicker {
+      color: var(--green-dark);
+      font-weight: 850;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      font-size: .76rem;
+    }
+
+    h1 {
+      margin: 14px 0 18px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(3.2rem, 9vw, 6.8rem);
+      line-height: .95;
+      letter-spacing: -0.04em;
+      color: #152219;
+    }
+
+    .lead {
+      max-width: 760px;
+      margin: 0;
+      font-size: clamp(1.07rem, 1.8vw, 1.28rem);
+      color: #26322b;
+    }
+
+    .hero-actions {
+      margin-top: 24px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 0 20px 36px;
+    }
+
+    .stat {
+      background: rgba(255, 255, 255, .84);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px 16px;
+      box-shadow: 0 8px 22px rgba(31, 41, 51, .06);
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 1.45rem;
+      line-height: 1.1;
+      color: var(--green-dark);
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-size: .91rem;
+    }
+
+    .band {
+      background: transparent;
+      border-top: 1px solid var(--line);
+      min-height: calc(100vh - 62px);
+    }
+
+    .workspace {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 34px 20px 72px;
+      display: grid;
+      grid-template-columns: 315px minmax(0, 1fr);
+      gap: 26px;
+      align-items: start;
+    }
+
+    .filters {
+      position: sticky;
+      top: 76px;
+      display: grid;
+      gap: 14px;
+      border-right: 1px solid var(--line);
+      padding-right: 22px;
+    }
+
+    .filters h2,
+    .content-head h2 {
+      margin: 0;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .field label {
+      color: var(--muted);
+      font-size: .84rem;
+      font-weight: 800;
+    }
+
+    .field input,
+    .field select {
+      width: 100%;
+      min-height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fff;
+      color: var(--ink);
+      padding: 8px 10px;
+    }
+
+    .filter-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .source-note {
+      color: var(--muted);
+      font-size: .9rem;
+      margin: 6px 0 0;
+    }
+
+    .source-note a { color: var(--green-dark); font-weight: 750; }
+
+    .content-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .experiment-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .experiment-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, .92);
+      padding: 17px;
+      min-height: 230px;
+      display: grid;
+      gap: 12px;
+      align-content: start;
+      box-shadow: 0 10px 24px rgba(31, 41, 51, .05);
+      transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+    }
+
+    .experiment-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(47, 125, 91, .52);
+      box-shadow: var(--shadow);
+    }
+
+    .experiment-card h3 {
+      margin: 0;
+      font-size: 1.24rem;
+      line-height: 1.22;
+    }
+
+    .description {
+      color: var(--muted);
+      font-size: .95rem;
+      max-height: 7.4em;
+      overflow: hidden;
+    }
+
+    .description :first-child { margin-top: 0; }
+    .description :last-child { margin-bottom: 0; }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: auto;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      border-radius: 999px;
+      border: 1px solid #d1ddcc;
+      background: #f4f8f0;
+      color: #355242;
+      padding: 4px 9px;
+      font-size: .82rem;
+      font-weight: 750;
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .empty,
+    .error {
+      border: 1px solid var(--line);
+      border-left: 4px solid var(--amber);
+      background: #fff;
+      border-radius: 8px;
+      padding: 18px;
+      color: var(--muted);
+    }
+
+    .error { border-left-color: var(--red); }
+
+    dialog {
+      width: min(960px, calc(100vw - 28px));
+      max-height: calc(100vh - 28px);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0;
+      box-shadow: 0 24px 80px rgba(31, 41, 51, .28);
+      color: var(--ink);
+      background: #fff;
+    }
+
+    dialog::backdrop { background: rgba(21, 34, 25, .46); }
+
+    .modal-head {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: start;
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 255, 255, .96);
+      backdrop-filter: blur(10px);
+    }
+
+    .modal-head h2 {
+      margin: 0;
+      line-height: 1.18;
+    }
+
+    .modal-tools {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .experiment-body {
+      padding: 20px;
+    }
+
+    .detail-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 0 0 18px;
+    }
+
+    .step {
+      margin: 14px 0;
+      padding: 14px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .step.text {
+      padding: 0;
+      border: 0;
+      background: transparent;
+    }
+
+    .step.aufgabe {
+      border-left: 5px solid var(--blue);
+      background: #eef6ff;
+    }
+
+    .step.merksatz {
+      border-left: 5px solid var(--amber);
+      background: #fff6e8;
+    }
+
+    .step img,
+    .experiment-body img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+    }
+
+    .step audio { width: 100%; }
+
+    .step :first-child { margin-top: 0; }
+    .step :last-child { margin-bottom: 0; }
+
+    .about {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 82px 20px;
+    }
+
+    .about h2 {
+      margin: 0 0 14px;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      line-height: 1.06;
+      letter-spacing: -0.03em;
+    }
+
+    .about p { color: #334139; }
+
+    footer {
+      border-top: 1px solid var(--line);
+      background: #152219;
+      color: #d8e3d4;
+      padding: 26px 20px;
+    }
+
+    footer .inner {
+      max-width: var(--max);
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+
+    .impressum-content {
+      flex-basis: 100%;
+      margin: 0;
+      white-space: pre-wrap;
+      color: inherit;
+      font: inherit;
+    }
+
+    @media print {
+      body { background: #fff; }
+      .topbar, .filters, .content-head, .hero, .stats, .about, footer, .modal-tools { display: none !important; }
+      dialog {
+        position: static;
+        display: block;
+        width: 100%;
+        max-height: none;
+        border: 0;
+        box-shadow: none;
+      }
+      .modal-head { position: static; padding: 0 0 12px; }
+      .experiment-body { padding: 0; }
+    }
+
+    @media (max-width: 900px) {
+      .workspace { grid-template-columns: 1fr; }
+      .filters {
+        position: static;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+        padding: 18px;
+        background: rgba(255, 255, 255, .92);
+        border-radius: 8px;
+        box-shadow: 0 10px 24px rgba(31, 41, 51, .05);
+      }
+      .experiment-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 620px) {
+      .topbar-inner { align-items: start; flex-direction: column; }
+      .nav-actions { justify-content: flex-start; }
+      .language-block { align-items: flex-start; }
+      .translation-note { text-align: left; }
+      .content-head { align-items: stretch; flex-direction: column; }
+      .modal-head { flex-direction: column; }
+      .modal-tools { justify-content: flex-start; }
+      .filter-actions { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="#start" aria-label="AlltagsLabor Start">
+        <img src="icon2.png" alt="" />
+        <span>AlltagsLabor</span>
+      </a>
+      <nav class="nav-actions" aria-label="Navigation">
+        <div class="language-block">
+        <label class="language-picker" for="language">
+          <span class="sr-only" data-i18n="languageLabel">Sprache</span>
+          <select id="language">
+            <option value="de">Deutsch</option>
+            <option value="eng">English</option>
+            <option value="fa">Farsi</option>
+            <option value="fr">Français</option>
+            <option value="pol">Polski</option>
+            <option value="rum">Română</option>
+            <option value="ru">Русский</option>
+            <option value="es">Español</option>
+            <option value="uk">Українська</option>
+          </select>
+        </label>
+        <p class="translation-note" data-i18n="translationNote">Hinweis: Die Experimente wurden ursprünglich auf Deutsch verfasst und anschließend mit KI übersetzt. Dabei können Übersetzungsfehler auftreten.</p>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main id="start">
+    <section class="band" id="experimente">
+      <div class="workspace">
+        <aside class="filters" aria-label="Filter" data-i18n-attr="aria-label:filtersAria">
+          <div>
+            <div class="kicker" data-i18n="searchKicker">Suche</div>
+            <h2 data-i18n="findMaterial">Material finden</h2>
+            <p class="source-note" data-i18n="sourceNote">Live geladen aus dem GitHub-Datenrepo. Neue Einträge erscheinen hier nach Review und Merge.</p>
+          </div>
+
+          <div class="field">
+            <label for="query" data-i18n="queryLabel">Suchbegriff</label>
+            <input id="query" type="search" autocomplete="off" placeholder="Titel, Beschreibung, Inhalt" data-i18n-attr="placeholder:queryPlaceholder" />
+          </div>
+          <div class="field">
+            <label for="subject" data-i18n="subjectLabel">Fach</label>
+            <select id="subject"><option value="">Alle Fächer</option></select>
+          </div>
+
+          <div class="field">
+            <label for="grade" data-i18n="gradeLabel">Klassenstufe</label>
+            <select id="grade"><option value="">Alle Stufen</option></select>
+          </div>
+
+          <div class="field">
+            <label for="school" data-i18n="schoolLabel">Schulform</label>
+            <select id="school"><option value="">Alle Schulformen</option></select>
+          </div>
+
+          <div class="filter-actions">
+            <button class="btn primary" type="button" id="applyFilters" data-i18n="applyFilters">Anwenden</button>
+            <button class="btn" type="button" id="resetFilters" data-i18n="resetFilters">Zurücksetzen</button>
+          </div>
+        </aside>
+
+        <section aria-live="polite">
+          <div class="content-head">
+            <div>
+              <div class="kicker" id="resultKicker" data-i18n="loadingKicker">Lade Daten</div>
+              <h2 id="resultTitle" data-i18n="experimentsTitle">Experimente</h2>
+            </div>
+          </div>
+          <div id="status" class="empty" data-i18n="loadingStatus">Daten werden aus dem GitHub-Datenrepo geladen...</div>
+          <div id="experimentGrid" class="experiment-grid" hidden></div>
+        </section>
+      </div>
+    </section>
+
+    <section class="about" id="mitmachen">
+      <div>
+        <div class="kicker" data-i18n="projectIdeaKicker">Projektidee</div>
+        <h2 data-i18n="aboutTitle">Vom Alltag zur fachlichen Erklärung</h2>
+        <p data-i18n="aboutText1">Das AlltagsLabor sammelt Experimente, die mit einfachen Materialien funktionieren und an vertraute Situationen anschließen. Lernende beginnen mit einer Beobachtung, probieren etwas selbst aus und ordnen die Erfahrung anschließend fachlich ein.</p>
+        <p data-i18n="aboutText2">Diese Seite ist bewusst als Besucheransicht umgesetzt: lesen, suchen, filtern, drucken. Wer neue Experimente beitragen möchte, kann Kontakt zum Entwicklerteam aufnehmen oder im Datenrepo mitarbeiten.</p>
+        <div class="hero-actions">
+          <a class="btn primary" href="mailto:pianoflix@gmx.de?subject=AlltagsLabor%20Mitmachen" data-i18n="contactButton">Kontakt aufnehmen</a>
+          <a class="btn" href="einpflegen.html" data-i18n="submitButton">Experiment einreichen</a>
+          
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="detailDialog" aria-labelledby="dialogTitle">
+    <div class="modal-head">
+      <div>
+        <div class="kicker" data-i18n="experimentKicker">Experiment</div>
+        <h2 id="dialogTitle"></h2>
+      </div>
+      <div class="modal-tools">
+        <button class="btn" type="button" id="printExperiment" data-i18n="printButton">Drucken</button>
+        <button class="btn" type="button" id="pdfExperiment">PDF</button>
+        <button class="btn primary" type="button" id="closeDialog" data-i18n="closeButton">Schließen</button>
+      </div>
+    </div>
+    <article class="experiment-body" id="dialogBody"></article>
+  </dialog>
+
+  <footer>
+    <div class="inner">
+      <span>Felix Staacke · AlltagsLabor</span>
+      <span id="dataTimestamp" data-i18n="dataTimestampLoading">Datenstand: wird geladen</span>
+    </div>
+  </footer>
+
+  <script>
+    const DATA_REPO_BASE_URL = "https://raw.githubusercontent.com/Datenflix007/alltagslabordata/main/";
+    const LANGUAGE_FILES = {
+      de: "_experiments_de.json",
+      eng: "_experiments_eng.json",
+      es: "_experiments_es.json",
+      fa: "_experiments_fa.json",
+      fr: "_experiments_fr.json",
+      pol: "_experiments_pol.json",
+      rum: "_experiments_rum.json",
+      ru: "_experiments_ru.json",
+      uk: "_experiments_uk.json"
+    };
+    const UI_TEXT = {
+      de: {
+        languageLabel: "Sprache",
+        translationNote: "Hinweis: Die Experimente wurden ursprünglich auf Deutsch verfasst und anschließend mit KI übersetzt. Dabei können Übersetzungsfehler auftreten.",
+        filtersAria: "Filter",
+        searchKicker: "Suche",
+        findMaterial: "Material finden",
+        sourceNote: "Live geladen aus dem GitHub-Datenrepo. Neue Einträge erscheinen hier nach Review und Merge.",
+        queryLabel: "Suchbegriff",
+        queryPlaceholder: "Titel, Beschreibung, Inhalt",
+        subjectLabel: "Fach",
+        gradeLabel: "Klassenstufe",
+        schoolLabel: "Schulform",
+        applyFilters: "Anwenden",
+        resetFilters: "Zurücksetzen",
+        loadingKicker: "Lade Daten",
+        experimentsTitle: "Experimente",
+        loadingStatus: "Daten werden aus dem GitHub-Datenrepo geladen...",
+        allSubjects: "Alle Fächer",
+        allGrades: "Alle Stufen",
+        allSchools: "Alle Schulformen",
+        projectIdeaKicker: "Projektidee",
+        aboutTitle: "Vom Alltag zur fachlichen Erklärung",
+        aboutText1: "Das AlltagsLabor sammelt Experimente, die mit einfachen Materialien funktionieren und an vertraute Situationen anschließen. Lernende beginnen mit einer Beobachtung, probieren etwas selbst aus und ordnen die Erfahrung anschließend fachlich ein.",
+        aboutText2: "Diese Seite ist bewusst als Besucheransicht umgesetzt: lesen, suchen, filtern, drucken. Wer neue Experimente beitragen möchte, kann Kontakt zum Entwicklerteam aufnehmen oder im Datenrepo mitarbeiten.",
+        contactButton: "Kontakt aufnehmen",
+        submitButton: "Experiment einreichen",
+        sourceRepoButton: "Source-Code-Repo",
+        dataRepoButton: "Datenrepo ansehen",
+        experimentKicker: "Experiment",
+        printButton: "Drucken",
+        closeButton: "Schließen",
+        dataTimestampLoading: "Datenstand: wird geladen",
+        dataTimestamp: "Datenstand: {date}",
+        loadError: "Die Daten konnten nicht geladen werden. Das GitHub-Datenrepo muss öffentlich erreichbar sein. Technischer Hinweis: {message}",
+        resultCount: "{filtered} von {total} Einträgen",
+        oneExperiment: "Ein Experiment",
+        manyExperiments: "Experimente",
+        noResults: "Keine passenden Experimente gefunden. Ändere die Filter oder setze die Suche zurück.",
+        untitled: "Ohne Titel",
+        noDescription: "Keine Kurzbeschreibung vorhanden.",
+        readButton: "Lesen",
+        gradePrefix: "Klasse {grade}",
+        imageAlt: "Experimentbild"
+      },
+      eng: {
+        languageLabel: "Language",
+        translationNote: "Note: The experiments were originally written in German and then translated with AI. Translation errors may therefore occur.",
+        filtersAria: "Filters",
+        searchKicker: "Search",
+        findMaterial: "Find material",
+        sourceNote: "Loaded live from the GitHub data repository. New entries appear here after review and merge.",
+        queryLabel: "Search term",
+        queryPlaceholder: "Title, description, content",
+        subjectLabel: "Subject",
+        gradeLabel: "Grade level",
+        schoolLabel: "School type",
+        applyFilters: "Apply",
+        resetFilters: "Reset",
+        loadingKicker: "Loading data",
+        experimentsTitle: "Experiments",
+        loadingStatus: "Loading data from the GitHub data repository...",
+        allSubjects: "All subjects",
+        allGrades: "All grades",
+        allSchools: "All school types",
+        projectIdeaKicker: "Project idea",
+        aboutTitle: "From everyday life to subject explanation",
+        aboutText1: "AlltagsLabor collects experiments that work with simple materials and connect to familiar situations. Learners start with an observation, try something themselves, and then classify the experience in subject terms.",
+        aboutText2: "This page is intentionally built as a visitor view: read, search, filter, print. Anyone who wants to contribute new experiments can contact the development team or work in the data repository.",
+        contactButton: "Contact us",
+        submitButton: "Submit experiment",
+        sourceRepoButton: "Source code repo",
+        dataRepoButton: "View data repo",
+        experimentKicker: "Experiment",
+        printButton: "Print",
+        closeButton: "Close",
+        dataTimestampLoading: "Data status: loading",
+        dataTimestamp: "Data status: {date}",
+        loadError: "The data could not be loaded. The GitHub data repository must be publicly reachable. Technical note: {message}",
+        resultCount: "{filtered} of {total} entries",
+        oneExperiment: "One experiment",
+        manyExperiments: "Experiments",
+        noResults: "No matching experiments found. Change the filters or reset the search.",
+        untitled: "Untitled",
+        noDescription: "No short description available.",
+        readButton: "Read",
+        gradePrefix: "Grade {grade}",
+        imageAlt: "Experiment image"
+      },
+      es: {
+        languageLabel: "Idioma",
+        translationNote: "Nota: Los experimentos se redactaron originalmente en alemán y después se tradujeron con IA. Por eso pueden aparecer errores de traducción.",
+        filtersAria: "Filtros",
+        searchKicker: "Búsqueda",
+        findMaterial: "Encontrar material",
+        sourceNote: "Cargado en directo desde el repositorio de datos de GitHub. Las nuevas entradas aparecen aquí después de la revisión y la fusión.",
+        queryLabel: "Término de búsqueda",
+        queryPlaceholder: "Título, descripción, contenido",
+        subjectLabel: "Asignatura",
+        gradeLabel: "Curso",
+        schoolLabel: "Tipo de centro",
+        applyFilters: "Aplicar",
+        resetFilters: "Restablecer",
+        loadingKicker: "Cargando datos",
+        experimentsTitle: "Experimentos",
+        loadingStatus: "Cargando datos desde el repositorio de GitHub...",
+        allSubjects: "Todas las asignaturas",
+        allGrades: "Todos los cursos",
+        allSchools: "Todos los tipos de centro",
+        projectIdeaKicker: "Idea del proyecto",
+        aboutTitle: "De la vida cotidiana a la explicación científica",
+        aboutText1: "AlltagsLabor reúne experimentos que funcionan con materiales sencillos y conectan con situaciones conocidas. El alumnado empieza con una observación, prueba algo por sí mismo y después clasifica la experiencia desde la materia correspondiente.",
+        aboutText2: "Esta página está diseñada como vista para visitantes: leer, buscar, filtrar e imprimir. Quien quiera aportar nuevos experimentos puede contactar con el equipo de desarrollo o colaborar en el repositorio de datos.",
+        contactButton: "Contactar",
+        submitButton: "Enviar experimento",
+        sourceRepoButton: "Repositorio del código",
+        dataRepoButton: "Ver repositorio de datos",
+        experimentKicker: "Experimento",
+        printButton: "Imprimir",
+        closeButton: "Cerrar",
+        dataTimestampLoading: "Estado de los datos: cargando",
+        dataTimestamp: "Estado de los datos: {date}",
+        loadError: "No se pudieron cargar los datos. El repositorio de GitHub debe ser accesible públicamente. Nota técnica: {message}",
+        resultCount: "{filtered} de {total} entradas",
+        oneExperiment: "Un experimento",
+        manyExperiments: "Experimentos",
+        noResults: "No se encontraron experimentos adecuados. Cambia los filtros o restablece la búsqueda.",
+        untitled: "Sin título",
+        noDescription: "No hay descripción breve disponible.",
+        readButton: "Leer",
+        gradePrefix: "Curso {grade}",
+        imageAlt: "Imagen del experimento"
+      },
+      fa: {
+        languageLabel: "زبان",
+        translationNote: "توجه: آزمایش‌ها در اصل به زبان آلمانی نوشته شده‌اند و سپس با هوش مصنوعی ترجمه شده‌اند. بنابراین ممکن است خطاهای ترجمه وجود داشته باشد.",
+        filtersAria: "فیلترها",
+        searchKicker: "جستجو",
+        findMaterial: "یافتن مواد آموزشی",
+        sourceNote: "داده‌ها به‌صورت زنده از مخزن داده GitHub بارگیری می‌شوند. ورودی‌های جدید پس از بازبینی و ادغام در اینجا ظاهر می‌شوند.",
+        queryLabel: "عبارت جستجو",
+        queryPlaceholder: "عنوان، توضیح، محتوا",
+        subjectLabel: "درس",
+        gradeLabel: "پایه",
+        schoolLabel: "نوع مدرسه",
+        applyFilters: "اعمال",
+        resetFilters: "بازنشانی",
+        loadingKicker: "در حال بارگیری داده‌ها",
+        experimentsTitle: "آزمایش‌ها",
+        loadingStatus: "داده‌ها از مخزن GitHub بارگیری می‌شوند...",
+        allSubjects: "همه درس‌ها",
+        allGrades: "همه پایه‌ها",
+        allSchools: "همه نوع‌های مدرسه",
+        projectIdeaKicker: "ایده پروژه",
+        aboutTitle: "از زندگی روزمره تا توضیح علمی",
+        aboutText1: "AlltagsLabor آزمایش‌هایی را گردآوری می‌کند که با مواد ساده انجام می‌شوند و به موقعیت‌های آشنا پیوند دارند. یادگیرندگان با یک مشاهده شروع می‌کنند، خودشان چیزی را امتحان می‌کنند و سپس تجربه را از نظر درسی دسته‌بندی می‌کنند.",
+        aboutText2: "این صفحه به‌عنوان نمای بازدیدکننده طراحی شده است: خواندن، جستجو، فیلتر کردن و چاپ. کسانی که می‌خواهند آزمایش‌های جدید اضافه کنند می‌توانند با تیم توسعه تماس بگیرند یا در مخزن داده همکاری کنند.",
+        contactButton: "تماس بگیرید",
+        submitButton: "ارسال آزمایش",
+        sourceRepoButton: "مخزن کد",
+        dataRepoButton: "مشاهده مخزن داده",
+        experimentKicker: "آزمایش",
+        printButton: "چاپ",
+        closeButton: "بستن",
+        dataTimestampLoading: "وضعیت داده‌ها: در حال بارگیری",
+        dataTimestamp: "وضعیت داده‌ها: {date}",
+        loadError: "داده‌ها بارگیری نشدند. مخزن GitHub باید به‌صورت عمومی در دسترس باشد. توضیح فنی: {message}",
+        resultCount: "{filtered} از {total} ورودی",
+        oneExperiment: "یک آزمایش",
+        manyExperiments: "آزمایش‌ها",
+        noResults: "هیچ آزمایش مطابقی پیدا نشد. فیلترها را تغییر دهید یا جستجو را بازنشانی کنید.",
+        untitled: "بدون عنوان",
+        noDescription: "توضیح کوتاهی موجود نیست.",
+        readButton: "خواندن",
+        gradePrefix: "پایه {grade}",
+        imageAlt: "تصویر آزمایش"
+      },
+      fr: {
+        languageLabel: "Langue",
+        translationNote: "Remarque : les expériences ont été rédigées à l'origine en allemand, puis traduites par IA. Des erreurs de traduction peuvent donc apparaître.",
+        filtersAria: "Filtres",
+        searchKicker: "Recherche",
+        findMaterial: "Trouver du matériel",
+        sourceNote: "Chargé en direct depuis le dépôt de données GitHub. Les nouvelles entrées apparaissent ici après vérification et fusion.",
+        queryLabel: "Terme de recherche",
+        queryPlaceholder: "Titre, description, contenu",
+        subjectLabel: "Matière",
+        gradeLabel: "Niveau",
+        schoolLabel: "Type d'établissement",
+        applyFilters: "Appliquer",
+        resetFilters: "Réinitialiser",
+        loadingKicker: "Chargement",
+        experimentsTitle: "Expériences",
+        loadingStatus: "Chargement des données depuis le dépôt GitHub...",
+        allSubjects: "Toutes les matières",
+        allGrades: "Tous les niveaux",
+        allSchools: "Tous les types d'établissement",
+        projectIdeaKicker: "Idée du projet",
+        aboutTitle: "Du quotidien à l'explication scientifique",
+        aboutText1: "AlltagsLabor rassemble des expériences réalisables avec du matériel simple et liées à des situations familières. Les élèves commencent par une observation, essaient eux-mêmes, puis classent l'expérience dans un cadre disciplinaire.",
+        aboutText2: "Cette page est conçue comme une vue visiteur : lire, chercher, filtrer, imprimer. Les personnes qui souhaitent proposer de nouvelles expériences peuvent contacter l'équipe de développement ou contribuer au dépôt de données.",
+        contactButton: "Prendre contact",
+        submitButton: "Soumettre une expérience",
+        sourceRepoButton: "Dépôt du code source",
+        dataRepoButton: "Voir le dépôt de données",
+        experimentKicker: "Expérience",
+        printButton: "Imprimer",
+        closeButton: "Fermer",
+        dataTimestampLoading: "État des données : chargement",
+        dataTimestamp: "État des données : {date}",
+        loadError: "Les données n'ont pas pu être chargées. Le dépôt GitHub doit être accessible publiquement. Note technique : {message}",
+        resultCount: "{filtered} sur {total} entrées",
+        oneExperiment: "Une expérience",
+        manyExperiments: "Expériences",
+        noResults: "Aucune expérience correspondante trouvée. Modifiez les filtres ou réinitialisez la recherche.",
+        untitled: "Sans titre",
+        noDescription: "Aucune description courte disponible.",
+        readButton: "Lire",
+        gradePrefix: "Niveau {grade}",
+        imageAlt: "Image de l'expérience"
+      },
+      pol: {
+        languageLabel: "Język",
+        translationNote: "Uwaga: eksperymenty zostały pierwotnie napisane po niemiecku, a następnie przetłumaczone z użyciem AI. Mogą więc wystąpić błędy tłumaczenia.",
+        filtersAria: "Filtry",
+        searchKicker: "Szukaj",
+        findMaterial: "Znajdź materiał",
+        sourceNote: "Dane są ładowane bezpośrednio z repozytorium GitHub. Nowe wpisy pojawiają się tutaj po przeglądzie i scaleniu.",
+        queryLabel: "Szukana fraza",
+        queryPlaceholder: "Tytuł, opis, treść",
+        subjectLabel: "Przedmiot",
+        gradeLabel: "Klasa",
+        schoolLabel: "Typ szkoły",
+        applyFilters: "Zastosuj",
+        resetFilters: "Resetuj",
+        loadingKicker: "Ładowanie danych",
+        experimentsTitle: "Eksperymenty",
+        loadingStatus: "Dane są ładowane z repozytorium GitHub...",
+        allSubjects: "Wszystkie przedmioty",
+        allGrades: "Wszystkie klasy",
+        allSchools: "Wszystkie typy szkół",
+        projectIdeaKicker: "Idea projektu",
+        aboutTitle: "Od codzienności do wyjaśnienia naukowego",
+        aboutText1: "AlltagsLabor gromadzi eksperymenty, które działają z prostymi materiałami i nawiązują do znanych sytuacji. Uczący się zaczynają od obserwacji, próbują czegoś samodzielnie, a następnie wyjaśniają doświadczenie w kontekście przedmiotu.",
+        aboutText2: "Ta strona jest przygotowana jako widok dla odwiedzających: czytanie, wyszukiwanie, filtrowanie i drukowanie. Osoby, które chcą dodać nowe eksperymenty, mogą skontaktować się z zespołem albo współpracować w repozytorium danych.",
+        contactButton: "Kontakt",
+        submitButton: "Prześlij eksperyment",
+        sourceRepoButton: "Repozytorium kodu",
+        dataRepoButton: "Zobacz repozytorium danych",
+        experimentKicker: "Eksperyment",
+        printButton: "Drukuj",
+        closeButton: "Zamknij",
+        dataTimestampLoading: "Stan danych: ładowanie",
+        dataTimestamp: "Stan danych: {date}",
+        loadError: "Nie udało się załadować danych. Repozytorium GitHub musi być publicznie dostępne. Informacja techniczna: {message}",
+        resultCount: "{filtered} z {total} wpisów",
+        oneExperiment: "Jeden eksperyment",
+        manyExperiments: "Eksperymenty",
+        noResults: "Nie znaleziono pasujących eksperymentów. Zmień filtry albo zresetuj wyszukiwanie.",
+        untitled: "Bez tytułu",
+        noDescription: "Brak krótkiego opisu.",
+        readButton: "Czytaj",
+        gradePrefix: "Klasa {grade}",
+        imageAlt: "Obraz eksperymentu"
+      },
+      rum: {
+        languageLabel: "Limbă",
+        translationNote: "Notă: experimentele au fost scrise inițial în germană și apoi traduse cu ajutorul AI. Prin urmare, pot apărea erori de traducere.",
+        filtersAria: "Filtre",
+        searchKicker: "Căutare",
+        findMaterial: "Găsește material",
+        sourceNote: "Încărcat direct din depozitul de date GitHub. Intrările noi apar aici după verificare și integrare.",
+        queryLabel: "Termen de căutare",
+        queryPlaceholder: "Titlu, descriere, conținut",
+        subjectLabel: "Materie",
+        gradeLabel: "Clasă",
+        schoolLabel: "Tip de școală",
+        applyFilters: "Aplică",
+        resetFilters: "Resetează",
+        loadingKicker: "Se încarcă datele",
+        experimentsTitle: "Experimente",
+        loadingStatus: "Datele se încarcă din depozitul GitHub...",
+        allSubjects: "Toate materiile",
+        allGrades: "Toate clasele",
+        allSchools: "Toate tipurile de școli",
+        projectIdeaKicker: "Ideea proiectului",
+        aboutTitle: "De la viața de zi cu zi la explicația științifică",
+        aboutText1: "AlltagsLabor adună experimente care funcționează cu materiale simple și se leagă de situații familiare. Elevii încep cu o observație, încearcă singuri și apoi încadrează experiența din perspectiva disciplinei.",
+        aboutText2: "Această pagină este concepută ca o vedere pentru vizitatori: citire, căutare, filtrare, imprimare. Cei care doresc să contribuie cu experimente noi pot contacta echipa de dezvoltare sau pot lucra în depozitul de date.",
+        contactButton: "Contact",
+        submitButton: "Trimite experiment",
+        sourceRepoButton: "Depozit cod sursă",
+        dataRepoButton: "Vezi depozitul de date",
+        experimentKicker: "Experiment",
+        printButton: "Imprimă",
+        closeButton: "Închide",
+        dataTimestampLoading: "Starea datelor: se încarcă",
+        dataTimestamp: "Starea datelor: {date}",
+        loadError: "Datele nu au putut fi încărcate. Depozitul GitHub trebuie să fie accesibil public. Notă tehnică: {message}",
+        resultCount: "{filtered} din {total} intrări",
+        oneExperiment: "Un experiment",
+        manyExperiments: "Experimente",
+        noResults: "Nu s-au găsit experimente potrivite. Schimbă filtrele sau resetează căutarea.",
+        untitled: "Fără titlu",
+        noDescription: "Nu există o descriere scurtă.",
+        readButton: "Citește",
+        gradePrefix: "Clasa {grade}",
+        imageAlt: "Imaginea experimentului"
+      },
+      ru: {
+        languageLabel: "Язык",
+        translationNote: "Примечание: эксперименты изначально были написаны на немецком языке, а затем переведены с помощью ИИ. Поэтому возможны ошибки перевода.",
+        filtersAria: "Фильтры",
+        searchKicker: "Поиск",
+        findMaterial: "Найти материалы",
+        sourceNote: "Данные загружаются из репозитория GitHub. Новые записи появляются здесь после проверки и слияния.",
+        queryLabel: "Поисковый запрос",
+        queryPlaceholder: "Название, описание, содержание",
+        subjectLabel: "Предмет",
+        gradeLabel: "Класс",
+        schoolLabel: "Тип школы",
+        applyFilters: "Применить",
+        resetFilters: "Сбросить",
+        loadingKicker: "Загрузка данных",
+        experimentsTitle: "Эксперименты",
+        loadingStatus: "Данные загружаются из репозитория GitHub...",
+        allSubjects: "Все предметы",
+        allGrades: "Все классы",
+        allSchools: "Все типы школ",
+        projectIdeaKicker: "Идея проекта",
+        aboutTitle: "От повседневности к научному объяснению",
+        aboutText1: "AlltagsLabor собирает эксперименты, которые можно выполнить с простыми материалами и связать со знакомыми ситуациями. Учащиеся начинают с наблюдения, пробуют сами и затем объясняют опыт в рамках учебного предмета.",
+        aboutText2: "Эта страница сделана как пользовательский просмотр: читать, искать, фильтровать, печатать. Те, кто хочет предложить новые эксперименты, могут связаться с командой или работать в репозитории данных.",
+        contactButton: "Связаться",
+        submitButton: "Отправить эксперимент",
+        sourceRepoButton: "Репозиторий кода",
+        dataRepoButton: "Репозиторий данных",
+        experimentKicker: "Эксперимент",
+        printButton: "Печать",
+        closeButton: "Закрыть",
+        dataTimestampLoading: "Состояние данных: загрузка",
+        dataTimestamp: "Состояние данных: {date}",
+        loadError: "Не удалось загрузить данные. Репозиторий GitHub должен быть публично доступен. Техническая информация: {message}",
+        resultCount: "{filtered} из {total} записей",
+        oneExperiment: "Один эксперимент",
+        manyExperiments: "Эксперименты",
+        noResults: "Подходящие эксперименты не найдены. Измените фильтры или сбросьте поиск.",
+        untitled: "Без названия",
+        noDescription: "Краткое описание отсутствует.",
+        readButton: "Читать",
+        gradePrefix: "{grade} класс",
+        imageAlt: "Изображение эксперимента"
+      },
+      uk: {
+        languageLabel: "Мова",
+        translationNote: "Примітка: експерименти спочатку були написані німецькою мовою, а потім перекладені за допомогою ШІ. Тому можливі помилки перекладу.",
+        filtersAria: "Фільтри",
+        searchKicker: "Пошук",
+        findMaterial: "Знайти матеріали",
+        sourceNote: "Дані завантажуються з репозиторію GitHub. Нові записи з'являються тут після перевірки та злиття.",
+        queryLabel: "Пошуковий запит",
+        queryPlaceholder: "Назва, опис, зміст",
+        subjectLabel: "Предмет",
+        gradeLabel: "Клас",
+        schoolLabel: "Тип школи",
+        applyFilters: "Застосувати",
+        resetFilters: "Скинути",
+        loadingKicker: "Завантаження даних",
+        experimentsTitle: "Експерименти",
+        loadingStatus: "Дані завантажуються з репозиторію GitHub...",
+        allSubjects: "Усі предмети",
+        allGrades: "Усі класи",
+        allSchools: "Усі типи шкіл",
+        projectIdeaKicker: "Ідея проєкту",
+        aboutTitle: "Від повсякденності до наукового пояснення",
+        aboutText1: "AlltagsLabor збирає експерименти, які працюють із простими матеріалами та пов'язані зі знайомими ситуаціями. Учні починають зі спостереження, пробують самі, а потім пояснюють досвід у межах навчального предмета.",
+        aboutText2: "Ця сторінка створена як перегляд для відвідувачів: читати, шукати, фільтрувати, друкувати. Ті, хто хоче запропонувати нові експерименти, можуть зв'язатися з командою або працювати в репозиторії даних.",
+        contactButton: "Зв'язатися",
+        submitButton: "Надіслати експеримент",
+        sourceRepoButton: "Репозиторій коду",
+        dataRepoButton: "Репозиторій даних",
+        experimentKicker: "Експеримент",
+        printButton: "Друк",
+        closeButton: "Закрити",
+        dataTimestampLoading: "Стан даних: завантаження",
+        dataTimestamp: "Стан даних: {date}",
+        loadError: "Не вдалося завантажити дані. Репозиторій GitHub має бути публічно доступним. Технічна інформація: {message}",
+        resultCount: "{filtered} з {total} записів",
+        oneExperiment: "Один експеримент",
+        manyExperiments: "Експерименти",
+        noResults: "Відповідних експериментів не знайдено. Змініть фільтри або скиньте пошук.",
+        untitled: "Без назви",
+        noDescription: "Короткий опис відсутній.",
+        readButton: "Читати",
+        gradePrefix: "{grade} клас",
+        imageAlt: "Зображення експерименту"
+      }
+    };
+    const LANGUAGE_LABELS = {
+      de: "Deutsch",
+      eng: "English",
+      es: "Español",
+      fa: "فارسی",
+      fr: "Français",
+      pol: "Polski",
+      rum: "Română",
+      ru: "Русский",
+      uk: "Українська"
+    };
+    const IMPRESSUM_URL = repoFileUrl("impressum.txt");
+
+    const state = {
+      experiments: [],
+      filtered: [],
+      language: "de",
+      activeExperiment: null
+    };
+
+    const els = {
+      query: document.getElementById("query"),
+      language: document.getElementById("language"),
+      subject: document.getElementById("subject"),
+      grade: document.getElementById("grade"),
+      school: document.getElementById("school"),
+      grid: document.getElementById("experimentGrid"),
+      status: document.getElementById("status"),
+      resultKicker: document.getElementById("resultKicker"),
+      resultTitle: document.getElementById("resultTitle"),
+      dialog: document.getElementById("detailDialog"),
+      dialogTitle: document.getElementById("dialogTitle"),
+      dialogBody: document.getElementById("dialogBody")
+    };
+
+    updateLanguageLabels();
+    applyUiTranslations();
+
+    document.getElementById("applyFilters").addEventListener("click", applyFilters);
+    document.getElementById("resetFilters").addEventListener("click", resetFilters);
+    document.getElementById("closeDialog").addEventListener("click", () => els.dialog.close());
+    document.getElementById("printExperiment").addEventListener("click", () => window.print());
+    document.getElementById("pdfExperiment").addEventListener("click", exportPdf);
+    els.language.addEventListener("change", () => {
+      state.language = els.language.value;
+      applyUiTranslations();
+      loadData();
+    });
+    els.query.addEventListener("keydown", event => {
+      if (event.key === "Enter") applyFilters();
+    });
+
+    loadData();
+
+    async function loadData() {
+      showStatus(t("loadingStatus"), "empty");
+      try {
+        const response = await fetch(dataUrlForLanguage(state.language), { cache: "no-store" });
+        if (!response.ok) throw new Error("HTTP " + response.status);
+        const data = await response.json();
+        state.experiments = Array.isArray(data) ? data : [];
+        state.filtered = [...state.experiments];
+        populateFilters(state.experiments);
+        renderExperiments();
+        loadImpressum();
+        const lastModified = response.headers.get("Last-Modified");
+        const fileDate = lastModified ? new Date(lastModified) : new Date();
+        document.getElementById("dataTimestamp").textContent = formatText("dataTimestamp", {
+          date: fileDate.toLocaleString(localeForLanguage(state.language))
+        });
+      } catch (error) {
+        showStatus(formatText("loadError", { message: error.message }), "error");
+      }
+    }
+
+    function t(key) {
+      return (UI_TEXT[state.language] && UI_TEXT[state.language][key]) || UI_TEXT.de[key] || key;
+    }
+
+    function formatText(key, replacements = {}) {
+      return Object.entries(replacements).reduce(
+        (text, [name, value]) => text.replaceAll("{" + name + "}", value),
+        t(key)
+      );
+    }
+
+    function localeForLanguage(language) {
+      return {
+        de: "de-DE",
+        eng: "en-US",
+        es: "es-ES",
+        fa: "fa-IR",
+        fr: "fr-FR",
+        pol: "pl-PL",
+        rum: "ro-RO",
+        ru: "ru-RU",
+        uk: "uk-UA"
+      }[language] || "de-DE";
+    }
+
+    function updateLanguageLabels() {
+      [...els.language.options].forEach(option => {
+        option.textContent = LANGUAGE_LABELS[option.value] || option.textContent;
+      });
+    }
+
+    function applyUiTranslations() {
+      document.documentElement.lang = {
+        eng: "en",
+        pol: "pl",
+        rum: "ro"
+      }[state.language] || state.language;
+      document.documentElement.dir = state.language === "fa" ? "rtl" : "ltr";
+      document.querySelectorAll("[data-i18n]").forEach(node => {
+        node.textContent = t(node.dataset.i18n);
+      });
+      document.querySelectorAll("[data-i18n-attr]").forEach(node => {
+        node.dataset.i18nAttr.split(";").forEach(entry => {
+          const [attr, key] = entry.split(":");
+          if (attr && key) node.setAttribute(attr, t(key));
+        });
+      });
+    }
+
+    async function loadImpressum() {
+      try {
+        const response = await fetch(IMPRESSUM_URL, { cache: "no-store" });
+        if (!response.ok) return;
+        const impressum = await response.text();
+        if (!impressum.trim()) return;
+        const footer = document.querySelector("footer .inner");
+        const pre = footer.querySelector(".impressum-content") || document.createElement("pre");
+        pre.className = "impressum-content";
+        pre.textContent = impressum.trim();
+        if (!pre.parentNode) footer.appendChild(pre);
+      } catch (error) {
+        console.warn("Impressum konnte nicht geladen werden", error);
+      }
+    }
+
+    function populateFilters(experiments) {
+      fillSelect(els.subject, uniqueValues(experiments, "subject"), t("allSubjects"));
+      fillSelect(els.grade, uniqueValues(experiments, "gradeLevel").sort(sortGrades), t("allGrades"));
+      fillSelect(els.school, uniqueValues(experiments, "schoolType"), t("allSchools"));
+    }
+
+    function uniqueValues(experiments, key) {
+      return [...new Set(experiments.map(exp => exp[key]).filter(Boolean))].sort((a, b) => String(a).localeCompare(String(b), localeForLanguage(state.language)));
+    }
+
+    function fillSelect(select, values, label) {
+      select.innerHTML = "";
+      select.append(new Option(label, ""));
+      values.forEach(value => select.append(new Option(value, value)));
+    }
+
+    function sortGrades(a, b) {
+      const na = Number(a);
+      const nb = Number(b);
+      if (!Number.isNaN(na) && !Number.isNaN(nb)) return na - nb;
+      return String(a).localeCompare(String(b), localeForLanguage(state.language));
+    }
+
+    function applyFilters() {
+      const query = normalize(els.query.value);
+      const subject = els.subject.value;
+      const grade = els.grade.value;
+      const school = els.school.value;
+
+      state.filtered = state.experiments.filter(exp => {
+        const searchable = [
+          exp.title,
+          exp.shortDescription,
+          exp.subject,
+          exp.gradeLevel,
+          exp.schoolType,
+          ...(Array.isArray(exp.steps) ? exp.steps.map(step => step.content) : [])
+        ].join(" ");
+
+        return (!query || normalize(searchable).includes(query))
+          && (!subject || exp.subject === subject)
+          && (!grade || exp.gradeLevel === grade)
+          && (!school || exp.schoolType === school);
+      });
+
+      renderExperiments();
+    }
+
+    function resetFilters() {
+      els.query.value = "";
+      els.subject.value = "";
+      els.grade.value = "";
+      els.school.value = "";
+      state.filtered = [...state.experiments];
+      renderExperiments();
+    }
+
+    function normalize(value) {
+      return String(value || "").toLowerCase().replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+    }
+
+    function renderExperiments() {
+      els.grid.innerHTML = "";
+      els.grid.hidden = false;
+      els.status.hidden = true;
+      els.resultKicker.textContent = formatText("resultCount", {
+        filtered: state.filtered.length,
+        total: state.experiments.length
+      });
+      els.resultTitle.textContent = state.filtered.length === 1 ? t("oneExperiment") : t("manyExperiments");
+
+      if (!state.filtered.length) {
+        els.grid.hidden = true;
+        showStatus(t("noResults"), "empty");
+        return;
+      }
+
+      state.filtered.forEach((experiment, index) => {
+        const card = document.createElement("article");
+        card.className = "experiment-card";
+
+        const title = document.createElement("h3");
+        title.textContent = experiment.title || t("untitled");
+
+        const description = document.createElement("div");
+        description.className = "description";
+        description.innerHTML = rewriteMediaPaths(experiment.shortDescription || t("noDescription"));
+
+        const meta = document.createElement("div");
+        meta.className = "meta";
+        [experiment.subject, formatGrade(experiment.gradeLevel), experiment.schoolType].filter(Boolean).forEach(value => {
+          const tag = document.createElement("span");
+          tag.className = "tag";
+          tag.textContent = value;
+          meta.appendChild(tag);
+        });
+
+        const actions = document.createElement("div");
+        actions.className = "card-actions";
+        const open = document.createElement("button");
+        open.className = "btn primary";
+        open.type = "button";
+        open.textContent = t("readButton");
+        open.addEventListener("click", () => showExperiment(experiment));
+        const print = document.createElement("button");
+        print.className = "btn";
+        print.type = "button";
+        print.textContent = t("printButton");
+        print.addEventListener("click", () => {
+          showExperiment(experiment);
+          setTimeout(() => window.print(), 120);
+        });
+        actions.append(open, print);
+
+        card.append(title, description, meta, actions);
+        card.style.animationDelay = (index * 20) + "ms";
+        els.grid.appendChild(card);
+      });
+    }
+
+    function formatGrade(grade) {
+      if (!grade) return "";
+      return /^\d+$/.test(String(grade)) ? formatText("gradePrefix", { grade }) : String(grade);
+    }
+
+    function showStatus(message, type) {
+      els.status.hidden = false;
+      els.status.className = type;
+      els.status.textContent = message;
+      els.grid.hidden = true;
+    }
+
+    function showExperiment(experiment) {
+      state.activeExperiment = experiment;
+      els.dialogTitle.textContent = experiment.title || t("experimentKicker");
+      els.dialogBody.innerHTML = "";
+
+      const meta = document.createElement("div");
+      meta.className = "detail-meta";
+      [experiment.subject, formatGrade(experiment.gradeLevel), experiment.schoolType].filter(Boolean).forEach(value => {
+        const tag = document.createElement("span");
+        tag.className = "tag";
+        tag.textContent = value;
+        meta.appendChild(tag);
+      });
+      els.dialogBody.appendChild(meta);
+
+      if (experiment.shortDescription) {
+        const intro = document.createElement("section");
+        intro.className = "step";
+        intro.innerHTML = rewriteMediaPaths(experiment.shortDescription);
+        els.dialogBody.appendChild(intro);
+      }
+
+      (experiment.steps || []).forEach(step => {
+        const section = document.createElement("section");
+        section.className = "step " + (step.type || "text");
+
+        if (step.type === "image") {
+          const img = document.createElement("img");
+          img.src = resolveAsset(step.content);
+          img.alt = step.description || experiment.title || t("imageAlt");
+          section.appendChild(img);
+          if (step.description) {
+            const caption = document.createElement("p");
+            caption.textContent = step.description;
+            section.appendChild(caption);
+          }
+        } else if (step.type === "audio") {
+          const audio = document.createElement("audio");
+          audio.controls = true;
+          audio.src = resolveAsset(step.content);
+          section.appendChild(audio);
+        } else {
+          section.innerHTML = rewriteMediaPaths(step.content || "");
+        }
+
+        els.dialogBody.appendChild(section);
+      });
+
+      if (typeof els.dialog.showModal === "function") {
+        els.dialog.showModal();
+      } else {
+        els.dialog.setAttribute("open", "");
+      }
+
+      if (window.MathJax && MathJax.typesetPromise) {
+        MathJax.typesetPromise([els.dialogBody]).catch(console.warn);
+      }
+    }
+
+    function resolveAsset(path) {
+      if (!path) return "";
+      if (/^https?:\/\//i.test(path)) return path;
+      return repoFileUrl(path.replace(/^dataEditor\//, "").replace(/^\/+/, ""));
+    }
+
+    function repoFileUrl(path) {
+      return DATA_REPO_BASE_URL + String(path || "").split("/").map(encodeURIComponent).join("/");
+    }
+
+    function dataUrlForLanguage(language) {
+      return repoFileUrl(LANGUAGE_FILES[language] || LANGUAGE_FILES.de);
+    }
+
+    function rewriteMediaPaths(html) {
+      const wrapper = document.createElement("div");
+      wrapper.innerHTML = html || "";
+      sanitizeElement(wrapper);
+      wrapper.querySelectorAll("img, audio, source").forEach(node => {
+        const attr = node.hasAttribute("src") ? "src" : "href";
+        const value = node.getAttribute(attr);
+        if (value) node.setAttribute(attr, resolveAsset(value));
+      });
+      wrapper.querySelectorAll("a").forEach(link => {
+        if (link.href && /^https?:\/\//i.test(link.href)) {
+          link.target = "_blank";
+          link.rel = "noopener";
+        }
+      });
+      return wrapper.innerHTML;
+    }
+
+    function sanitizeElement(root) {
+      root.querySelectorAll("script, iframe, object, embed, link, meta").forEach(node => node.remove());
+      root.querySelectorAll("*").forEach(node => {
+        [...node.attributes].forEach(attr => {
+          const name = attr.name.toLowerCase();
+          const value = attr.value.trim();
+          if (name.startsWith("on") || /^javascript:/i.test(value)) {
+            node.removeAttribute(attr.name);
+          }
+        });
+      });
+    }
+
+    function exportPdf() {
+      if (!state.activeExperiment || !window.html2canvas || !window.jspdf) {
+        window.print();
+        return;
+      }
+
+      const source = els.dialogBody.cloneNode(true);
+      const printable = document.createElement("div");
+      printable.style.position = "fixed";
+      printable.style.left = "-9999px";
+      printable.style.top = "0";
+      printable.style.width = "760px";
+      printable.style.padding = "28px";
+      printable.style.background = "#fff";
+      printable.style.color = "#1f2933";
+      printable.innerHTML = "<h1 style='font-size:28px;line-height:1.1;margin:0 0 18px'>" + escapeHtml(state.activeExperiment.title || "AlltagsLabor") + "</h1>";
+      printable.appendChild(source);
+      document.body.appendChild(printable);
+
+      const render = () => html2canvas(printable, { scale: 2, backgroundColor: "#ffffff", useCORS: true }).then(canvas => {
+        const pdf = new window.jspdf.jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
+        const imgWidth = pageWidth;
+        const imgHeight = canvas.height * imgWidth / canvas.width;
+        const imgData = canvas.toDataURL("image/png");
+        let position = 0;
+
+        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+        let remainingHeight = imgHeight - pageHeight;
+        while (remainingHeight > 0) {
+          position -= pageHeight;
+          pdf.addPage();
+          pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+          remainingHeight -= pageHeight;
+        }
+
+        pdf.save((state.activeExperiment.title || "alltagslabor").replace(/[^\w\-]+/g, "_") + ".pdf");
+        document.body.removeChild(printable);
+      }).catch(error => {
+        document.body.removeChild(printable);
+        console.warn(error);
+        window.print();
+      });
+
+      if (window.MathJax && MathJax.typesetPromise) {
+        MathJax.typesetPromise([printable]).then(render).catch(render);
+      } else {
+        render();
+      }
+    }
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      })[char]);
+    }
+  </script>
+    <script src="../../../feedback-widget.js" defer></script>
+</body>
+</html>

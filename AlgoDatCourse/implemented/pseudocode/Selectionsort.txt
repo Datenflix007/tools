@@ -1,0 +1,14 @@
+﻿⊳ Eingabe: Array A[1..n]
+⊳ Ausgabe: Array A aufsteigend sortiert (in-place)
+
+algorithm Selectionsort(A)
+  for i = 1 to length(A) - 1 do
+    min = i
+    for j = i + 1 to length(A) do
+      if A[j] < A[min] then
+        min = j
+      end if
+    end for
+    swap(A[i], A[min])
+  end for
+end algorithm

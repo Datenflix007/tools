@@ -1,0 +1,21 @@
+﻿⊳ Eingabe: Array A[1..n] mit Werten in [0..k], Maximalwert k
+⊳ Ausgabe: Array B[1..n] mit den Elementen aus A aufsteigend sortiert
+
+algorithm Countingsort(A, B, k)
+  let C[0..k] be a new array
+  for i = 0 to k do
+    C[i] = 0
+  end for
+  for j = 1 to length(A) do
+    C[A[j]] = C[A[j]] + 1
+  end for
+  // C[i] enthaelt jetzt die Anzahl der Elemente gleich i
+  for i = 1 to k do
+    C[i] = C[i] + C[i - 1]
+  end for
+  // C[i] enthaelt jetzt die Anzahl der Elemente <= i
+  for j = length(A) downto 1 do
+    B[C[A[j]]] = A[j]
+    C[A[j]] = C[A[j]] - 1
+  end for
+end algorithm

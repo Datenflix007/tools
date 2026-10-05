@@ -1,0 +1,11 @@
+⊳ Eingabe: unsortiertes Feld A
+⊳ Ausgabe: Heap
+
+algorithm Heapsort(𝐴)
+    BuildMaxHeap(𝐴)
+    for 𝑖 = länge[𝐴] down to 2 do
+        swap(𝐴[1], 𝐴[𝑖])
+        heap_größe[𝐴] = heap_größe[𝐴] −1
+        MaxHeapify(𝐴, 1)
+    end for
+end algorithm

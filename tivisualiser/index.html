@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/png" href="../../../media/favicon.png">
+    <title>visualiser</title>
+    <style>
+         :root {
+            --bg: #0b1220;
+            --panel: #111827;
+            --panel-2: #0f172a;
+            --border: #1f2a44;
+            --text: #e5e7eb;
+            --muted: #9ca3af;
+            --accent: #60a5fa;
+            --accent-2: #38bdf8;
+            --shadow: 0 10px 30px rgba(0, 0, 0, .35), 0 2px 8px rgba(0, 0, 0, .25);
+            --radius: 16px
+        }
+        
+        * {
+            box-sizing: border-box
+        }
+        
+        html,
+        body {
+            height: 100%
+        }
+        
+        body {
+            margin: 0;
+            color: var(--text);
+            font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+            background: radial-gradient(1200px 800px at 80% -200px, #0f1a33 0%, var(--bg) 50%, var(--bg) 100%)
+        }
+        
+        .header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: linear-gradient(90deg, var(--panel-2), var(--panel));
+            border-bottom: 1px solid var(--border);
+            box-shadow: var(--shadow)
+        }
+        
+        .header-inner {
+            max-width: 1500px;
+            margin: 0 auto;
+            padding: 14px 20px;
+            display: flex;
+            align-items: center
+        }
+        
+        .logo {
+            font-weight: 800;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            font-size: 22px
+        }
+        
+        .tag {
+            margin-left: auto;
+            font-size: 12px;
+            color: var(--muted)
+        }
+        
+        .layout {
+            max-width: 1500px;
+            margin: 20px auto;
+            padding: 0 16px;
+            display: grid;
+            grid-template-columns: 220px 340px 1fr;
+            gap: 18px
+        }
+        
+        @media (max-width:1100px) {
+            .layout {
+                grid-template-columns: 1fr
+            }
+            .tools {
+                order: 2
+            }
+            .settings {
+                order: 3
+            }
+            .stage {
+                order: 1
+            }
+            .info-wide {
+                grid-column: 1 / -1
+            }
+        }
+        
+        .panel {
+            background: linear-gradient(180deg, rgba(255, 255, 255, .02), transparent 120px), var(--panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            box-shadow: var(--shadow)
+        }
+        
+        .panel h3 {
+            margin: 0 0 12px;
+            font-size: 14px;
+            color: var(--muted);
+            font-weight: 700;
+            letter-spacing: .08em;
+            text-transform: uppercase
+        }
+        
+        .group {
+            border-top: 1px solid var(--border);
+            padding-top: 12px;
+            margin-top: 12px
+        }
+        
+        .opt {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            padding: 10px 8px;
+            border-radius: 12px;
+            cursor: pointer
+        }
+        
+        .opt:hover {
+            background: #0f1d33
+        }
+        
+        .opt input {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 6px;
+            border: 2px solid var(--accent);
+            display: grid;
+            place-items: center
+        }
+        
+        .opt input::after {
+            content: "";
+            width: 12px;
+            height: 12px;
+            border-radius: 4px;
+            transform: scale(0);
+            transition: transform .15s;
+            background: linear-gradient(180deg, var(--accent), var(--accent-2))
+        }
+        
+        .opt input:checked::after {
+            transform: scale(1)
+        }
+        
+        .opt small {
+            color: var(--muted)
+        }
+        /* Bühne / Modell */
+        
+        .stage {
+            min-height: 620px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 18px;
+            z-index: 1
+        }
+        
+        .canvas {
+            width: 100%;
+            height: 100%;
+            position: relative
+        }
+        
+        .hint {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 18px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 13px
+        }
+        
+        .hint .key {
+            background: #0b1b32;
+            border: 1px solid #18345a;
+            padding: 2px 6px;
+            border-radius: 6px
+        }
+        
+        .block {
+            position: absolute;
+            min-width: 160px;
+            padding: 12px 14px;
+            background: #102135;
+            border: 1px solid #1a3a66;
+            color: #dbeafe;
+            border-radius: 14px;
+            text-align: center;
+            font-weight: 700;
+            box-shadow: 0 10px 18px rgba(4, 17, 46, .35) inset, 0 10px 22px rgba(0, 0, 0, .25)
+        }
+        
+        .block.clickable {
+            cursor: pointer
+        }
+        
+        .chip {
+            display: inline-block;
+            font-size: 12px;
+            color: #89b4ff;
+            background: #0b1b32;
+            border: 1px solid #19345a;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            margin-top: 6px
+        }
+        
+        .label {
+            display: block;
+            margin-top: 6px
+        }
+        
+        .cpu-frame {
+            position: absolute;
+            left: 200px;
+            top: 160px;
+            width: 420px;
+            height: 160px;
+            border-radius: 16px;
+            border: 2px dashed #2b579a;
+            display: none;
+            background: transparent;
+        }
+        
+        .cpu-label {
+            position: absolute;
+            left: 50%;
+            top: 10px;
+            transform: translateX(-50%);
+            background: #0b1b2b;
+            border: 1px solid #153257;
+            padding: 6px 14px;
+            border-radius: 10px;
+            font-weight: 800
+        }
+        
+        svg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%
+        }
+        
+        .bus {
+            stroke: #93c5fd;
+            stroke-width: 3
+        }
+        
+        .bus-addr {
+            stroke: #34d399;
+            stroke-width: 3
+        }
+        
+        .bus-ctrl {
+            stroke: #fca5a5;
+            stroke-width: 3
+        }
+        
+        .systembus {
+            stroke: #93c5fd;
+            stroke-width: 12;
+            opacity: .9
+        }
+        
+        .bus-group {
+            cursor: pointer
+        }
+        
+        .hide {
+            display: none !important
+        }
+        
+        .legend {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            background: #0b1b2b;
+            border: 1px solid #153257;
+            color: #c7d2fe;
+            border-radius: 12px;
+            padding: 10px 12px;
+            font-size: 13px
+        }
+        
+        .legend div {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 6px 0
+        }
+        
+        .legline {
+            width: 40px;
+            height: 3px;
+            background: #8ab4ff;
+            border-radius: 2px
+        }
+        
+        .legline.addr {
+            background: #34d399
+        }
+        
+        .legline.ctrl {
+            background: #fca5a5
+        }
+        
+        .legline.thick {
+            height: 6px
+        }
+        /* Buttons */
+        
+        .btn {
+            appearance: none;
+            border: 1px solid var(--border);
+            background: #0f1d33;
+            padding: 10px 14px;
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .25)
+        }
+        
+        .btn:hover {
+            filter: brightness(1.05)
+        }
+        
+        .btn-primary {
+            border-color: #2463eb;
+            background: linear-gradient(180deg, var(--accent), var(--accent-2));
+            color: #041223;
+            font-weight: 800
+        }
+        
+        .floating-next {
+            position: absolute;
+            right: 22px;
+            bottom: 22px;
+            z-index: 2
+        }
+        
+        .floating-prev {
+            position: absolute;
+            left: 22px;
+            bottom: 22px;
+            z-index: 2
+        }
+        /* Merksatz/Detail Overlays */
+        
+        .overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(180deg, rgba(5, 12, 24, .85), rgba(5, 12, 24, .75));
+            backdrop-filter: blur(4px) saturate(120%)
+        }
+        
+        .info-card {
+            width: min(760px, 92%);
+            max-height: 80%;
+            background: linear-gradient(180deg, rgba(255, 255, 255, .02), transparent 140px), var(--panel-2);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden
+        }
+        
+        .info-card header {
+            padding: 16px 18px;
+            border-bottom: 1px solid var(--border);
+            font-weight: 800;
+            font-size: 18px;
+            letter-spacing: .02em
+        }
+        
+        .card-body {
+            padding: 16px 18px;
+            overflow-y: auto;
+            line-height: 1.5
+        }
+        
+        .card-footer {
+            padding: 12px 18px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px
+        }
+        /* Breites Info-Panel (Schritt 1) */
+        
+        .info-wide {
+            grid-column: 2 / 4;
+            display: flex;
+            flex-direction: column;
+            max-height: 72vh
+        }
+        
+        .info-wide header {
+            font-weight: 800;
+            margin-bottom: 8px
+        }
+        
+        .info-wide .wide-body {
+            flex: 1;
+            overflow: auto;
+            line-height: 1.6;
+            padding: 6px 2px
+        }
+        
+        .info-wide .wide-footer {
+            display: flex;
+            justify-content: flex-end;
+            border-top: 1px solid var(--border);
+            padding-top: 12px;
+            margin-top: 12px
+        }
+        /* Galerie-Styles für Detail-Overlays */
+        
+        .gallery img {
+            max-width: 100%;
+            border-radius: 12px;
+            margin: 6px 0
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <div class="header-inner">
+            <div class="logo">visualiser</div>
+            <div class="tag">Interaktive Unterrichtstools</div>
+        </div>
+    </header>
+
+    <main class="layout">
+        <!-- Links: Architektur -->
+        <aside class="panel tools">
+            <h3>Architektur</h3>
+            <label class="opt">
+      <input id="chk-vna" type="checkbox" />
+      <div>
+        <div>Von-Neumann-Architektur</div>
+        <small>Darstellung in der Mitte anzeigen</small>
+      </div>
+    </label>
+        </aside>
+
+        <!-- Schritt 1: Breites Info-Panel -->
+        <section id="info-panel" class="panel info-wide hide" aria-live="polite">
+            <h3>Einführung</h3>
+            <div class="wide-body" style="text-align:center">
+                <!-- Deine Bilder/Texte für den Intro-Teil -->
+                <img src="media/vna/vna00.webp" style="width:80%" alt="">
+                <img src="media/vna/vna01.webp" style="width:80%" alt="">
+                <img src="media/vna/vna02.webp" style="width:80%" alt="">
+                <img src="media/vna/vna03.webp" style="width:60%;border-radius:10%" alt=""><br/> Nachbau der Z3 1941 (der erste durch Konrad Zuse entwickelte programmierbare Rechner ist steuerbar durch Lochstreifen)<br />
+                <img src="media/vna/vna04.webp" style="width:60%;border-radius:10%" alt=""><br/> der ENIAC Computer 1945 (der zweite programmierbare Rechner ist steuerbar durch Steckverbindungen)<br />
+                <img src="media/vna/vna05.webp" style="width:60%;border-radius:10%" alt=""><br/> zwei der Frauen, die den ENIAC programmierten<br />
+
+
+
+
+            </div>
+            <div class="wide-footer">
+                <button id="btn-info-next" class="btn btn-primary">Weiter</button>
+            </div>
+        </section>
+
+        <!-- Mitte: Detaileinstellungen (Start = VERSTECKT) -->
+        <aside class="panel settings hide">
+            <h3>Detail­einstellungen</h3>
+
+            <label class="opt">
+      <input id="chk-dreiwerke" type="checkbox" />
+      <div>
+        <div>„Drei Werke“ einblenden</div>
+        <small>ALU (Rechenwerk) • Registerwerk • Steuerwerk & Speicherwerk</small>
+      </div>
+    </label>
+
+            <label class="opt">
+      <input id="chk-steuerwerk-label" type="checkbox" />
+      <div><div>Steuerwerk-Beschriftung</div><small>Label anzeigen</small></div>
+    </label>
+
+            <label class="opt">
+      <input id="chk-rechenwerk-label" type="checkbox" />
+      <div><div>Rechenwerk-Beschriftung</div><small>Label anzeigen</small></div>
+    </label>
+
+            <label class="opt">
+      <input id="chk-cpu-frame" type="checkbox" />
+      <div><div>CPU-Rahmen einblenden</div><small>Rahmen um Rechen- & Steuerwerk (mit „CPU“)</small></div>
+    </label>
+
+            <label class="opt">
+      <input id="chk-mem-label" type="checkbox" />
+      <div><div>Speicherwerk-Beschriftung</div><small>Label anzeigen</small></div>
+    </label>
+
+            <div class="group">
+                <h3>Bus-Variante</h3>
+                <label class="opt">
+        <input id="bus-simple" type="radio" name="busmode" checked />
+        <div><div>Einfacher Systembus</div><small>ein dicker Strich</small></div>
+      </label>
+                <label class="opt">
+        <input id="bus-triple" type="radio" name="busmode" />
+        <div><div>Drei-Bus-System</div><small>Daten • Adresse • Kontrolle</small></div>
+      </label>
+            </div>
+
+            <!-- NEU: Bus einblenden -->
+            <div class="group">
+                <label class="opt">
+        <input id="chk-bus-visible" type="checkbox" />
+        <div>
+          <div>Bus einblenden</div>
+          <small>Systembus bzw. Drei-Bus anzeigen</small>
+        </div>
+      </label>
+            </div>
+
+            <div class="group">
+                <label class="opt">
+        <input id="chk-io" type="checkbox" />
+        <div><div>Ein/Ausgabe einblenden</div><small>als „periphere Geräte“ anzeigen</small></div>
+      </label>
+
+                <label class="opt">
+        <input id="chk-io-rename" type="checkbox" />
+        <div><div>Als „periphere Geräte“ benennen</div><small>ändert die Beschriftung der Ein/Ausgabe</small></div>
+      </label>
+            </div>
+        </aside>
+
+        <!-- Rechts: Bühne/Modell (Start = VERSTECKT) -->
+        <section class="panel stage hide">
+            <div class="canvas" id="canvas" aria-live="polite">
+                <!-- Drei-Bus -->
+                <svg id="svg-triple" viewBox="0 0 1000 620" preserveAspectRatio="none" class="hide" aria-hidden="true">
+        <g id="bus-triple-group" class="bus-group">
+          <line class="bus"      x1="160" y1="420" x2="860" y2="420"/>
+          <line class="bus-addr" x1="160" y1="460" x2="860" y2="460"/>
+          <line class="bus-ctrl" x1="160" y1="380" x2="860" y2="380"/>
+          <!-- Abgänge hoch -->
+          <line class="bus" x1="360" y1="240" x2="360" y2="460"/>
+          <line class="bus" x1="600" y1="240" x2="600" y2="460"/>
+          <line class="bus" x1="820" y1="240" x2="820" y2="460"/>
+          <line class="bus" x1="200" y1="380" x2="200" y2="530"/>
+        </g>
+      </svg>
+
+                <!-- Einfacher Systembus -->
+                <svg id="svg-simple" viewBox="0 0 1000 620" preserveAspectRatio="none" aria-hidden="true">
+        <g id="bus-simple-group" class="bus-group">
+          <line class="systembus" x1="160" y1="440" x2="860" y2="440"/>
+          <line class="systembus" x1="360" y1="240" x2="360" y2="440"/>
+          <line class="systembus" x1="600" y1="240" x2="600" y2="440"/>
+          <line class="systembus" x1="820" y1="240" x2="820" y2="440"/>
+          <line class="systembus" x1="200" y1="440" x2="200" y2="530"/>
+        </g>
+      </svg>
+
+                <!-- CPU-Rahmen -->
+                <div id="cpu-frame" class="cpu-frame">
+                    <div class="cpu-label">CPU</div>
+                </div>
+                <div id="cpu-pill" class="block" style="left:210px; top:160px; width:380px; height:130px; display:none;">CPU</div>
+
+                <!-- Drei Werke -->
+                <div id="rw" class="block" style="left:220px; top:200px; display:none;">Rechenwerk <span class="label chip" id="lbl-rw" style="display:none">ALU</span></div>
+                <div id="sw" class="block" style="left:420px; top:200px; display:none;">Steuerwerk </div>
+                <div id="mem" class="block" style="left:600px; top:200px; display:none;">Speicherwerk <span class="label chip" id="lbl-mem" style="display:none">HDD/ SSD</span></div>
+                <div id="io" class="block" style="left:180px; top:660px; display:none;">Ein/Ausgabe
+                    <div class="chip">Tastatur · Anzeige · SSD</div>
+                </div>
+
+                <!-- Legenden -->
+                <div id="legend-triple" class="legend hide">
+                    <div><span class="legline"></span> Datenbus</div>
+                    <div><span class="legline addr"></span> Adressbus</div>
+                    <div><span class="legline ctrl"></span> Kontrollbus</div>
+                </div>
+                <div id="legend-simple" class="legend">
+                    <div><span class="legline thick"></span> Systembus</div>
+                </div>
+
+                <!-- Zentrierter Tipp -->
+                <div class="hint">Tipp: <span class="key">Leertaste</span> toggelt die Anzeige.</div>
+            </div>
+
+            <!-- Schritt-2 Navigation -->
+            <button id="btn-stage-prev" class="btn floating-prev hide">Zurück</button>
+            <button id="btn-stage-next" class="btn btn-primary floating-next hide">Weiter</button>
+
+            <!-- Schritt 3: Merksatz -->
+            <div id="notes-overlay" class="overlay hide" role="dialog" aria-modal="true" aria-label="Merksatzübersicht">
+                <div class="info-card">
+                    <header>Merksatzübersicht</header>
+                    <div class="card-body">
+                        <ul>
+                            <li>Ein Computer arbeitet nach dem Von-Neumann-Prinzip: Befehle und Daten liegen im gemeinsamen Speicher.</li>
+                            <li>Rechenwerk führt Operationen aus, Steuerwerk steuert den Ablauf.</li>
+                            <li>Der (System-)Bus verbindet die Komponenten und transportiert Daten, Adressen und Steuersignale.</li>
+                        </ul>
+                    </div>
+                    <div class="card-footer">
+                        <button id="btn-notes-close" class="btn">Schließen</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NEU: Detail-Overlay für Klick auf RW/SW/MEM/BUS -->
+            <div id="detail-overlay" class="overlay hide" role="dialog" aria-modal="true" aria-label="Details">
+                <div class="info-card">
+                    <header id="detail-title">Details</header>
+                    <div class="card-body" id="detail-body">
+                        <!-- Hier füllen wir dynamisch Inhalte (Bilder/Texte) ein -->
+                    </div>
+                    <div class="card-footer">
+                        <button id="btn-detail-close" class="btn">Schließen</button>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <div style="max-width:1500px;margin:14px auto 40px;padding:0 16px;color:var(--muted);font-size:12px">
+        <a id="footerLink" href="https://datenflix007.github.io/" target="_blank" rel="noopener" style="color:white;text-decoration:none;">© <span id="year"></span> Felix Staacke</a>
+    </div>
+
+    <script>
+        // Panels
+        const settingsPanel = document.querySelector('.panel.settings');
+        const stagePanel = document.querySelector('.panel.stage');
+        const infoPanel = document.getElementById('info-panel');
+
+        // Controls
+        const chkVNA = document.getElementById('chk-vna');
+        const chkDrei = document.getElementById('chk-dreiwerke');
+        const chkSWLbl = document.getElementById('chk-steuerwerk-label');
+        const chkRWLbl = document.getElementById('chk-rechenwerk-label');
+        const chkCPUFrame = document.getElementById('chk-cpu-frame');
+        const chkMemLbl = document.getElementById('chk-mem-label');
+        const chkBusVisible = document.getElementById('chk-bus-visible');
+        const chkIO = document.getElementById('chk-io');
+        const chkIORename = document.getElementById('chk-io-rename');
+        const busSimple = document.getElementById('bus-simple');
+        const busTriple = document.getElementById('bus-triple');
+
+        // Stage elements
+        const svgTriple = document.getElementById('svg-triple');
+        const svgSimple = document.getElementById('svg-simple');
+        const busGroupSimple = document.getElementById('bus-simple-group');
+        const busGroupTriple = document.getElementById('bus-triple-group');
+        const legendTriple = document.getElementById('legend-triple');
+        const legendSimple = document.getElementById('legend-simple');
+        const cpuFrame = document.getElementById('cpu-frame');
+        const cpuPill = document.getElementById('cpu-pill');
+        const rw = document.getElementById('rw');
+        const sw = document.getElementById('sw');
+        const lblRW = document.getElementById('lbl-rw');
+        const lblSW = document.getElementById('lbl-sw');
+        const mem = document.getElementById('mem');
+        const lblMEM = document.getElementById('lbl-mem');
+        const io = document.getElementById('io');
+
+        // Overlays & Buttons
+        const btnInfoNext = document.getElementById('btn-info-next');
+        const btnStagePrev = document.getElementById('btn-stage-prev');
+        const btnStageNext = document.getElementById('btn-stage-next');
+        const notesOverlay = document.getElementById('notes-overlay');
+        const btnNotesClose = document.getElementById('btn-notes-close');
+
+        const detailOverlay = document.getElementById('detail-overlay');
+        const detailTitle = document.getElementById('detail-title');
+        const detailBody = document.getElementById('detail-body');
+        const btnDetailClose = document.getElementById('btn-detail-close');
+
+        const forceShow = (el, on) => {
+            el.classList.toggle('hide', !on);
+            if (on) el.style.removeProperty('display');
+            else el.style.display = 'none';
+        };
+        const disp = (el, on) => el.style.display = on ? '' : 'none';
+
+        // === Visualisierung ===
+        function applyBuses() {
+            const busOn = chkVNA.checked && chkBusVisible.checked;
+            forceShow(svgSimple, busOn && busSimple.checked);
+            forceShow(legendSimple, busOn && busSimple.checked);
+            forceShow(svgTriple, busOn && busTriple.checked);
+            forceShow(legendTriple, busOn && busTriple.checked);
+        }
+
+        function applyVNA() {
+            applyBuses();
+            applyDreiWerke();
+            applyMemLabel();
+            applyCpuFrame();
+            applyIoVisibility();
+            applyIoRename();
+        }
+
+        function applyBusVariant() {
+            if (!chkVNA.checked) return;
+            applyBuses();
+        }
+
+        function applyDreiWerke() {
+            const worksOn = chkVNA.checked && chkDrei.checked;
+            disp(rw, worksOn);
+            disp(sw, worksOn);
+            disp(mem, worksOn);
+            rw.classList.toggle('clickable', worksOn);
+            sw.classList.toggle('clickable', worksOn);
+            mem.classList.toggle('clickable', worksOn);
+            lblRW.style.display = (worksOn && chkRWLbl.checked) ? 'block' : 'none';
+            lblSW.style.display = (worksOn && chkSWLbl.checked) ? 'block' : 'none';
+        }
+
+        function applyCpuFrame() {
+            const on = chkVNA.checked && chkDrei.checked && chkCPUFrame.checked;
+            disp(cpuFrame, on);
+            disp(cpuPill, on);
+        }
+
+        function applyMemLabel() {
+            const on = chkVNA.checked && chkDrei.checked && chkMemLbl.checked;
+            lblMEM.style.display = on ? 'block' : 'none';
+        }
+
+        function applyIoVisibility() {
+            disp(io, chkVNA.checked && chkIO.checked);
+        }
+
+        function applyIoRename() {
+            const title = chkIORename.checked ? 'Periphere Geräte' : 'Ein/Ausgabe';
+            if (io.firstChild) io.firstChild.nodeValue = title;
+        }
+
+        // === Flow / State ===
+        // 0 Start (nur Architektur), 1 Info, 2 Modell+Details, 3 Merksatz
+        let flowStep = 0;
+
+        function setStep(n) {
+            flowStep = n;
+            forceShow(infoPanel, n === 1);
+            forceShow(settingsPanel, n >= 2);
+            forceShow(stagePanel, n >= 2);
+            forceShow(btnStagePrev, n === 2);
+            forceShow(btnStageNext, n === 2);
+            forceShow(notesOverlay, n === 3);
+            if (n >= 2) {
+                applyVNA();
+            }
+        }
+        setStep(0);
+
+        function handleVNAChange() {
+            if (chkVNA.checked) {
+                setStep(1);
+            } else {
+                setStep(0);
+            }
+        }
+
+        // Events
+        chkVNA.addEventListener('change', handleVNAChange);
+        [busSimple, busTriple].forEach(r => r.addEventListener('change', applyBusVariant));
+        chkBusVisible.addEventListener('change', applyBuses);
+
+        chkDrei.addEventListener('change', () => {
+            applyDreiWerke();
+            applyCpuFrame();
+            applyMemLabel();
+        });
+        chkSWLbl.addEventListener('change', () => {
+            lblSW.style.display = (chkVNA.checked && chkDrei.checked && chkSWLbl.checked) ? 'block' : 'none';
+        });
+        chkRWLbl.addEventListener('change', () => {
+            lblRW.style.display = (chkVNA.checked && chkDrei.checked && chkRWLbl.checked) ? 'block' : 'none';
+        });
+        chkCPUFrame.addEventListener('change', applyCpuFrame);
+        chkMemLbl.addEventListener('change', applyMemLabel);
+        chkIO.addEventListener('change', applyIoVisibility);
+        chkIORename.addEventListener('change', applyIoRename);
+
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                chkVNA.checked = !chkVNA.checked;
+                handleVNAChange();
+            }
+            if (e.key === 'Escape' && !detailOverlay.classList.contains('hide')) {
+                forceShow(detailOverlay, false);
+            }
+            if (e.key === 'Escape' && flowStep === 3) {
+                setStep(2);
+            }
+        });
+
+        // Schritt-Logik
+        document.getElementById('btn-info-next').addEventListener('click', e => {
+            e.preventDefault();
+            setStep(2);
+        });
+        document.getElementById('btn-stage-prev').addEventListener('click', e => {
+            e.preventDefault();
+            setStep(1);
+        });
+        document.getElementById('btn-stage-next').addEventListener('click', e => {
+            e.preventDefault();
+            setStep(3);
+        });
+        document.getElementById('btn-notes-close').addEventListener('click', e => {
+            e.preventDefault();
+            setStep(2);
+        });
+
+        // === Klick-Overlays (Details) ===
+        const detailContent = {
+            rw: `
+      <div class="gallery" style="text-align:center">
+        <!-- HIER deine Bilder/Erklärgrafiken zum Rechenwerk einfügen -->
+        <!-- Beispiel: <img src="media/vna/rw01.webp" alt=""> -->
+        <img src="media/vna/vna07.webp" style="width:80%" alt="">
+      </div>`,
+            sw: `
+      <div class="gallery" style="text-align:center">
+        <!-- Bilder/Diagramme zum Steuerwerk -->
+        <img src="media/vna/vna06.webp" style="width:80%" alt="">
+      </div>`,
+            mem: `
+      <div class="gallery" style="text-align:center">
+        <!-- Bilder/Diagramme zum Speicher -->
+        <img src="media/vna/vna08.webp" style="width:80%" alt="">
+      </div>`,
+            bus: `
+      <div class="gallery"  style="text-align:center">
+        <!-- Bilder/Diagramme zum (System-)Bus / Drei-Bus -->
+        <img src="media/vna/vna09.webp" style="width:80%" alt="">
+      </div>`
+        };
+        const detailTitles = {
+            rw: 'ALU',
+            sw: 'Steuerwerk',
+            mem: 'SSD / HDD',
+            bus: 'Mainboard'
+        };
+
+        function showDetail(kind) {
+            detailTitle.textContent = detailTitles[kind] || 'Details';
+            detailBody.innerHTML = detailContent[kind] || '';
+            forceShow(detailOverlay, true);
+        }
+
+        // Klickflächen aktivieren
+        rw.addEventListener('click', () => showDetail('rw'));
+        sw.addEventListener('click', () => showDetail('sw'));
+        mem.addEventListener('click', () => showDetail('mem'));
+        if (busGroupSimple) busGroupSimple.addEventListener('click', () => showDetail('bus'));
+        if (busGroupTriple) busGroupTriple.addEventListener('click', () => showDetail('bus'));
+        btnDetailClose.addEventListener('click', () => forceShow(detailOverlay, false));
+
+        // Footer
+        document.getElementById('year').textContent = new Date().getFullYear();
+    </script>
+    <script src="../../../feedback-widget.js" defer></script>
+</body>
+
+</html>

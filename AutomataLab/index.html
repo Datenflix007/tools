@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/png" href="../../../media/favicon.png">
+<meta name="description" content="AutomataLab zum Konstruieren, Simulieren und Transformieren endlicher Automaten, Kellerautomaten und Turingmaschinen.">
+  <title>AutomataLab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;600&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="program.css">
+</head>
+<body>
+  <header class="menubar">
+    <a class="app-title" href="../AlgoDatCourse/index.html"><span class="app-logo">AL</span><span>AutomataLab<small>Automaten und Berechenbarkeit</small></span></a>
+    <div class="menu-group">
+      <button class="menu-btn" type="button">DATEI</button>
+      <div class="dropdown">
+        <button id="newBtn" type="button">Neu</button>
+        <button id="saveBtn" type="button">Im Browser speichern</button>
+        <button id="exportBtn" type="button">Als JSON exportieren</button>
+        <button id="importBtn" type="button">JSON importieren</button>
+        <input id="importFile" type="file" accept="application/json,.json" hidden>
+      </div>
+    </div>
+    <div class="menu-group">
+      <button class="menu-btn" type="button">BEISPIELE</button>
+      <div class="dropdown" id="exampleMenu">
+        <button data-example="dfa" type="button">DFA: endet auf 01</button>
+        <button data-example="nfa" type="button">NFA: enthält 01</button>
+        <button data-example="pda" type="button">PDA: Spiegelwort w#wᴿ</button>
+        <button data-example="pda-palindrome" type="button">PDA: Binärpalindrome mit λ-Sprung</button>
+        <button data-example="tm" type="button">TM: aⁿbⁿcⁿ erkennen</button>
+        <button data-example="tm-copy" type="button">TM: Binärmuster kopieren w → w#w</button>
+        <button data-example="lba" type="button">LBA: aⁿbⁿcⁿ auf beschränktem Band</button>
+      </div>
+    </div>
+    <div class="menu-group">
+      <button class="menu-btn" type="button">TRANSFORMIEREN</button>
+      <div class="dropdown">
+        <button id="determinizeBtn" type="button">NFA → DFA (Potenzmenge)</button>
+        <button id="completeBtn" type="button">DFA vervollständigen</button>
+        <button id="minimizeBtn" type="button">DFA minimieren</button>
+        <button id="removeUnreachableBtn" type="button">Unerreichbare Zustände entfernen</button>
+      </div>
+    </div>
+    <div class="menu-group">
+      <button class="menu-btn" type="button">ANZEIGE</button>
+      <div class="dropdown">
+        <button id="fitBtn" type="button">Automat einpassen</button>
+        <button id="tableBtn" type="button">Übergangstabelle</button>
+        <button id="formalBtn" type="button">Formale Definition</button>
+        <button id="grammarBtn" type="button">Rechtslineare Grammatik</button>
+      </div>
+    </div>
+    <div class="history-actions">
+      <button class="icon-btn" id="undoBtn" title="Rückgängig" type="button">↶</button>
+      <button class="icon-btn" id="redoBtn" title="Wiederholen" type="button">↷</button>
+    </div>
+    <span class="save-state" id="saveState">Automatisch lokal</span>
+    <label class="type-control"><span>Maschinentyp</span><select id="machineType"><option value="DFA">DFA</option><option value="NFA">NFA</option><option value="PDA">PDA</option><option value="TM">TM</option><option value="LBA">LBA</option></select></label>
+  </header>
+
+  <main class="app-grid">
+    <aside class="toolbox panel">
+      <div class="pane-resizer pane-resizer-right" data-resize-pane="toolbox" title="Werkzeugleiste skalieren"></div>
+      <div class="panel-title"><span>WERKZEUGE</span><strong>Konstruieren</strong></div>
+      <div class="tool-list" role="group" aria-label="Editorwerkzeuge">
+        <button class="tool active" data-tool="select" type="button"><span>↖</span><div><strong>Auswählen</strong><small>Ziehen und bearbeiten</small></div></button>
+        <button class="tool" data-tool="state" type="button"><span>○</span><div><strong>Zustand</strong><small>Auf Fläche klicken</small></div></button>
+        <button class="tool" data-tool="transition" type="button"><span>→</span><div><strong>Übergang</strong><small>Quelle, dann Ziel</small></div></button>
+        <button class="tool" data-tool="delete" type="button"><span>×</span><div><strong>Löschen</strong><small>Element anklicken</small></div></button>
+      </div>
+      <div class="tool-help">
+        <strong>Schnellbedienung</strong>
+        <p>Doppelklick erzeugt einen Zustand. <kbd>Shift</kbd>+Ziehen verbindet Zustände. Mausrad zoomt, rechte Maustaste verschiebt.</p>
+      </div>
+      <div class="validation-card" id="validationCard"></div>
+    </aside>
+
+    <section class="workspace panel">
+      <div class="workspace-bar">
+        <label class="machine-name"><span>Name</span><input id="machineName" value="Mein Automat" maxlength="70"></label>
+        <span class="mode-hint" id="modeHint">Zustände auswählen und verschieben</span>
+        <span class="zoom-value" id="zoomValue">100 %</span>
+      </div>
+      <div class="graph-viewport" id="graphViewport">
+        <svg id="graph" aria-label="Automatengraph" tabindex="0">
+          <defs>
+            <pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse"><path d="M28 0H0V28" fill="none" stroke="rgba(126,160,185,.12)" stroke-width="1"/></pattern>
+            <marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0L9 4.5L0 9Z" fill="#7f9db3"/></marker>
+            <filter id="glow"><feGaussianBlur stdDeviation="4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          </defs>
+          <rect class="graph-bg" x="-5000" y="-5000" width="10000" height="10000" fill="url(#grid)"></rect>
+          <g id="world"><g id="edgeLayer"></g><g id="stateLayer"></g><g id="draftLayer"></g></g>
+        </svg>
+      </div>
+      <div class="simulator" id="simulator">
+        <div class="simulator-head">
+          <div><span class="section-eyebrow">SIMULATION</span><strong id="simMachineTitle">Automat ausführen</strong></div>
+          <div class="sim-actions">
+            <button class="btn" id="simResetBtn" type="button">Reset</button>
+            <button class="btn primary" id="simStepBtn" type="button">Einzelschritt</button>
+            <button class="btn" id="simPlayBtn" type="button">▶ Abspielen</button>
+          </div>
+        </div>
+        <div class="sim-settings">
+          <label><span>Eingabewort</span><input id="wordInput" value="001" spellcheck="false"></label>
+          <label class="max-steps"><span>Schrittlimit</span><input id="stepLimit" type="number" min="1" max="5000" value="250"></label>
+          <label class="machine-option pda-only hidden"><span>Startkeller (Top links)</span><input id="initialStack" value="□" spellcheck="false"></label>
+          <label class="machine-option tm-only hidden"><span>Startposition Kopf</span><input id="initialHead" type="number" value="0"></label>
+          <label class="speed-option"><span>Tempo</span><select id="simSpeed"><option value="900">Langsam</option><option value="420" selected>Normal</option><option value="140">Schnell</option></select></label>
+        </div>
+        <div class="sim-data-grid">
+          <div class="sim-data-card"><span class="sim-data-label" id="inputDataLabel">EINGABE</span><div class="word-tape" id="wordTape"></div></div>
+          <div class="sim-data-card memory-card"><span class="sim-data-label" id="memoryDataLabel">KONFIGURATION</span><div class="machine-memory" id="machineMemory"></div></div>
+        </div>
+        <div class="sim-status idle" id="simStatus">Bereit zur Simulation</div>
+      </div>
+    </section>
+
+    <aside class="inspector panel">
+      <div class="pane-resizer pane-resizer-left" data-resize-pane="inspector" title="Eigenschaften skalieren"></div>
+      <div class="tabs"><button class="tab active" data-tab="properties" type="button">Eigenschaften</button><button class="tab" data-tab="program" type="button">Programm</button><button class="tab" data-tab="configs" type="button">Konfigurationen</button><button class="tab" data-tab="log" type="button">Protokoll</button></div>
+      <div class="tab-pane active" id="propertiesPane">
+        <div id="inspectorEmpty" class="empty"><span>◇</span><strong>Nichts ausgewählt</strong><p>Wähle einen Zustand oder Übergang.</p></div>
+        <form id="propertyForm" class="property-form hidden"></form>
+      </div>
+      <div class="tab-pane" id="programPane">
+        <div class="program-editor">
+          <div class="program-heading"><div><span class="program-eyebrow">AUTOMATA DSL</span><h3 id="programTitle">DFA-Regeln</h3></div><span class="ide-language">UTF-8 · DSL</span></div>
+          <p id="programHelp"></p>
+          <div class="ide-toolbar"><button id="insertCommentBtn" type="button" title="Kommentar einfügen">▷ Kommentar</button><button id="showSuggestionsBtn" type="button" title="Vorschläge öffnen">⌘ Vorschläge</button><span>Strg+Leertaste</span></div>
+          <div class="code-editor-shell">
+            <pre class="line-numbers" id="programLineNumbers" aria-hidden="true">1</pre>
+            <textarea id="programEditor" spellcheck="false" aria-label="Übergangsprogramm" autocomplete="off" autocapitalize="off"></textarea>
+            <div class="code-suggestions hidden" id="programSuggestions" role="listbox"></div>
+          </div>
+          <div class="ide-status"><span id="programCursor">Zeile 1, Spalte 1</span><span>Kommentare: # → ▷</span></div>
+          <div class="program-actions"><button class="btn" id="programRefreshBtn" type="button">Aus Graph übernehmen</button><button class="btn primary" id="programApplyBtn" type="button">Programm anwenden</button></div>
+          <div class="program-diagnostics" id="programDiagnostics">Eine Regel pro Zeile. Ein # am Zeilenanfang wird automatisch zu ▷.</div>
+        </div>
+      </div>
+      <div class="tab-pane" id="configsPane"><div class="config-list" id="configList"></div></div>
+      <div class="tab-pane" id="logPane"><div class="operation-log" id="operationLog"><p>Operationen und Simulationsschritte erscheinen hier.</p></div></div>
+    </aside>
+  </main>
+
+  <footer class="statusbar">
+    <span id="statusText">DFA · 0 Zustände · 0 Übergänge</span>
+    <span id="selectionText">Keine Auswahl</span>
+    <span>Skript WS 2022/23 · Seiten 14–77</span>
+  </footer>
+
+  <dialog id="transitionDialog" class="dialog">
+    <form method="dialog" id="transitionForm">
+      <div class="dialog-head"><div><small>ÜBERGANG</small><h2 id="transitionTitle">Regel anlegen</h2></div><button value="cancel" class="icon-btn" aria-label="Schließen">×</button></div>
+      <div id="transitionFields"></div>
+      <div class="syntax-help" id="transitionHelp"></div>
+      <div class="dialog-actions"><button class="btn" value="cancel">Abbrechen</button><button class="btn primary" id="transitionSubmit" value="default">Übernehmen</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="infoDialog" class="dialog wide">
+    <form method="dialog"><div class="dialog-head"><div><small id="infoEyebrow">ANALYSE</small><h2 id="infoTitle">Ergebnis</h2></div><button value="cancel" class="icon-btn" aria-label="Schließen">×</button></div><div class="info-content" id="infoContent"></div><div class="dialog-actions"><button class="btn primary" value="default">Schließen</button></div></form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+    <script src="../../../feedback-widget.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+algorithm MinHeapify(A, i)
+  l = left(i)
+  r = right(i)
+  if l <= heap_size[A] and A[l] < A[i] then
+    smallest = l
+  else
+    smallest = i
+  end if
+
+  if r <= heap_size[A] and A[r] < A[smallest] then
+    smallest = r
+  end if
+
+  if smallest != i then
+    swap(A[i], A[smallest])
+    MinHeapify(A, smallest)
+  end if
+end algorithm
+
+algorithm BuildMinHeap(A)
+  heap_size[A] = length[A]
+  for i = floor(length[A] / 2) downto 1 do
+    MinHeapify(A, i)
+  end for
+end algorithm
+
+algorithm MinHeapInsert(A, key)
+  heap_size[A] = heap_size[A] + 1
+  A[heap_size[A]] = +∞
+  MinHeapDecreaseKey(A, heap_size[A], key)
+end algorithm
+
+algorithm MinHeapDecreaseKey(A, i, key)
+  if key > A[i] then
+    Error
+  end if
+  A[i] = key
+  while i > 1 and A[parent(i)] > A[i] do
+    swap(A[i], A[parent(i)])
+    i = parent(i)
+  end while
+end algorithm

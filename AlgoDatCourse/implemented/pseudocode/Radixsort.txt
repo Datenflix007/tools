@@ -1,0 +1,32 @@
+﻿⊳ Eingabe: Array A[1..n] mit ganzzahligen Werten, Anzahl Stellen d (Basis 10)
+⊳ Ausgabe: Array A aufsteigend sortiert (LSD-Radixsort)
+
+algorithm GetDigit(n, stelle, basis)
+  return floor(n / basis^(stelle-1)) mod basis
+end algorithm
+
+algorithm Radixsort(A, d)
+  for stelle = 1 to d do
+    stabile Sortierung von A nach Stelle stelle
+  end for
+end algorithm
+
+// Stabile Sortierung einer Stelle mittels Countingsort:
+algorithm CountingsortByDigit(A, B, basis, stelle)
+  let C[0..basis-1] be a new array
+  for i = 0 to basis - 1 do
+    C[i] = 0
+  end for
+  for j = 1 to length(A) do
+    d = GetDigit(A[j], stelle, basis)
+    C[d] = C[d] + 1
+  end for
+  for i = 1 to basis - 1 do
+    C[i] = C[i] + C[i - 1]
+  end for
+  for j = length(A) downto 1 do
+    d = GetDigit(A[j], stelle, basis)
+    B[C[d]] = A[j]
+    C[d] = C[d] - 1
+  end for
+end algorithm

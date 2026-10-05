@@ -1,0 +1,673 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/png" href="../../../media/favicon.png">
+    <title>Regie Wall</title>
+
+  <style>
+    :root {
+      --bg:#07090d; --bar:#10141b; --panel:#141a23; --line:#2a3444;
+      --text:#eef2f7; --muted:#8f9bad; --blue:#38bdf8; --green:#22c55e;
+      --yellow:#facc15; --red:#f87171; --top:54px; --drawer:400px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overflow:hidden}
+    button,input,select{font:inherit}
+    .topbar{height:var(--top);display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bar);border-bottom:1px solid var(--line)}
+    .menu-btn,.btn,.select,.icon,.mini{border:1px solid var(--line);background:#0b0f15;color:var(--text);border-radius:8px;cursor:pointer}
+    .menu-btn{width:38px;height:38px;display:grid;place-items:center;flex:0 0 auto}
+    .menu-btn:hover,.btn:hover,.select:hover,.icon:hover,.mini:hover{border-color:var(--blue)}
+    .hamburger{width:18px;height:12px;display:grid;gap:3px}.hamburger span{height:2px;background:var(--text);border-radius:999px}
+    .title{display:flex;flex-direction:column;line-height:1.1;min-width:170px;margin-right:auto}
+    .title strong{font-size:15px;letter-spacing:.04em}.title small{font-size:11px;color:var(--muted);margin-top:3px}
+    .status{height:26px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:0 9px;color:var(--muted);font-size:12px;background:#0b0f15;white-space:nowrap}
+    .led{width:8px;height:8px;border-radius:999px;background:var(--green);box-shadow:0 0 9px var(--green)}
+    .toolbar{display:flex;gap:8px;align-items:center}.select,.btn{height:36px;padding:0 10px}.btn{white-space:nowrap}.btn.blue{border-color:#1d4ed8;background:#0f1d31}.btn.red{border-color:#7f1d1d;background:#241015}.btn.yellow{border-color:#854d0e;background:#251b0b}
+    .wall{position:absolute;inset:var(--top) 0 0 0;padding:10px;background:linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),#07090d;background-size:36px 36px}
+    .pane{position:absolute;min-width:260px;min-height:180px;border:1px solid #334155;border-radius:10px;background:#020617;overflow:hidden;box-shadow:0 10px 26px rgba(0,0,0,.45)}
+    .pane.active{outline:2px solid var(--blue);outline-offset:-2px}
+    .head{height:34px;display:flex;align-items:center;gap:8px;padding:0 8px;background:#111827;border-bottom:1px solid var(--line);cursor:grab;user-select:none}
+    .num{width:24px;height:20px;border-radius:5px;display:grid;place-items:center;background:#0b0f15;border:1px solid var(--line);color:var(--blue);font-size:11px;font-weight:700;flex:0 0 auto}
+    .signal{width:24px;height:20px;border-radius:5px;display:grid;place-items:center;background:#0b0f15;border:1px solid var(--line);font-size:12px;line-height:1;flex:0 0 auto}.signal.live{border-color:#166534;background:#06180d}.signal.checking{border-color:#854d0e;background:#1b1204}.signal.error{border-color:#7f1d1d;background:#210d0d}.signal.empty,.signal.unknown{border-color:#334155;background:#09111c}
+    .monitor-title{font-size:12px;color:#d8dee9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+    .icon{width:24px;height:24px;padding:0;color:var(--muted)}
+    .audio-chip{height:24px;border:1px solid var(--line);border-radius:6px;background:#0b0f15;color:var(--muted);padding:0 7px;font-size:11px;cursor:pointer}
+    .audio-chip.on{border-color:var(--yellow);color:var(--yellow)}
+    .audio-chip.muted{border-color:var(--red);color:#fecaca}
+    .frame{position:relative;height:calc(100% - 34px);background:#000}
+    iframe,video,.yt-player{width:100%;height:100%;border:0;background:#000;display:block}.webcam-image{width:100%;height:100%;object-fit:contain;background:#000;display:block}
+    .yt-probe{position:fixed;left:-10000px;bottom:0;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none}
+    .placeholder,.note{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:18px;color:var(--muted);font-size:13px;background:rgba(2,6,23,.94);z-index:2}
+    .placeholder strong,.note strong{color:var(--text);display:block;margin-bottom:4px}.note a{color:var(--blue)}
+    .note .note-actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+    .note button{height:32px;border:1px solid var(--line);border-radius:8px;background:#0b0f15;color:var(--text);cursor:pointer;padding:0 10px}
+    .note button:hover{border-color:var(--blue)}
+    .yt-fallback,.local-fallback{position:absolute;right:10px;bottom:10px;z-index:3;display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.yt-fallback button,.local-fallback button{height:30px;border:1px solid rgba(148,163,184,.55);border-radius:7px;background:rgba(2,6,23,.78);color:#e2e8f0;cursor:pointer;font-size:11px;padding:0 9px}.yt-fallback button:hover,.local-fallback button:hover{border-color:var(--blue)}
+    .resize{position:absolute;right:0;bottom:0;width:20px;height:20px;cursor:nwse-resize;opacity:.65;background:linear-gradient(135deg,transparent 50%,var(--blue) 51%,var(--blue) 57%,transparent 58%),linear-gradient(135deg,transparent 68%,#fff 69%,#fff 75%,transparent 76%)}
+    .drawer{position:fixed;top:var(--top);left:0;width:var(--drawer);height:calc(100vh - var(--top));background:#0b0f15;border-right:1px solid var(--line);transform:translateX(calc(-1 * var(--drawer)));transition:transform .18s ease;z-index:20;box-shadow:18px 0 40px rgba(0,0,0,.45);display:flex;flex-direction:column}
+    .drawer.open{transform:translateX(0)}
+    .drawer-head{height:46px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;border-bottom:1px solid var(--line);background:var(--panel)}.drawer-head strong{font-size:13px;letter-spacing:.04em;text-transform:uppercase}
+    .drawer-body{overflow:auto;padding:12px}.section{border:1px solid var(--line);border-radius:10px;background:var(--panel);margin-bottom:12px;overflow:hidden}
+    .section h2{margin:0;padding:10px 10px 6px;font-size:13px}.section p{margin:0;padding:0 10px 10px;color:var(--muted);font-size:12px;line-height:1.35}
+    .quick-actions{display:grid;gap:8px;padding:0 10px 10px}.quick-target{display:grid;grid-template-columns:1fr;gap:7px}.quick-target.choosing{grid-template-columns:minmax(0,1fr) minmax(128px,.9fr)}.quick-target .mini,.quick-target .select{height:34px}.quick-target .select{width:100%;max-width:none;min-width:0}.quick-target:not(.choosing) .select{display:none}.quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.quick-grid .mini{height:34px}.quick-grid .wide{grid-column:1/-1}.quick-note{border:1px solid var(--line);border-radius:8px;background:#07090d;color:#cbd5e1;font-size:12px;line-height:1.35;padding:8px}
+    .catalog-tools{display:grid;gap:8px;padding:0 10px 10px}.catalog-row{display:grid;grid-template-columns:minmax(0,1fr) 92px;gap:7px}.catalog-row.buttons{grid-template-columns:1fr 1fr}.catalog-row .mini{height:34px}.catalog-target{display:grid;gap:5px;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.04em}.catalog-target .select{width:100%;max-width:none;min-width:0}.result-list{display:grid;gap:8px;max-height:310px;overflow:auto;padding-right:2px}.result-card{border:1px solid var(--line);border-radius:8px;background:#0b0f15;padding:8px;display:grid;gap:7px}.result-card:hover{border-color:#334155}.result-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}.result-title{min-width:0}.result-title strong{display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.result-title small{display:block;color:var(--muted);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.result-badge{height:22px;border:1px solid #1d4ed8;border-radius:999px;color:#93c5fd;background:#081527;padding:2px 7px;font-size:11px;white-space:nowrap}.result-meta{color:var(--muted);font-size:11px;line-height:1.3}.result-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px}.result-actions.choosing{grid-template-columns:minmax(0,1fr) minmax(118px,.95fr)}.result-actions.choosing .open{grid-column:1/-1}.result-actions .mini,.result-actions .select{height:30px}.result-actions .select{width:100%;max-width:none;min-width:0;padding:0 7px}.result-actions:not(.choosing) .target-select{display:none}.result-empty{border:1px dashed var(--line);border-radius:8px;color:var(--muted);font-size:12px;line-height:1.35;padding:10px;background:#07090d}
+    .settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 10px 10px}.settings-grid label{display:grid;gap:5px;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.04em}.settings-grid .wide{grid-column:1/-1}
+    .device-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 10px 10px}.device-actions .wide{grid-column:1/-1}.section-extra{margin:0 10px 10px;border-top:1px solid rgba(148,163,184,.16);padding-top:7px}.section-extra summary{cursor:pointer;list-style:none;color:var(--muted);font-size:12px;font-weight:700}.section-extra summary::-webkit-details-marker{display:none}.section-extra summary::after{content:"+";float:right}.section-extra[open] summary{margin-bottom:7px;color:var(--text)}.section-extra[open] summary::after{content:"-"}.section-extra .device-actions{padding:0}.mini.primary{border-color:#1d4ed8;background:#0f1d31}
+    .section summary{cursor:pointer;list-style:none;margin:0;padding:10px 10px 6px;font-size:13px;font-weight:700}.section summary::-webkit-details-marker{display:none}.section summary::after{content:"+";float:right;color:var(--muted)}.section[open] summary::after{content:"-"}.section .section-extra summary{padding:0;font-size:12px;color:var(--muted)}.section .section-extra[open] summary{margin-bottom:7px;color:var(--text)}
+    .sources{display:grid;gap:8px;padding:0 10px 10px}.source{border:1px solid var(--line);border-radius:8px;background:#0b0f15;padding:8px;display:grid;gap:7px}
+    .source-top{display:flex;align-items:center;justify-content:space-between;gap:8px}.source-title{display:flex;align-items:center;gap:8px;min-width:0}.source-title span{width:22px;height:20px;border-radius:5px;display:grid;place-items:center;background:#07111f;border:1px solid var(--line);color:var(--blue);font-size:11px;font-weight:800;flex:0 0 auto}.source-title strong{display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px}.source-title small{display:block;margin-top:1px;color:var(--muted);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px}
+    .input,.type-select{width:100%;height:34px;border:1px solid var(--line);border-radius:7px;background:#07090d;color:var(--text);padding:0 9px;outline:none}
+    .input:focus,.type-select:focus{border-color:var(--blue)}.source-fields{display:grid;gap:6px}.source-actions{display:flex;gap:6px;justify-content:flex-end}.source-actions .mini{min-width:66px}.source-actions.extra .mini{flex:1}.mini{height:30px;font-size:12px}
+    .audio-row{display:grid;grid-template-columns:54px 1fr 58px 58px;gap:7px;align-items:center;color:var(--muted);font-size:12px}.audio-row input[type=range]{width:100%}
+    .channel-row{display:grid;grid-template-columns:1fr 74px;gap:6px}.hint{font-size:11px;color:var(--muted);line-height:1.25}
+    .source-extra{border-top:1px solid rgba(148,163,184,.16);padding-top:2px}.source-extra summary{cursor:pointer;list-style:none;color:var(--muted);font-size:12px;font-weight:700}.source-extra summary::-webkit-details-marker{display:none}.source-extra summary::after{content:"+";float:right}.source-extra[open] summary{margin-bottom:7px;color:var(--text)}.source-extra[open] summary::after{content:"-"}.field-label{display:grid;gap:5px;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+    .local-tools{display:grid;gap:8px;padding:0 10px 10px}.local-tools .mini{width:100%}.local-state{border:1px solid var(--line);border-radius:8px;background:#07090d;padding:8px;color:#cbd5e1;font-size:12px;line-height:1.35}
+    .scrim{display:none;position:fixed;inset:var(--top) 0 0 0;background:rgba(0,0,0,.28);z-index:15}.scrim.show{display:block}
+    .live-toast{position:fixed;right:14px;bottom:14px;width:min(340px,calc(100vw - 28px));border:1px solid #166534;border-radius:10px;background:#07130c;color:#e5f7e9;box-shadow:0 18px 44px rgba(0,0,0,.46);z-index:45;padding:10px;display:none;gap:8px}.live-toast.show{display:grid}.live-toast strong{display:block;font-size:13px}.live-toast p{margin:2px 0 0;color:#bbf7d0;font-size:12px;line-height:1.35}.live-toast-actions{display:grid;grid-template-columns:1fr 1fr 32px;gap:6px}.live-toast-actions .mini{height:30px}.live-toast-close{width:32px;height:30px;border:1px solid rgba(187,247,208,.35);border-radius:7px;background:#0b1f12;color:#e5f7e9;cursor:pointer}
+    .modal{display:none;position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.6);place-items:center;padding:20px}
+    .modal.open{display:grid}.modal-card{width:min(820px,96vw);max-height:86vh;overflow:auto;background:#0b0f15;border:1px solid var(--line);border-radius:12px;box-shadow:0 24px 60px rgba(0,0,0,.55)}
+    .modal-head{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--line);background:var(--panel)}.modal-body{padding:14px 18px;color:#d8dee9;line-height:1.5}.modal-body h3{margin:16px 0 6px}.modal-body p,.modal-body li{color:#cbd5e1}.modal-body code{background:#111827;border:1px solid #1f2937;padding:2px 5px;border-radius:5px}
+    code{color:#cbd5e1;font-size:11px}
+    @media(max-width:980px){.status{display:none}.select{max-width:110px}:root{--drawer:min(96vw,400px)}}
+    @media(max-width:560px){.topbar{gap:7px;padding:8px}.title{min-width:112px}.title small{display:none}.toolbar{gap:6px;margin-left:auto}.toolbar #saveDeviceViewTop,.toolbar #helpBtn{display:none}.btn{padding:0 8px}}
+  </style>
+</head>
+
+<body>
+  <header class="topbar">
+    <button id="menuBtn" class="menu-btn" title="Menü öffnen"><span class="hamburger"><span></span><span></span><span></span></span></button>
+    <div class="title"><strong>REGIE WALL</strong><small>Alles im Blick!</small></div>
+    <span class="status"><span class="led"></span> LIVE</span>
+    <div class="toolbar">
+      <button id="saveDeviceViewTop" class="btn">Speichern</button>
+      <button id="muteAllBtn" class="btn red">Alle stumm</button>
+      <button id="helpBtn" class="btn yellow">Hilfe</button>
+      <button id="fullscreenBtn" class="btn">Vollbild</button>
+    </div>
+  </header>
+
+  <section id="wall" class="wall"></section>
+  <div id="liveToast" class="live-toast" role="status" aria-live="polite"></div>
+  <div id="scrim" class="scrim"></div>
+
+  <aside id="drawer" class="drawer">
+    <div class="drawer-head"><strong>Menü</strong><button id="closeMenu" class="icon">×</button></div>
+    <div class="drawer-body">
+      <section class="section">
+        <h2>Ansicht</h2>
+        <p>Fuer den normalen Start reicht Standard. News- und ELD-Vorlagen koennen bei Bedarf geladen werden.</p>
+        <div class="settings-grid">
+          <label class="wide">Vorlage
+            <select id="profileSelect" class="select"><option value="standard">Standard</option><option value="news">News Übersicht</option><option value="eld">ELD</option></select>
+          </label>
+          <button id="loadTemplateBtn" class="mini primary wide">Laden</button>
+          <label>Monitore
+            <select id="countSelect" class="select"><option value="2" selected>2 Monitore</option><option value="4">4 Monitore</option><option value="6">6 Monitore</option><option value="8">8 Monitore</option></select>
+          </label>
+          <label>Layout
+            <select id="presetSelect" class="select"><option value="grid">Grid</option><option value="program">Program + Preview</option><option value="wide">Breit oben</option><option value="stack">Kontrollwand</option></select>
+          </label>
+        </div>
+        <details class="section-extra">
+          <summary>Persoenliche Ansicht</summary>
+          <div class="device-actions">
+            <button id="saveDeviceViewBtn" class="mini">Speichern</button>
+            <button id="loadDeviceViewBtn" class="mini">Laden</button>
+            <button id="clearDeviceViewBtn" class="mini wide">Loeschen</button>
+          </div>
+        </details>
+      </section>
+
+      <section class="section">
+        <h2>Schnellstart</h2>
+        <p>Wichtige Aktionen ohne lange Quellenliste: Naumburg-Livestream frisch von YouTube holen oder robuste HLS-Nachrichten laden.</p>
+        <div class="quick-actions">
+          <div class="quick-target">
+            <button id="quickNaumburg" class="mini">Webcam Naumburg suchen</button>
+            <select id="quickNaumburgTarget" class="select" aria-label="Zielfenster fuer Webcam Naumburg"></select>
+          </div>
+          <div class="quick-grid">
+            <button id="quickRefreshEmbed" class="mini">Embed aktualisieren</button>
+            <button id="quickNewsHls" class="mini">News Übersicht</button>
+          </div>
+          <div id="quickStatus" class="quick-note">Bereit.</div>
+        </div>
+      </section>
+
+      <details class="section">
+        <summary>Webcam-Suche</summary>
+        <p>Ort eingeben und direkt einbettbare Livestreams in einen Monitor laden. WorldCam bleibt als externe Karte fuer weitere Recherche.</p>
+        <div class="catalog-tools">
+          <div class="catalog-row">
+            <input id="webcamSearchInput" class="input" placeholder="Ort, z.B. Apolda, Leipzig, Magdeburg, Wacken">
+            <button id="webcamSearchBtn" class="mini primary">Suchen</button>
+          </div>
+          <div class="catalog-row buttons">
+            <button id="webcamUseNaumburgBtn" class="mini">Naumburg</button>
+            <button id="webcamWorldcamBtn" class="mini">WorldCam-Karte</button>
+          </div>
+          <div id="webcamResults" class="result-list"></div>
+        </div>
+      </details>
+
+      <details class="section">
+        <summary>Livestream-Katalog</summary>
+        <p>Nachrichten, internationale Live-Kanaele und weitere Direktstreams schnell in den gewaehlten Monitor uebernehmen.</p>
+        <div class="catalog-tools">
+          <div class="catalog-row">
+            <input id="channelSearchInput" class="input" placeholder="Sender suchen, z.B. BLK TV, Burgenlandkreis, WELT">
+            <button id="channelSearchBtn" class="mini primary">Suchen</button>
+          </div>
+          <div id="channelResults" class="result-list"></div>
+        </div>
+      </details>
+
+      <details class="section">
+        <summary>Quellen bearbeiten</summary>
+        <div id="sources" class="sources"></div>
+      </details>
+
+      <details class="section">
+        <summary>Lokale Dienste</summary>
+        <p>GitHub Pages versucht lokale IPv4-Ziele direkt mit Browser-Freigabe fuer Local Network Access. Wenn Edge/Chrome die Kachel blockiert oder keine Freigabe zeigt, starte die Wall lokal per HTTP.</p>
+        <div class="local-tools">
+          <div id="localModeState" class="local-state">Lokaler Modus wird geprueft...</div>
+          <input id="localProbeUrl" class="input" placeholder="http://127.0.0.1:8000 oder http://192.168.0.50">
+          <button id="probeLocalAccessBtn" class="mini">Browser-Freigabe anstossen</button>
+          <button id="copyLocalServerBtn" class="mini">Startscript kopieren</button>
+          <button id="openLocalWallBtn" class="mini">Lokale Regie mit Setup oeffnen</button>
+        </div>
+      </details>
+    </div>
+  </aside>
+
+  <div id="helpModal" class="modal">
+    <div class="modal-card">
+      <div class="modal-head"><strong>Kurztutorial</strong><button id="closeHelp" class="icon">×</button></div>
+      <div class="modal-body">
+        <h3>Login-Websites</h3>
+        <p>Wähle als Typ <code>Login-Website</code>. Dann wird der Frame ohne Sandbox geladen. Formulare, Cookies und Login-Popups haben dadurch die besten Chancen.</p>
+        <p>Grenze: Wenn die Zielseite selbst <code>X-Frame-Options</code>, <code>frame-ancestors</code>, blockierte Third-Party-Cookies oder eine Weiterleitung aus dem Frame nutzt, kann die Regie Wall das nicht erzwingen. Nutze dann <code>Login</code>/<code>Öffnen</code>, melde dich im normalen Tab an und lade danach den Frame neu.</p>
+        <h3>IPv4-/LAN-Dienste</h3>
+        <p>Loopback-Testserver wie <code>http://127.0.0.1:8000</code> und LAN-Geräte wie <code>http://192.168.0.50:8080</code> werden aus GitHub Pages direkt versucht. Aktuelle Chromium-/Edge-Browser verlangen dafuer Local Network Access; wenn der Browser fragt, Zugriff erlauben.</p>
+        <ul>
+          <li>Empfohlen: <code>src\modules\regie\start-local-regie-wall.bat</code> starten. Das Script hostet das Repository lokal und oeffnet die Wall auf Port 8765.</li>
+          <li>Fallback: Wenn der Browser keine Local-Network-Freigabe gibt, erst das Script starten, dann <code>Lokale Regie mit Setup oeffnen</code> klicken. Die aktuelle Quellenliste wird per URL uebernommen.</li>
+          <li>Grenze: Wenn die Zielseite selbst <code>X-Frame-Options</code> oder <code>frame-ancestors</code> setzt, muss sie im eigenen Tab laufen; das kann keine Wall ueberschreiben.</li>
+        </ul>
+        <h3>Tonsteuerung</h3>
+        <p>Mute/Solo/Volume funktionieren bei YouTube und HLS. Bei fremden Website-iFrames ist Tonsteuerung aus Sicherheitsgründen nicht zuverlässig möglich.</p>
+        <h3>Webcam-Suche</h3>
+        <p>Gib einen Ort ein. Die Wall sortiert nur direkt einbettbare Livestreams nach Entfernung. Die WorldCam-Karte dient als externe Recherche, weil viele Webcam-Seiten iFrames blockieren.</p>
+        <h3>Sender suchen</h3>
+        <p>Im Livestream-Katalog oder im Source-Menü kannst du Sendernamen wie <code>BLK TV</code>, <code>Burgenlandkreis</code>, <code>ARD</code>, <code>ZDF</code>, <code>DW</code>, <code>Sky</code>, <code>Al Jazeera</code>, <code>MDR Thüringen</code>, <code>WDR</code> oder <code>ARTE</code> suchen. Beim Übernehmen wird der hinterlegte HLS-, YouTube- oder Website-Link geladen.</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
+  <script>
+    const DEFAULT_COUNT = 2;
+    const DEFAULT_PRESET = "grid";
+    const DEFAULT_VERSION = "2026-07-regie-display-only";
+    const DEFAULT_PROFILE = "standard";
+    const LOCAL_SERVER_PORT = 8765;
+    const LOCAL_WALL_PATH = "/src/modules/regie/index(1).html";
+    const LOCAL_START_SCRIPT = "src\\modules\\regie\\start-local-regie-wall.bat";
+    const BURGENLANDKREIS_CHANNEL_ID = "UC-PUiuFgCcIUKdkUssCD3mA";
+    const BURGENLANDKREIS_LIVE_CHECK_MS = 90000;
+    const NAUMBURG_WATCH_URL = "https://www.youtube.com/watch?v=IixXpcGrTzo";
+    const NAUMBURG_SEARCH_URL = "https://www.youtube.com/results?search_query=livecam+naumburg";
+    const PINNED_SOURCE = { title:"Naumburg Marktplatz Live", type:"youtube", url:NAUMBURG_WATCH_URL, fallbackUrl:NAUMBURG_WATCH_URL, volume:70, muted:false, pinned:true };
+    const HLS_SOURCES = {
+      welt:{ title:"WELT LIVE", type:"hls", url:"https://welt.personalstream.tv/v1/master.m3u8", volume:70, muted:false },
+      tagesschau:{ title:"tagesschau24", type:"hls", url:"https://tagesschau.akamaized.net/hls/live/2020115/tagesschau/tagesschau_1/master.m3u8", volume:70, muted:true },
+      phoenix:{ title:"PHOENIX", type:"hls", url:"https://zdf-hls-19.akamaized.net/hls/live/2016502/de/high/master.m3u8", volume:70, muted:true },
+      zdfinfo:{ title:"ZDFinfo", type:"hls", url:"https://zdf-hls-17.akamaized.net/hls/live/2016500/de/high/master.m3u8", volume:70, muted:true },
+      dw:{ title:"DW", type:"hls", url:"https://dwamdstream111.akamaized.net/hls/live/2017972/dwstream111/index.m3u8", volume:70, muted:true },
+      dwEnglish:{ title:"DW News English", type:"hls", url:"https://dwamdstream102.akamaized.net/hls/live/2015525/dwstream102/master.m3u8", volume:70, muted:true },
+      wdr:{ title:"WDR", type:"hls", url:"https://wdrfs247.akamaized.net/hls/live/681509/wdr_msl4_fs247/index.m3u8", volume:70, muted:true }
+    };
+    const CHANNEL_PRESETS = [
+      { title:"Naumburg Marktplatz Live", type:"youtube", url:NAUMBURG_WATCH_URL, fallbackUrl:NAUMBURG_WATCH_URL },
+      { title:"BLK TV Livestream", type:"youtube-live", url:"https://www.youtube.com/@BLKregionalTV/live", channelId:"UCm4dAV4RXq2NUfSRVHHH81A", fallbackUrl:"https://www.blkregional.de/", source:"BLK Regional TV", keywords:"blk tv blk regional tv burgenlandkreis burgendlandkreis regionalfernsehen weissenfels naumburg hohenmoelsen" },
+      { title:"Burgenlandkreis YouTube Live", type:"youtube-live", url:"https://www.youtube.com/@burgenlandkreis1489/live", channelId:"UC-PUiuFgCcIUKdkUssCD3mA", fallbackUrl:"https://www.youtube.com/@burgenlandkreis1489/streams", source:"Burgenlandkreis", keywords:"burgenlandkreis burgendlandkreis blk kreistag sitzung landkreis naumburg youtube livestream" },
+      { title:"DW News Live", type:"youtube", url:"https://www.youtube.com/watch?v=LuKwFajn37U", fallbackType:"hls", fallbackUrl:"https://dwamdstream102.akamaized.net/hls/live/2015525/dwstream102/master.m3u8" },
+      { title:"FRANCE 24 English Live", type:"youtube", url:"https://www.youtube.com/watch?v=HvZt-nh9sGg", fallbackUrl:"https://www.france24.com/en/live" },
+      { title:"Euronews English Live", type:"youtube", url:"https://www.youtube.com/watch?v=pykpO5kQJ98", fallbackUrl:"https://www.euronews.com/live" },
+      { title:"Sky News Live", type:"youtube", url:"https://www.youtube.com/watch?v=YDvsBbKfLPA", fallbackUrl:"https://news.sky.com/watch-live" },
+      { title:"Al Jazeera English Live", type:"youtube", url:"https://www.youtube.com/watch?v=gCNeDWCI0vo", fallbackUrl:"https://www.aljazeera.com/video/live" },
+      { title:"CNA 24/7 Live", type:"youtube", url:"https://www.youtube.com/watch?v=XWq5kBlakcQ", fallbackUrl:"https://www.channelnewsasia.com/watch" },
+      { title:"Bloomberg TV Live", type:"youtube", url:"https://www.youtube.com/watch?v=QB5BNdBFujE", fallbackUrl:"https://www.bloomberg.com/live" },
+      { title:"CNBC Marathon Live", type:"youtube", url:"https://www.youtube.com/watch?v=9NyxcX3rhQs", fallbackUrl:"https://www.cnbc.com/live-tv/" },
+      { title:"BLK Regional TV", type:"hls", url:"https://h056.video-stream-hosting.de/medienasa-live/_definst_/mp4:BLKonline_high/playlist.m3u8", fallbackUrl:"https://www.blkregional.de/", source:"BLK TV", keywords:"blk tv blk regional tv burgenlandkreis burgendlandkreis lokal tv hohenmoelsen weissenfels naumburg zeitz medienportal sachsen anhalt" },
+      { title:"n-tv Livestream", type:"iframe", url:"https://www.n-tv.de/mediathek/livestream/", fallbackUrl:"https://www.n-tv.de/mediathek/livestream/" },
+      { title:"BBC News Live", type:"iframe", url:"https://www.bbc.com/news/live", fallbackUrl:"https://www.bbc.com/news/live" },
+      { title:"ARD", url:"https://daserste-live.ard-mcdn.de/daserste/live/hls/de/master.m3u8" },
+      { title:"ARD ONE", url:"https://mcdn-one.ard.de/ardone/hls/master.m3u8" },
+      { title:"ARD Alpha", url:"https://mcdn.br.de/br/fs/ard_alpha/hls/de/master.m3u8" },
+      { title:"ARD Tagesschau", url:"https://tagesschau.akamaized.net/hls/live/2020115/tagesschau/tagesschau_1/master.m3u8" },
+      { title:"ZDF", url:"https://zdf-hls-15.akamaized.net/hls/live/2016498/de/high/master.m3u8" },
+      { title:"ZDF neo", url:"https://zdf-hls-16.akamaized.net/hls/live/2016499/de/high/master.m3u8" },
+      { title:"ZDF info", url:"https://zdf-hls-17.akamaized.net/hls/live/2016500/de/high/master.m3u8" },
+      { title:"MDR Sachsen", url:"https://mdrtvsnhls.akamaized.net/hls/live/2016928/mdrtvsn/master.m3u8" },
+      { title:"MDR Thüringen", url:"https://mdrtvthhls.akamaized.net/hls/live/2016880/mdrtvth/master.m3u8" },
+      { title:"MDR Sachsen-Anhalt", url:"https://mdrtvsahls.akamaized.net/hls/live/2016879/mdrtvsa/master.m3u8" },
+      { title:"PHOENIX", url:"https://zdf-hls-19.akamaized.net/hls/live/2016502/de/high/master.m3u8" },
+      { title:"RBB Berlin", url:"https://rbb-hls-berlin.akamaized.net/hls/live/2017824/rbb_berlin/master.m3u8" },
+      { title:"RBB Brandenburg", url:"https://rbb-hls-brandenburg.akamaized.net/hls/live/2017825/rbb_brandenburg/master.m3u8" },
+      { title:"BR Nord", url:"https://mcdn.br.de/br/fs/bfs_nord/hls/de/master.m3u8" },
+      { title:"BR Süd", url:"https://mcdn.br.de/br/fs/bfs_sued/hls/de/master.m3u8" },
+      { title:"HR", url:"https://hrhls.akamaized.net/hls/live/2024525/hrhls/master.m3u8" },
+      { title:"SR", url:"https://srfs.akamaized.net/hls/live/689649/srfsgeo/index.m3u8" },
+      { title:"SWR BW", url:"https://swrbwd-hls.akamaized.net/hls/live/2018672/swrbwd/master.m3u8" },
+      { title:"SWR RP", url:"https://swrrpd-hls.akamaized.net/hls/live/2018676/swrrpd/master.m3u8" },
+      { title:"NDR Niedersachsen", url:"https://mcdn.ndr.de/ndr/hls/ndr_fs/ndr_nds/master.m3u8" },
+      { title:"NDR Hamburg", url:"https://mcdn.ndr.de/ndr/hls/ndr_fs/ndr_hh/master.m3u8" },
+      { title:"NDR Mecklenburg-Vorpommern", url:"https://mcdn.ndr.de/ndr/hls/ndr_fs/ndr_mv/master.m3u8" },
+      { title:"NDR Schleswig-Holstein", url:"https://mcdn.ndr.de/ndr/hls/ndr_fs/ndr_sh/master.m3u8" },
+      { title:"DW", url:"https://dwamdstream111.akamaized.net/hls/live/2017972/dwstream111/index.m3u8" },
+      { title:"DW News English HLS", url:"https://dwamdstream102.akamaized.net/hls/live/2015525/dwstream102/master.m3u8" },
+      { title:"DW Deutsch HLS", url:"https://dwamdstream106.akamaized.net/hls/live/2017965/dwstream106/index.m3u8" },
+      { title:"WDR", url:"https://wdrfs247.akamaized.net/hls/live/681509/wdr_msl4_fs247/index.m3u8" },
+      { title:"ARTE DE", url:"https://artesimulcast.akamaized.net/hls/live/2030993/artelive_de/index.m3u8" },
+      { title:"ARTE FR", url:"https://artesimulcast.akamaized.net/hls/live/2031003/artelive_fr/index.m3u8" },
+      { title:"3Sat", url:"https://zdf-hls-18.akamaized.net/hls/live/2016501/dach/high/master.m3u8" },
+      { title:"KiKA", url:"https://kikageohls.akamaized.net/hls/live/2022693/livetvkika_de/master.m3u8" },
+      { title:"WELT LIVE", url:"https://welt.personalstream.tv/v1/master.m3u8" }
+    ];
+    const WEBCAM_PRESETS = [
+      { title:"Naumburg Marktplatz Live", place:"Naumburg (Saale)", lat:51.1527, lon:11.8098, type:"youtube", url:NAUMBURG_WATCH_URL, fallbackUrl:NAUMBURG_WATCH_URL, source:"YouTube Live", keywords:"naumburg saale marktplatz webcam livecam" },
+      { title:"Jena Markt Live", place:"Jena", lat:50.9271, lon:11.5892, type:"youtube", url:"https://www.youtube.com/watch?v=1GIEC6zBYI4", fallbackUrl:"https://www.youtube.com/watch?v=1GIEC6zBYI4", source:"YouTube Live", keywords:"jena markt marktplatz webcam live" },
+      { title:"Jena Innenstadt Livebild", place:"Jena", lat:50.9276, lon:11.5858, type:"image", url:"https://dpop.eu/webcam.jpg", fallbackUrl:"https://www.dpop.eu/webcam-jena/", source:"DPOP Webcam", refreshSec:60, keywords:"jena innenstadt skyline webcam livebild thueringen apolda umgebung" },
+      { title:"Weimar Markt Livebild", place:"Weimar", lat:50.9795, lon:11.3235, type:"image", url:"https://images.webcamgalore.com/12174-current-webcam-Weimar.jpg", fallbackUrl:"https://www.webcamgalore.com/webcam/Germany/Weimar/12174.html", source:"Webcam Galore", refreshSec:60, keywords:"weimar markt marktplatz webcam livebild thueringen apolda umgebung" },
+      { title:"Erfurt Domplatz Livebild", place:"Erfurt", lat:50.9787, lon:11.0283, type:"image", url:"https://www.erfurt.de/webcam/domplatz.jpg", fallbackUrl:"https://www.erfurt.de/ef/de/service/mediathek/webcam/115621.html", source:"Erfurt.de", refreshSec:60, keywords:"erfurt domplatz dom severikirche webcam livebild thueringen" },
+      { title:"Leipzig 360 Live", place:"Leipzig", lat:51.3397, lon:12.3731, type:"youtube", url:"https://www.youtube.com/watch?v=rqTfSm7NMwc", fallbackUrl:"https://www.youtube.com/watch?v=rqTfSm7NMwc", source:"YouTube Live", keywords:"leipzig 360 webcam live" },
+      { title:"Leipzig Augustusplatz Livebild", place:"Leipzig", lat:51.3398, lon:12.3813, type:"image", url:"https://files.l.de/lde-typo3/Leipziger/Wir-fuer-Leipzig/WfL-Webcam-Augustusplatz.jpg", fallbackUrl:"https://www.l.de/wir-fuer-leipzig/leipziger-leben/webcam/", source:"Leipziger Gruppe", refreshSec:60, keywords:"leipzig augustusplatz europahaus panorama webcam livebild oper gewandhaus" },
+      { title:"Leipzig Europahaus Livebild", place:"Leipzig", lat:51.3398, lon:12.3813, type:"image", url:"https://webcameh.visix-group.de/webcamEH_leipziger_stable.jpg", fallbackUrl:"https://www.l.de/wir-fuer-leipzig/leipziger-leben/webcam/", source:"VISIX / Leipziger Gruppe", refreshSec:60, keywords:"leipzig europahaus augustusplatz webcam livebild stadtwerke" },
+      { title:"Leipzig/Halle Airport Live", place:"Leipzig/Halle", lat:51.4239, lon:12.2364, type:"youtube", url:"https://www.youtube.com/watch?v=z0V4LvBXCFY", fallbackUrl:"https://www.youtube.com/watch?v=z0V4LvBXCFY", source:"YouTube Live", keywords:"leipzig halle airport planespotting webcam live" },
+      { title:"Halle Neustadt 4K Live", place:"Halle (Saale)", lat:51.4795, lon:11.9186, type:"youtube", url:"https://www.youtube.com/watch?v=_oi1Bp8HmdM", fallbackUrl:"https://www.youtube.com/watch?v=_oi1Bp8HmdM", source:"YouTube Live", keywords:"halle saale halle neustadt webcam live 4k sachsen anhalt" },
+      { title:"Magdeburg Dom Blick Live", place:"Magdeburg", lat:52.1310, lon:11.6350, type:"youtube", url:"https://www.youtube.com/watch?v=B1CP1sDp5yc", fallbackUrl:"https://www.youtube.com/watch?v=B1CP1sDp5yc", source:"YouTube Live", keywords:"magdeburg dom altstadt alter markt webcam live sachsen anhalt" },
+      { title:"Bernburg Karlsplatz Livebild", place:"Bernburg (Saale)", lat:51.7984, lon:11.7394, type:"image", url:"https://images.webcamgalore.com/11142-current-webcam-Bernburg-Saale.jpg", fallbackUrl:"https://www.webcamgalore.com/webcam/Germany/Bernburg-Saale/11142.html", source:"Webcam Galore", refreshSec:60, keywords:"bernburg saale karlsplatz webcam livebild salzlandkreis sachsen anhalt" },
+      { title:"Dresden Elbufer Live", place:"Dresden", lat:51.0504, lon:13.7373, type:"youtube", url:"https://www.youtube.com/watch?v=ynvrVPHRaYs", fallbackUrl:"https://www.youtube.com/watch?v=ynvrVPHRaYs", source:"YouTube Live", keywords:"dresden elbe elbufer webcam live" },
+      { title:"Chemnitz Markt Livebild", place:"Chemnitz", lat:50.8329, lon:12.9204, type:"image", url:"https://webcam-image.juwelier-roller.de/chemnitz_markt.jpg", fallbackUrl:"https://webcam.juwelier-roller.de/", source:"Juwelier Roller", refreshSec:60, keywords:"chemnitz markt marktplatz neumarkt webcam livebild sachsen" },
+      { title:"Chemnitz Panorama Livebild", place:"Chemnitz", lat:50.8387, lon:12.9292, type:"image", url:"https://www.chemnitz-cam.de/livegross.jpg", fallbackUrl:"https://www.chemnitz-cam.de/", source:"Chemnitz-Cam", refreshSec:180, keywords:"chemnitz panorama skyline webcam livebild sachsen" },
+      { title:"Berlin Brandenburger Tor", place:"Berlin", lat:52.5163, lon:13.3777, type:"youtube", url:"https://www.youtube.com/watch?v=SgeQKaiJGNU", fallbackUrl:"https://www.youtube.com/watch?v=SgeQKaiJGNU", source:"YouTube Live", keywords:"berlin brandenburger tor webcam live" },
+      { title:"Berlin RBB Fernsehturm Livebild", place:"Berlin", lat:52.5060, lon:13.2779, type:"image", url:"https://www.berlin.de/webcams/fsz/webcam.jpg", fallbackUrl:"https://www.berlin.de/en/webcams/4350926-6439179-webcam-rbb-television-centre.en.html", source:"Berlin.de / RBB", refreshSec:6, keywords:"berlin rbb fernsehzentrum funkturm icc webcam livebild" },
+      { title:"Berlin Rotes Rathaus Livebild", place:"Berlin", lat:52.5186, lon:13.4083, type:"image", url:"https://www.berlin.de/webcams/rathaus/webcam.jpg", fallbackUrl:"https://www.berlin.de/en/webcams/4350944-6439179-webcam-red-town-hall.en.html", source:"Berlin.de", refreshSec:6, keywords:"berlin rotes rathaus alexanderplatz fernsehturm dom webcam livebild" },
+      { title:"Berlin Estrel Tower Live", place:"Berlin", lat:52.4746, lon:13.4596, type:"youtube", url:"https://www.youtube.com/watch?v=JsaCJvTNeuM", fallbackUrl:"https://www.youtube.com/watch?v=JsaCJvTNeuM", source:"YouTube Live", keywords:"berlin estrel tower webcam live" },
+      { title:"Berlin Frankfurter Tor Live", place:"Berlin", lat:52.5158, lon:13.4543, type:"youtube", url:"https://www.youtube.com/watch?v=-mNT2LmuifM", fallbackUrl:"https://www.youtube.com/watch?v=-mNT2LmuifM", source:"YouTube Live", keywords:"berlin frankfurter tor karl marx allee webcam live" },
+      { title:"Hamburg Hafen Live", place:"Hamburg", lat:53.5444, lon:9.9678, type:"youtube", url:"https://www.youtube.com/watch?v=4PHorxLPkZA", fallbackUrl:"https://www.youtube.com/watch?v=4PHorxLPkZA", source:"YouTube Live", keywords:"hamburg hafen port elbe webcam live" },
+      { title:"Hamburg Michel Live", place:"Hamburg", lat:53.5486, lon:9.9786, type:"youtube", url:"https://www.youtube.com/watch?v=OmyDLXvaus4", fallbackUrl:"https://www.youtube.com/watch?v=OmyDLXvaus4", source:"YouTube Live", keywords:"hamburg michel hafen webcam live" },
+      { title:"Hamburg St. Michaelis Tower Live", place:"Hamburg", lat:53.5486, lon:9.9786, type:"youtube", url:"https://www.youtube.com/watch?v=2_IpYA8apCE", fallbackUrl:"https://www.youtube.com/watch?v=2_IpYA8apCE", source:"YouTube Live", keywords:"hamburg st michaelis tower michel hafen elbe webcam live" },
+      { title:"Warnemuende Alter Strom Live", place:"Rostock-Warnemuende", lat:54.1768, lon:12.0896, type:"youtube", url:"https://www.youtube.com/watch?v=P3PZmEukcrM", fallbackUrl:"https://www.youtube.com/watch?v=P3PZmEukcrM", source:"YouTube Live", keywords:"rostock warnemuende warnemunde alter strom ostsee webcam live" },
+      { title:"Warnemuende Kreuzfahrtterminal Live", place:"Rostock-Warnemuende", lat:54.1793, lon:12.0987, type:"youtube", url:"https://www.youtube.com/watch?v=dAHJivjQHlU", fallbackUrl:"https://www.youtube.com/watch?v=dAHJivjQHlU", source:"YouTube Live", keywords:"rostock warnemuende warnemunde kreuzfahrtterminal pier cruise terminal webcam live" },
+      { title:"Wacken Raiba Tower Livebild", place:"Wacken", lat:54.0216, lon:9.3759, type:"image", url:"https://webcam.wacken.com/images/webcamraiba_web.jpg", fallbackUrl:"https://www.wacken.com/en/media/webcams/", source:"Wacken Open Air", refreshSec:1800, keywords:"wacken open air woa raiba tower festival webcam livebild" },
+      { title:"Wacken Infield Livebild", place:"Wacken", lat:54.0216, lon:9.3759, type:"image", url:"https://webcam.wacken.com/images/webcaminfield_web.jpg", fallbackUrl:"https://www.wacken.com/en/media/webcams/", source:"Wacken Open Air", refreshSec:1800, keywords:"wacken open air woa infield festival webcam livebild" },
+      { title:"Frankfurt Skyline Live", place:"Frankfurt am Main", lat:50.1109, lon:8.6821, type:"youtube", url:"https://www.youtube.com/watch?v=inDASDtepck", fallbackUrl:"https://www.youtube.com/watch?v=inDASDtepck", source:"YouTube Live", keywords:"frankfurt main skyline webcam live" },
+      { title:"Deutschland Webcam-Mix", place:"Deutschland", lat:51.1657, lon:10.4515, type:"youtube", url:"https://www.youtube.com/watch?v=Li3Dvqlo5uE", fallbackUrl:"https://www.youtube.com/watch?v=Li3Dvqlo5uE", source:"YouTube Live", keywords:"deutschland germany webcam mix live" },
+      { title:"Tokyo Live Camera", place:"Tokyo", lat:35.6595, lon:139.7005, type:"youtube", url:"https://www.youtube.com/watch?v=QOjmvL3e7Lc", fallbackUrl:"https://www.youtube.com/watch?v=QOjmvL3e7Lc", source:"YouTube Live", keywords:"tokyo shiodome webcam live" }
+    ];
+    const KNOWN_LOCATIONS = [
+      { name:"Naumburg", lat:51.1526, lon:11.8099 }, { name:"Naumburg Saale", lat:51.1526, lon:11.8099 }, { name:"Jena", lat:50.9271, lon:11.5892 },
+      { name:"Apolda", lat:51.0263, lon:11.5164 }, { name:"Weimar", lat:50.9795, lon:11.3235 }, { name:"Erfurt", lat:50.9848, lon:11.0299 },
+      { name:"Leipzig", lat:51.3397, lon:12.3731 }, { name:"Halle", lat:51.4825, lon:11.9705 }, { name:"Halle Saale", lat:51.4825, lon:11.9705 },
+      { name:"Magdeburg", lat:52.1205, lon:11.6276 }, { name:"Bernburg", lat:51.7946, lon:11.7401 }, { name:"Bernburg Saale", lat:51.7946, lon:11.7401 },
+      { name:"Dresden", lat:51.0504, lon:13.7373 }, { name:"Chemnitz", lat:50.8323, lon:12.9253 }, { name:"Rostock", lat:54.0924, lon:12.0991 }, { name:"Warnemuende", lat:54.1768, lon:12.0896 }, { name:"Warnemunde", lat:54.1768, lon:12.0896 },
+      { name:"Berlin", lat:52.52, lon:13.405 }, { name:"Wacken", lat:54.0216, lon:9.3759 },
+      { name:"Hamburg", lat:53.5511, lon:9.9937 }, { name:"Muenchen", lat:48.1372, lon:11.5756 }, { name:"München", lat:48.1372, lon:11.5756 }, { name:"Munich", lat:48.1372, lon:11.5756 },
+      { name:"Koeln", lat:50.9375, lon:6.9603 }, { name:"Köln", lat:50.9375, lon:6.9603 }, { name:"Cologne", lat:50.9375, lon:6.9603 }, { name:"Frankfurt", lat:50.1109, lon:8.6821 },
+      { name:"London", lat:51.5072, lon:-0.1276 }, { name:"Paris", lat:48.8566, lon:2.3522 }, { name:"New York", lat:40.7128, lon:-74.006 },
+      { name:"Washington", lat:38.9072, lon:-77.0369 }, { name:"Tokyo", lat:35.6762, lon:139.6503 }
+    ];
+    const PROFILE_PRESETS = {
+      standard: {
+        label:"Standard", count:2, layout:"grid",
+        sources:[
+          {...PINNED_SOURCE, muted:true},
+          HLS_SOURCES.tagesschau,
+          { title:"Freie Quelle 3", type:"auto", url:"", volume:70, muted:true },
+          { title:"Freie Quelle 4", type:"auto", url:"", volume:70, muted:true },
+          { title:"Freie Quelle 5", type:"auto", url:"", volume:70, muted:true },
+          { title:"Freie Quelle 6", type:"auto", url:"", volume:70, muted:true },
+          { title:"Freie Quelle 7", type:"auto", url:"", volume:70, muted:true },
+          { title:"Freie Quelle 8", type:"auto", url:"", volume:70, muted:true }
+        ]
+      },
+      eld: {
+        label:"ELD", count:4, layout:"grid",
+        sources:[
+          HLS_SOURCES.welt,
+          HLS_SOURCES.tagesschau,
+          { title:"EDPweb", type:"edpweb", url:"http://192.168.0.1:83", volume:70, muted:true },
+          { title:"FEWIS / LOGIN", type:"login", url:"https://www.fewis.dwd.de/kartenansicht.php?typ=gewitter", volume:70, muted:true },
+          { title:"SOURCE 5", type:"auto", url:"", volume:70, muted:true },
+          { title:"SOURCE 6", type:"auto", url:"", volume:70, muted:true },
+          { title:"SOURCE 7", type:"auto", url:"", volume:70, muted:true },
+          { title:"SOURCE 8", type:"auto", url:"", volume:70, muted:true }
+        ]
+      },
+      news: {
+        label:"News Übersicht", count:4, layout:"program",
+        sources:[
+          {...HLS_SOURCES.welt, muted:false },
+          HLS_SOURCES.tagesschau,
+          HLS_SOURCES.phoenix,
+          HLS_SOURCES.dw,
+          HLS_SOURCES.zdfinfo,
+          { title:"SOURCE 6", type:"auto", url:"", volume:70, muted:true },
+          { title:"SOURCE 7", type:"auto", url:"", volume:70, muted:true },
+          { title:"SOURCE 8", type:"auto", url:"", volume:70, muted:true }
+        ]
+      }
+    };
+    function clonePreset(value){return typeof structuredClone==="function"?structuredClone(value):JSON.parse(JSON.stringify(value));}
+    const STORAGE_PREFIX = "regie.loginlocal.";
+    const DEVICE_VIEW_KEY = STORAGE_PREFIX+"deviceView";
+    function readDeviceView(){try{const value=JSON.parse(localStorage.getItem(DEVICE_VIEW_KEY)||"null");return value&&value.state&&Array.isArray(value.state.sources)?value:null;}catch(e){return null;}}
+    const bootDeviceView = readDeviceView();
+    let activeProfile = bootDeviceView?.activeProfile || DEFAULT_PROFILE;
+    if(!PROFILE_PRESETS[activeProfile]) activeProfile = DEFAULT_PROFILE;
+    const wall = document.getElementById("wall"), drawer = document.getElementById("drawer"), scrim = document.getElementById("scrim"), sourcesEl = document.getElementById("sources"), countSelect = document.getElementById("countSelect"), presetSelect = document.getElementById("presetSelect"), profileSelect = document.getElementById("profileSelect"), quickNaumburgTarget = document.getElementById("quickNaumburgTarget"), webcamSearchInput = document.getElementById("webcamSearchInput"), webcamResultsEl = document.getElementById("webcamResults"), channelSearchInput = document.getElementById("channelSearchInput"), channelResultsEl = document.getElementById("channelResults"), helpModal = document.getElementById("helpModal"), muteAllBtn = document.getElementById("muteAllBtn"), quickStatusEl = document.getElementById("quickStatus"), liveToastEl = document.getElementById("liveToast");
+    function scopedKey(name){return STORAGE_PREFIX+"profile."+activeProfile+"."+name;}
+    function profileDefault(profile=activeProfile){const preset=PROFILE_PRESETS[profile]||PROFILE_PRESETS.standard;return {count:preset.count||DEFAULT_COUNT,sources:clonePreset(preset.sources),soloIndex:-1,muteAllSnapshot:null,positions:null};}
+    function profileLayout(profile=activeProfile){const preset=PROFILE_PRESETS[profile]||PROFILE_PRESETS.standard;return localStorage.getItem(scopedKey("preset"))||preset.layout||DEFAULT_PRESET;}
+    function loadState(){const base=profileDefault();return {count:Number(localStorage.getItem(scopedKey("count")))||base.count,sources:JSON.parse(localStorage.getItem(scopedKey("sources"))||"null")||base.sources,soloIndex:Number(localStorage.getItem(scopedKey("soloIndex"))??-1),muteAllSnapshot:JSON.parse(localStorage.getItem(scopedKey("muteAllSnapshot"))||"null"),positions:JSON.parse(localStorage.getItem(scopedKey("positions"))||"null")};}
+    function normalizeStateSnapshot(input){const base=profileDefault();const sources=Array.isArray(input?.sources)?input.sources.slice(0,8):base.sources;return{count:Math.max(1,Math.min(8,Number(input?.count)||sources.length||base.count)),sources,soloIndex:Number.isFinite(Number(input?.soloIndex))?Number(input.soloIndex):-1,muteAllSnapshot:input?.muteAllSnapshot||null,positions:Array.isArray(input?.positions)?input.positions:null};}
+    function encodePayload(value){try{const json=JSON.stringify(value);const bytes=new TextEncoder().encode(json);let binary="";bytes.forEach(byte=>binary+=String.fromCharCode(byte));return btoa(binary);}catch(e){return"";}}
+    function decodePayload(value){try{const binary=atob(value);const bytes=Uint8Array.from(binary,c=>c.charCodeAt(0));return JSON.parse(new TextDecoder().decode(bytes));}catch(e){return null;}}
+    function importStateFromUrl(){const raw=new URLSearchParams(location.search).get("regieState");if(!raw)return null;const payload=decodePayload(raw);if(!payload||typeof payload!=="object")return null;if(payload.activeProfile&&PROFILE_PRESETS[payload.activeProfile])activeProfile=payload.activeProfile;if(payload.preset)localStorage.setItem(scopedKey("preset"),String(payload.preset));const imported=payload.state;if(!imported||!Array.isArray(imported.sources))return null;const count=Math.max(1,Math.min(8,Number(imported.count)||imported.sources.length||DEFAULT_COUNT));return{count,sources:imported.sources.slice(0,8),soloIndex:Number.isFinite(Number(imported.soloIndex))?Number(imported.soloIndex):-1,muteAllSnapshot:imported.muteAllSnapshot||null,positions:Array.isArray(imported.positions)?imported.positions:null};}
+    function persistImportedState(imported){if(!imported)return false;localStorage.setItem(STORAGE_PREFIX+"activeProfile",activeProfile);localStorage.setItem(scopedKey("count"),imported.count);localStorage.setItem(scopedKey("sources"),JSON.stringify(imported.sources));localStorage.setItem(scopedKey("soloIndex"),String(imported.soloIndex));localStorage.setItem(scopedKey("muteAllSnapshot"),JSON.stringify(imported.muteAllSnapshot));if(imported.positions)localStorage.setItem(scopedKey("positions"),JSON.stringify(imported.positions));else localStorage.removeItem(scopedKey("positions"));return true;}
+    function cleanImportUrl(){if(!new URLSearchParams(location.search).has("regieState"))return;try{const url=new URL(location.href);url.searchParams.delete("regieState");history.replaceState(null,"",url.pathname+(url.search||"")+url.hash);}catch(e){}}
+    const importedState = importStateFromUrl();
+    let deviceViewActive = Boolean(!importedState && bootDeviceView);
+    if(deviceViewActive&&bootDeviceView.preset)localStorage.setItem(scopedKey("preset"),String(bootDeviceView.preset));
+    const storedProfileVersion = localStorage.getItem(scopedKey("version"));
+    let state = importedState || (deviceViewActive?normalizeStateSnapshot(bootDeviceView.state):loadState());
+    if(!importedState&&!deviceViewActive&&activeProfile===DEFAULT_PROFILE&&storedProfileVersion!==DEFAULT_VERSION){state=profileDefault(DEFAULT_PROFILE);localStorage.removeItem(scopedKey("positions"));}
+    const importedLocalState = persistImportedState(importedState);
+    if(importedLocalState)cleanImportUrl();
+    function isRemovedSourceType(source){return source?.type==="tr"+"acker";}
+    function hlsReplacementFor(source,index){if(isRemovedSourceType(source))return{title:`Freie Quelle ${index+1}`,type:"auto",url:"",volume:70,muted:true};const hay=`${source?.title||""} ${source?.url||""}`;if(/IixXpcGrTzo|Naumburg|Marktplatz/i.test(hay))return{...source,title:source?.title||"Naumburg Marktplatz Live",type:"youtube",url:NAUMBURG_WATCH_URL,fallbackUrl:source?.fallbackUrl||NAUMBURG_WATCH_URL};if(/LuKwFajn37U|DW News/i.test(hay))return clonePreset(HLS_SOURCES.dw);if(/HvZt-nh9sGg|FRANCE 24/i.test(hay))return clonePreset(index===0?HLS_SOURCES.welt:HLS_SOURCES.tagesschau);if(/pykpO5kQJ98|Euronews/i.test(hay))return clonePreset(index===0?HLS_SOURCES.welt:HLS_SOURCES.phoenix);return source;}
+    function migrateBlockedSources(){state.sources=state.sources.map((s,i)=>hlsReplacementFor(s,i));localStorage.setItem(scopedKey("version"),DEFAULT_VERSION);}
+    migrateBlockedSources();
+    let activePane = null; const ytPlayers = new Map(); const videoPlayers = new Map(); const embedRefreshes = new Set(); const signalStates = new Map(); const liveToastKeys = new Set(); let ytApiReady = false; let ytApiLoading = false; let lastWebcamOrigin = null; let burgenlandkreisLiveTimer = null; let burgenlandkreisLiveInFlight = false; let liveToastTimer = null;
+    window.onYouTubeIframeAPIReady = function(){ ytApiReady=true; document.querySelectorAll("[data-yt-index]").forEach(el=>initYouTubePlayer(Number(el.dataset.ytIndex),el.id,el.dataset.videoId)); checkBurgenlandkreisLive(); };
+    function ensureYouTubeApi(){if(window.YT&&window.YT.Player){if(!ytApiReady)window.onYouTubeIframeAPIReady();return;}if(ytApiLoading)return;ytApiLoading=true;const tag=document.createElement("script");tag.src="https://www.youtube.com/iframe_api";document.head.appendChild(tag);}
+    function save(){ localStorage.setItem(STORAGE_PREFIX+"activeProfile",activeProfile); localStorage.setItem(scopedKey("count"),state.count); localStorage.setItem(scopedKey("sources"),JSON.stringify(state.sources)); localStorage.setItem(scopedKey("soloIndex"),String(state.soloIndex)); localStorage.setItem(scopedKey("muteAllSnapshot"),JSON.stringify(state.muteAllSnapshot)); if(state.positions)localStorage.setItem(scopedKey("positions"),JSON.stringify(state.positions));else localStorage.removeItem(scopedKey("positions")); }
+    function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));}
+    function normalizeText(value){return String(value||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g," ").trim();}
+    function normalizeUrl(value){const u=(value||"").trim();if(!u)return"";if(/^(https?:|file:|\/|\.\/|\.\.\/)/i.test(u))return u;if(/^(localhost|127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[0-1])\.)/i.test(u))return"http://"+u;if(/^(\d{1,3}\.){3}\d{1,3}(:\d+)?(\/|$)/.test(u))return"http://"+u;return"https://"+u;}
+    function parseUrl(value){try{return new URL(normalizeUrl(value));}catch(e){return null;}}
+    function isLoopbackHost(host){const h=String(host||"").toLowerCase();return h==="localhost"||h.endsWith(".localhost")||h==="::1"||h==="[::1]"||/^127\./.test(h);}
+    function isPrivateIPv4Host(host){if(!host)return false;if(isLoopbackHost(host))return true;if(/^10\./.test(host))return true;if(/^192\.168\./.test(host))return true;if(/^172\.(1[6-9]|2\d|3[0-1])\./.test(host))return true;if(/^169\.254\./.test(host))return true;return false;}
+    function isMixedContentBlocked(urlValue){const u=parseUrl(urlValue);if(!u)return false;return location.protocol==="https:"&&u.protocol==="http:"&&!isPrivateIPv4Host(u.hostname);}
+    function isLocalHttpUrl(urlValue){const u=parseUrl(urlValue);return Boolean(u&&u.protocol==="http:"&&isPrivateIPv4Host(u.hostname));}
+    function isLocalMode(){return location.protocol==="file:"||location.hostname==="localhost"||location.hostname==="127.0.0.1"||location.protocol==="http:";}
+    function localAccessFetchOptions(urlValue){const u=parseUrl(urlValue);const options={mode:"no-cors",cache:"no-store"};if(u&&isLoopbackHost(u.hostname))options.targetAddressSpace="loopback";else if(u&&isPrivateIPv4Host(u.hostname))options.targetAddressSpace="local";return options;}
+    function firstLocalSourceUrl(){const active=activePane?state.sources[Number(activePane.dataset.index)||0]:null;const urls=[active,...state.sources].map(s=>normalizeUrl(s?.url)).filter(Boolean);return urls.find(url=>isLocalHttpUrl(url))||"http://127.0.0.1:8000/";}
+    async function queryLocalAccessPermission(){try{if(navigator.permissions?.query){const result=await navigator.permissions.query({name:"local-network-access"});return result.state||"unknown";}}catch(e){}return"unknown";}
+    async function requestLocalNetworkAccess(urlValue=null){const input=document.getElementById("localProbeUrl");const target=normalizeUrl(urlValue||input?.value||firstLocalSourceUrl());if(!target){setQuickStatus("Keine lokale URL zum Testen gefunden.");return false;}if(input)input.value=target;setQuickStatus(`Local-Network-Freigabe wird angefragt: ${target}`);try{await fetch(target,localAccessFetchOptions(target));setQuickStatus("Local-Network-Freigabe ok. Lokale Kacheln werden neu geladen.");[...document.querySelectorAll(".pane")].forEach(p=>{const index=Number(p.dataset.index)||0;if(isLocalHttpUrl(state.sources[index]?.url))renderInsideFrame(p.querySelector(".frame"),state.sources[index],index);});updateLocalModeUi();return true;}catch(e){const stateText=await queryLocalAccessPermission();setQuickStatus(`Local-Network-Freigabe nicht bestaetigt (${stateText}). Browser-Freigabe pruefen oder lokale Regie starten.`);updateLocalModeUi();return false;}}
+    function localRunCommand(){return LOCAL_START_SCRIPT;}
+    function manualLocalRunCommand(){return`python -m http.server ${LOCAL_SERVER_PORT} --bind 127.0.0.1`;}
+    function localStatePayload(){return{activeProfile,preset:presetSelect?.value||profileLayout(),state:clonePreset(state)};}
+    function localPlainWallUrl(){return`http://127.0.0.1:${LOCAL_SERVER_PORT}${LOCAL_WALL_PATH}`;}
+    function localWallUrl(includeState=true){const url=new URL(localPlainWallUrl());const payload=includeState?encodePayload(localStatePayload()):"";if(payload)url.searchParams.set("regieState",payload);return url.toString();}
+    function isYouTubeLiveChannelUrl(value){try{const u=new URL(normalizeUrl(value));return u.hostname.includes("youtube.com")&&/^\/(@[^/]+|channel\/UC[a-zA-Z0-9_-]+|c\/[^/]+|user\/[^/]+)\/live\/?$/.test(u.pathname);}catch(e){return false;}}
+    function detectType(source){const declared=source.type||"auto";if(declared!=="auto")return declared;const u=(source.url||"").trim().toLowerCase();if(!u)return"iframe";if(isYouTubeLiveChannelUrl(source.url))return"youtube-live";if(u.includes("youtube.com")||u.includes("youtu.be")||/^[a-zA-Z0-9_-]{11}$/.test(source.url.trim()))return"youtube";if(u.includes(".m3u8")||u.includes("m3u8"))return"hls";if(/\.(jpe?g|png|webp|gif)(\?|#|$)/i.test(u))return"image";if((source.title||"").toLowerCase().includes("edpweb")||u.includes("edpweb"))return"edpweb";const parsed=parseUrl(source.url);if(parsed&&isPrivateIPv4Host(parsed.hostname))return"local";return"iframe";}
+    function youtubeId(input){const s=(input||"").trim();if(/^[a-zA-Z0-9_-]{11}$/.test(s))return s;try{const u=new URL(normalizeUrl(s));if(u.hostname.includes("youtu.be"))return u.pathname.slice(1).split("/")[0];if(u.searchParams.get("v"))return u.searchParams.get("v");const m=u.pathname.match(/\/embed\/([a-zA-Z0-9_-]{11})/);if(m)return m[1];}catch(e){}return s;}
+    function setQuickStatus(text){if(quickStatusEl)quickStatusEl.textContent=text;}
+    function layoutLabel(value){return {grid:"Grid",program:"Program + Preview",wide:"Breit oben",stack:"Kontrollwand"}[value]||value||"Layout";}
+    function typeLabel(value){return {auto:"Auto erkennen",iframe:"iFrame / Website",login:"Login-Website",edpweb:"EDPweb",local:"Lokaler IPv4-Dienst",youtube:"YouTube","youtube-live":"YouTube Live-Kanal",hls:"HLS / m3u8 Stream",image:"Bild-Webcam"}[value]||value||"Quelle";}
+    function signalInfo(status){return {live:{status:"live",emoji:"🟢",title:"Videosignal erkannt"},checking:{status:"checking",emoji:"🟡",title:"Signal wird geprueft"},error:{status:"error",emoji:"🔴",title:"Kein Videosignal oder Fehler"},empty:{status:"empty",emoji:"⚫",title:"Keine Quelle geladen"},unknown:{status:"unknown",emoji:"⚪",title:"Signal technisch nicht direkt pruefbar"}}[status]||{status:"checking",emoji:"🟡",title:"Signal wird geprueft"};}
+    function signalStatusForSource(source){return normalizeUrl(source?.url)?"checking":"empty";}
+    function applySignalToElement(index,el=null){const saved=signalStates.get(index);if(!saved)return;const info=signalInfo(saved.status);const node=el||wall.querySelector(`.pane[data-index="${index}"] .signal`);if(!node)return;node.className=`signal ${info.status}`;node.textContent=info.emoji;node.title=saved.title||info.title;node.setAttribute("aria-label",saved.title||info.title);}
+    function setSignalStatus(index,status,title=null){const info=signalInfo(status);signalStates.set(index,{status:info.status,title:title||info.title});applySignalToElement(index);if(info.status==="live"&&isBurgenlandkreisSource(state.sources[index]))notifyBurgenlandkreisLive(null,state.sources[index]);}
+    function burgenlandkreisLivePreset(){return CHANNEL_PRESETS.find(item=>item.channelId===BURGENLANDKREIS_CHANNEL_ID)||CHANNEL_PRESETS.find(item=>normalizeText(item.title)==="burgenlandkreis youtube live");}
+    function isBurgenlandkreisSource(source){const hay=normalizeText([source?.title,source?.source,source?.keywords,source?.url,source?.fallbackUrl].filter(Boolean).join(" "));return source?.channelId===BURGENLANDKREIS_CHANNEL_ID||hay.includes("burgenlandkreis")||hay.includes("burgendlandkreis");}
+    function videoIdFromOEmbed(data){const id=youtubeId(data?.embedUrl||"");return /^[a-zA-Z0-9_-]{11}$/.test(id)?id:"";}
+    function sourceFromBurgenlandkreisLive(data=null,source=null){const preset=burgenlandkreisLivePreset()||{};const id=videoIdFromOEmbed(data);return{...preset,...(source||{}),title:data?.title||source?.title||preset.title||"Burgenlandkreis YouTube Live",type:id?"youtube":"youtube-live",url:id?`https://www.youtube.com/watch?v=${id}`:(source?.url||preset.url||"https://www.youtube.com/@burgenlandkreis1489/live"),embedUrl:data?.embedUrl||source?.embedUrl||preset.embedUrl||"",channelId:id?"":(source?.channelId||preset.channelId||BURGENLANDKREIS_CHANNEL_ID),fallbackUrl:source?.fallbackUrl||preset.fallbackUrl||"https://www.youtube.com/@burgenlandkreis1489/streams",source:"Burgenlandkreis",keywords:"burgenlandkreis burgendlandkreis blk kreistag livestream youtube"};}
+    function hideLiveToast(){if(liveToastEl)liveToastEl.classList.remove("show");if(liveToastTimer)clearTimeout(liveToastTimer);}
+    function showLiveToast(item,message){if(!liveToastEl)return;const title=item?.title||"Burgenlandkreis YouTube Live";liveToastEl.innerHTML=`<div><strong>🔴 Burgenlandkreis ist live</strong><p>${esc(message||title)}</p></div><div class="live-toast-actions"><button class="mini loadLive">In aktiven Monitor</button><button class="mini openLive">Oeffnen</button><button class="live-toast-close" title="Schliessen">×</button></div>`;liveToastEl.classList.add("show");liveToastEl.querySelector(".loadLive").onclick=()=>{applyPresetToSource(activeIndex(),item,{muted:false});hideLiveToast();};liveToastEl.querySelector(".openLive").onclick=()=>openPresetExternally(item);liveToastEl.querySelector(".live-toast-close").onclick=hideLiveToast;if(liveToastTimer)clearTimeout(liveToastTimer);liveToastTimer=setTimeout(hideLiveToast,26000);}
+    function notifyBurgenlandkreisLive(data=null,source=null){const item=sourceFromBurgenlandkreisLive(data,source);const id=videoIdFromOEmbed(data);const key=id||`${item.url||"burgenlandkreis-live"}:${new Date().toISOString().slice(0,10)}`;if(liveToastKeys.has(key))return;liveToastKeys.add(key);if(id)localStorage.setItem(STORAGE_PREFIX+"burgenlandkreisLiveVideo",id);showLiveToast(item,id?`${item.title} wurde als aktiver YouTube-Livestream erkannt.`:`${item.title} meldet ein Videosignal.`);}
+    function probeBurgenlandkreisLivePlayer(){const preset=burgenlandkreisLivePreset();if(!preset||burgenlandkreisLiveInFlight)return;if(!(window.YT&&window.YT.Player)){ensureYouTubeApi();return;}burgenlandkreisLiveInFlight=true;const holder=document.createElement("div");holder.id=`burgenlandkreis-live-probe-${Date.now()}`;holder.className="yt-probe";document.body.appendChild(holder);let player=null,done=false;const finish=()=>{if(done)return;done=true;burgenlandkreisLiveInFlight=false;try{if(player&&typeof player.destroy==="function")player.destroy();}catch(e){}holder.remove();};try{player=new YT.Player(holder.id,{videoId:"live_stream",width:"1",height:"1",playerVars:{channel:BURGENLANDKREIS_CHANNEL_ID,autoplay:1,mute:1,controls:0,enablejsapi:1,playsinline:1,rel:0,origin:youtubeOrigin()},events:{onReady:event=>{try{event.target.mute();event.target.playVideo();}catch(e){}},onStateChange:event=>{const ps=window.YT?.PlayerState||{};if(event.data===ps.PLAYING){notifyBurgenlandkreisLive(null,preset);finish();}else if(event.data===ps.ENDED)finish();},onError:finish}});setTimeout(finish,22000);}catch(e){finish();}}
+    async function checkBurgenlandkreisLive(){const preset=burgenlandkreisLivePreset();if(!preset||burgenlandkreisLiveInFlight)return;try{const data=await fetchYouTubeOEmbed(preset.url);const id=videoIdFromOEmbed(data);if(id){const saved=localStorage.getItem(STORAGE_PREFIX+"burgenlandkreisLiveVideo")||"";if(saved!==id)notifyBurgenlandkreisLive(data,preset);return;}}catch(e){}probeBurgenlandkreisLivePlayer();}
+    function startBurgenlandkreisLiveWatch(){const saved=localStorage.getItem(STORAGE_PREFIX+"burgenlandkreisLiveVideo");if(saved)liveToastKeys.add(saved);setTimeout(checkBurgenlandkreisLive,7000);if(burgenlandkreisLiveTimer)clearInterval(burgenlandkreisLiveTimer);burgenlandkreisLiveTimer=setInterval(checkBurgenlandkreisLive,BURGENLANDKREIS_LIVE_CHECK_MS);document.addEventListener("visibilitychange",()=>{if(!document.hidden)checkBurgenlandkreisLive();});}
+    function updateViewStatus(){}
+    function currentDeviceSnapshot(){const panes=[...document.querySelectorAll(".pane")];if(panes.length)state.positions=panes.map(p=>({left:p.style.left,top:p.style.top,width:p.style.width,height:p.style.height}));return{activeProfile,preset:presetSelect.value||profileLayout(),savedAt:new Date().toISOString(),state:clonePreset(state)};}
+    function saveDeviceView(){save();const snapshot=currentDeviceSnapshot();localStorage.setItem(DEVICE_VIEW_KEY,JSON.stringify(snapshot));deviceViewActive=true;updateViewStatus();setQuickStatus("Geräteansicht lokal gespeichert. Dieser Browser lädt sie beim nächsten Öffnen automatisch.");}
+    function loadDeviceView(){const snapshot=readDeviceView();if(!snapshot){setQuickStatus("Keine Geräteansicht in diesem Browser gespeichert.");return false;}activeProfile=PROFILE_PRESETS[snapshot.activeProfile]?snapshot.activeProfile:DEFAULT_PROFILE;localStorage.setItem(STORAGE_PREFIX+"activeProfile",activeProfile);if(snapshot.preset)localStorage.setItem(scopedKey("preset"),String(snapshot.preset));state=normalizeStateSnapshot(snapshot.state);presetSelect.value=snapshot.preset||profileLayout();deviceViewActive=true;migrateBlockedSources();render();setQuickStatus("Geräteansicht aus diesem Browser geladen.");return true;}
+    function clearDeviceView(){localStorage.removeItem(DEVICE_VIEW_KEY);loadDrkStandard();setQuickStatus("Geräteansicht gelöscht. Neue Aufrufe starten wieder mit Standard.");}
+    function loadDrkStandard(){activeProfile=DEFAULT_PROFILE;localStorage.setItem(STORAGE_PREFIX+"activeProfile",activeProfile);state=profileDefault(DEFAULT_PROFILE);presetSelect.value=(PROFILE_PRESETS[DEFAULT_PROFILE]||PROFILE_PRESETS.standard).layout||DEFAULT_PRESET;localStorage.setItem(scopedKey("preset"),presetSelect.value);deviceViewActive=false;migrateBlockedSources();render();setQuickStatus(`${PROFILE_PRESETS[DEFAULT_PROFILE]?.label||"Standard"} geladen.`);}
+    function extractIframeSrc(html){const m=String(html||"").match(/\ssrc=["']([^"']+)["']/i);return m?m[1].replace(/&amp;/g,"&"):"";}
+    function tuneEmbedUrl(src){try{const u=new URL(src);u.searchParams.set("autoplay","1");u.searchParams.set("mute","1");u.searchParams.set("playsinline","1");u.searchParams.set("rel","0");return u.toString();}catch(e){return src;}}
+    async function fetchYouTubeOEmbed(watchUrl){const endpoint=`https://www.youtube.com/oembed?url=${encodeURIComponent(watchUrl)}&format=json&maxwidth=1280`;const res=await fetch(endpoint,{cache:"no-store"});if(!res.ok)throw new Error(`oEmbed ${res.status}`);const data=await res.json();const embedUrl=tuneEmbedUrl(extractIframeSrc(data.html));if(!embedUrl)throw new Error("Kein Embed-Link in oEmbed-Antwort");return{title:data.title||"YouTube Live",author:data.author_name||"",embedUrl,watchUrl};}
+    function youtubeChannelIdFromUrl(input){try{const u=new URL(normalizeUrl(input));const m=u.pathname.match(/\/channel\/(UC[a-zA-Z0-9_-]+)/);return m?m[1]:"";}catch(e){return"";}}
+    function youtubeLiveEmbedUrl(source,index){const channelId=source?.channelId||youtubeChannelIdFromUrl(source?.url);if(!channelId)return"";const u=new URL("https://www.youtube.com/embed/live_stream");u.searchParams.set("channel",channelId);u.searchParams.set("autoplay","1");u.searchParams.set("mute",isEffectivelyMuted(index)?"1":"0");u.searchParams.set("playsinline","1");u.searchParams.set("rel","0");u.searchParams.set("enablejsapi","1");u.searchParams.set("origin",youtubeOrigin());return u.toString();}
+    function shouldRefreshYouTubeEmbed(source){if(!source||detectType(source)!=="youtube")return false;if(!source.embedUrl)return true;const refreshedAt=Date.parse(source.refreshedAt||"");return !Number.isFinite(refreshedAt)||(Date.now()-refreshedAt)>6*60*60*1000;}
+    function queueYouTubeEmbedRefresh(index,watchUrl){const normalized=watchUrl||NAUMBURG_WATCH_URL;const key=`${index}:${normalized}`;if(embedRefreshes.has(key))return;embedRefreshes.add(key);fetchYouTubeOEmbed(normalized).then(data=>{const current=state.sources[index];if(!current||detectType(current)!=="youtube")return;state.sources[index]={...current,title:current.title||data.title,url:current.url||data.watchUrl,embedUrl:data.embedUrl,fallbackUrl:current.fallbackUrl||data.watchUrl,refreshedAt:new Date().toISOString()};updatePane(index);renderSources();save();setQuickStatus(`Embed aktualisiert: ${state.sources[index].title||data.title}`);}).catch(()=>{}).finally(()=>embedRefreshes.delete(key));}
+    function activeIndex(){return activePane?Number(activePane.dataset.index)||0:0;}
+    function quickTargetLabel(index){const source=state.sources[index]||{};const title=String(source.title||`Monitor ${index+1}`).trim()||`Monitor ${index+1}`;return`[${index+1}] - ${title}`;}
+    function selectedTargetIndex(select){const value=Number(select?.value);return Number.isInteger(value)&&value>=0&&value<state.count?value:activeIndex();}
+    function updateSelectTargets(select,preferred=null){if(!select)return;const explicit=preferred!==null&&preferred!==undefined;const previous=explicit&&Number.isInteger(Number(preferred))?Number(preferred):Number(select.value);const fallback=Number.isInteger(previous)&&previous>=0&&previous<state.count?previous:activeIndex();select.innerHTML=`<option value="" disabled>Monitor waehlen</option>`+Array.from({length:state.count},(_,i)=>`<option value="${i}">${esc(quickTargetLabel(i))}</option>`).join("");select.value=String(Math.min(Math.max(fallback,0),Math.max(0,state.count-1)));}
+    function selectedQuickNaumburgIndex(){const value=Number(quickNaumburgTarget?.value);return Number.isInteger(value)&&value>=0&&value<state.count?value:activeIndex();}
+    function updateQuickNaumburgTargets(preferred=null){if(!quickNaumburgTarget)return;const explicit=preferred!==null&&preferred!==undefined;const previous=explicit&&Number.isInteger(Number(preferred))?Number(preferred):Number(quickNaumburgTarget.value);const fallback=Number.isInteger(previous)&&previous>=0&&previous<state.count?previous:activeIndex();quickNaumburgTarget.innerHTML=`<option value="" disabled>Fenster wählen</option>`+Array.from({length:state.count},(_,i)=>`<option value="${i}">${esc(quickTargetLabel(i))}</option>`).join("");quickNaumburgTarget.value=String(Math.min(Math.max(fallback,0),Math.max(0,state.count-1)));}
+    function syncQuickNaumburgTarget(index=activeIndex()){if(quickNaumburgTarget&&index>=0&&index<state.count)quickNaumburgTarget.value=String(index);}
+    function showQuickNaumburgTargets(){if(!quickNaumburgTarget)return;updateQuickNaumburgTargets(activeIndex());quickNaumburgTarget.closest(".quick-target")?.classList.add("choosing");quickNaumburgTarget.value="";setQuickStatus("Zielfenster fuer Webcam Naumburg auswaehlen.");requestAnimationFrame(()=>{quickNaumburgTarget.focus();if(typeof quickNaumburgTarget.showPicker==="function"){try{quickNaumburgTarget.showPicker();}catch(e){}}});}
+    async function loadNaumburgIntoSelectedTarget(){const index=selectedQuickNaumburgIndex();const pane=wall.querySelector(`.pane[data-index="${index}"]`);if(pane)setActive(pane);await loadYouTubeOEmbedInto(index,NAUMBURG_WATCH_URL);}
+    async function loadYouTubeOEmbedInto(index,watchUrl=NAUMBURG_WATCH_URL){setQuickStatus(`YouTube-Embed wird fuer Monitor ${index+1} frisch abgefragt...`);try{const data=await fetchYouTubeOEmbed(watchUrl);state.sources[index]={title:data.title,type:"youtube",url:data.watchUrl,embedUrl:data.embedUrl,fallbackUrl:data.watchUrl,volume:70,muted:false,refreshedAt:new Date().toISOString()};state.count=Math.max(state.count,index+1);state.muteAllSnapshot=null;updatePane(index);renderSources();save();setQuickStatus(`Monitor ${index+1}: ${data.title} geladen.`);return true;}catch(e){setQuickStatus("YouTube konnte nicht automatisch gelesen werden. Suche/Teilen öffnen.");window.open(NAUMBURG_SEARCH_URL,"_blank","noopener");return false;}}
+    async function refreshActiveEmbed(){const index=activeIndex();const s=state.sources[index];const url=(s&&detectType(s)==="youtube"&&s.url)?s.url:NAUMBURG_WATCH_URL;await loadYouTubeOEmbedInto(index,url);}
+    function youtubeEmbedUrl(input){const id=youtubeId(input);const origin=youtubeOrigin();return`https://www.youtube.com/embed/${encodeURIComponent(id)}?enablejsapi=1&autoplay=1&mute=1&playsinline=1&rel=0&origin=${encodeURIComponent(origin)}`;}
+    function youtubeOrigin(){return location.origin&&location.origin!=="null"?location.origin:"https://datenflix007.github.io";}
+    function youtubeWidgetReferrer(){return /^https?:/i.test(location.href)?location.href:youtubeOrigin();}
+    function isYouTubeLivePage(input){try{const u=new URL(normalizeUrl(input));return u.hostname.includes("youtube.com")&&/\/(live|streams)\/?$/i.test(u.pathname);}catch(e){return false;}}
+    function renderYouTubeFrame(frame,s,index,u){if(s.channelId||youtubeChannelIdFromUrl(s.url)||isYouTubeLivePage(s.url)){renderYouTubeLiveFrame(frame,s,index,u);return;}const holder=document.createElement("div");holder.id=`yt-player-${index}-${Date.now()}-${Math.floor(Math.random()*10000)}`;holder.className="yt-player";holder.dataset.ytIndex=String(index);holder.dataset.videoId=youtubeId(s.url||u||NAUMBURG_WATCH_URL);frame.appendChild(holder);const fallback=document.createElement("div");fallback.className="yt-fallback";const buttons=[];buttons.push(`<button onclick="updatePane(${index})">API neu</button>`);buttons.push(`<button onclick="loadYouTubeOEmbedInto(${index},'${esc(s.url||NAUMBURG_WATCH_URL)}')">Embed neu</button>`);if(s.fallbackType&&s.fallbackUrl)buttons.push(`<button onclick="useFallbackSource(${index})">Fallback laden</button>`);buttons.push(`<button onclick="window.open('${esc(normalizeUrl(s.fallbackUrl||s.url))}','_blank','noopener')">Extern oeffnen</button>`);fallback.innerHTML=buttons.join("");frame.appendChild(fallback);ensureYouTubeApi();if(ytApiReady)initYouTubePlayer(index,holder.id,holder.dataset.videoId);if(shouldRefreshYouTubeEmbed(s))queueYouTubeEmbedRefresh(index,s.url||NAUMBURG_WATCH_URL);}
+    function renderYouTubeLiveFrame(frame,s,index,u){setSignalStatus(index,"checking","YouTube-Live-Kanal wird geladen.");const src=s.embedUrl?tuneEmbedUrl(s.embedUrl):youtubeLiveEmbedUrl(s,index);if(!src){setSignalStatus(index,"error","YouTube-Live-Kanal ohne Channel-ID.");frame.innerHTML=`<div class="note"><div><strong>YouTube Live-Kanal</strong>Fuer diesen Live-Kanal fehlt die Channel-ID. Oeffne den Kanal im Tab oder nutze einen Katalogeintrag.<div class="note-actions"><button onclick="window.open('${esc(normalizeUrl(u||s.url))}','_blank','noopener')">Kanal oeffnen</button></div></div></div>`;return;}const iframe=document.createElement("iframe");iframe.src=src;iframe.allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";iframe.allowFullscreen=true;iframe.referrerPolicy="strict-origin-when-cross-origin";iframe.addEventListener("load",()=>setSignalStatus(index,"unknown","YouTube-Player geladen; echtes Live-Signal nur im Player pruefbar."));frame.appendChild(iframe);const fallback=document.createElement("div");fallback.className="yt-fallback";fallback.innerHTML=`<button onclick="updatePane(${index})">Neu laden</button><button onclick="window.open('${esc(normalizeUrl(s.url||u))}','_blank','noopener')">Live-Seite</button><button onclick="window.open('${esc(normalizeUrl(s.fallbackUrl||s.url||u))}','_blank','noopener')">Weitere Streams</button>`;frame.appendChild(fallback);}
+    function cacheBustUrl(url){try{const out=new URL(url,location.href);out.searchParams.set("_",String(Date.now()));return out.toString();}catch(e){return url+(url.includes("?")?"&":"?")+"_="+Date.now();}}
+    function renderImageFrame(frame,s,index,u){setSignalStatus(index,"checking","Bild-Webcam wird geladen.");const img=document.createElement("img");img.className="webcam-image";img.alt=s.title||`Webcam ${index+1}`;frame.appendChild(img);const note=document.createElement("div");note.className="note";note.style.display="none";note.innerHTML=`<div><strong>Bild-Webcam nicht geladen</strong>Quelle pruefen oder extern oeffnen.<div class="note-actions"><button onclick="renderInsideFrame(document.querySelector('.pane[data-index=&quot;${index}&quot;] .frame'),state.sources[${index}],${index})">Neu laden</button><button onclick="window.open('${esc(normalizeUrl(s.fallbackUrl||u))}','_blank','noopener')">Oeffnen</button></div></div>`;frame.appendChild(note);const load=()=>{if(!img.isConnected)return;img.src=cacheBustUrl(u);};img.onload=()=>{note.style.display="none";setSignalStatus(index,"live","Bild-Webcam geladen.");};img.onerror=()=>{note.style.display="grid";setSignalStatus(index,"error","Bild-Webcam konnte nicht geladen werden.");};load();const interval=Math.max(15,Number(s.refreshSec||60))*1000;const schedule=()=>setTimeout(()=>{if(!img.isConnected)return;load();schedule();},interval);schedule();const fallback=document.createElement("div");fallback.className="yt-fallback";fallback.innerHTML=`<button onclick="renderInsideFrame(document.querySelector('.pane[data-index=&quot;${index}&quot;] .frame'),state.sources[${index}],${index})">Aktualisieren</button><button onclick="window.open('${esc(normalizeUrl(s.fallbackUrl||u))}','_blank','noopener')">Quelle</button>`;frame.appendChild(fallback);}
+    function useFallbackSource(index){const s=state.sources[index];if(!s||!s.fallbackUrl)return;state.sources[index]={...s,type:s.fallbackType||detectType({url:s.fallbackUrl,type:"auto"}),url:s.fallbackUrl,muted:false};updatePane(index);save();}
+    function findChannel(query){const q=normalizeText(query);if(!q)return null;return CHANNEL_PRESETS.find(ch=>normalizeText(ch.title)===q)||CHANNEL_PRESETS.find(ch=>normalizeText(ch.title).startsWith(q))||CHANNEL_PRESETS.find(ch=>normalizeText(ch.title).includes(q));}
+    function presetSearchText(item){return normalizeText([item?.title,item?.place,item?.source,item?.keywords,item?.url].filter(Boolean).join(" "));}
+    function sourceFromPreset(item,options={}){const existing=state.sources[options.index]||{};const type=item.type||detectType({url:item.url,type:"auto"});return{title:item.title||existing.title||"Quelle",type,url:item.url||"",channelId:item.channelId||"",embedUrl:item.embedUrl||"",fallbackUrl:item.fallbackUrl||"",fallbackType:item.fallbackType||"",refreshSec:Number(item.refreshSec??existing.refreshSec??60),volume:Number(item.volume??existing.volume??70),muted:Boolean(options.muted??item.muted??false),pinned:Boolean(item.pinned||false)};}
+    function applyPresetToSource(index,item,options={}){if(!item||!item.url)return false;const target=Math.max(0,Math.min(7,Number(index)||0));state.count=Math.max(state.count,target+1);state.sources[target]=sourceFromPreset(item,{...options,index:target});state.muteAllSnapshot=null;updatePane(target);const pane=wall.querySelector(`.pane[data-index="${target}"]`);if(pane)setActive(pane);applyAudioAll();updateQuickNaumburgTargets(target);setQuickStatus(`${item.title} in Monitor ${target+1} geladen.`);return true;}
+    function openPresetExternally(item){const url=normalizeUrl(item?.fallbackUrl||item?.url);if(url)window.open(url,"_blank","noopener");}
+    function channelMatches(item,query){const q=normalizeText(query);if(!q)return true;return presetSearchText(item).includes(q);}
+    function channelResults(query=""){const q=String(query||"").trim();const list=CHANNEL_PRESETS.filter(item=>channelMatches(item,q));return list.length?list.slice(0,16):CHANNEL_PRESETS.slice(0,16);}
+    function formatDistance(km){if(!Number.isFinite(km))return"";return km<1?`${Math.round(km*1000)} m`:`${Math.round(km)} km`;}
+    function distanceKm(a,b){const R=6371,dLat=(b.lat-a.lat)*Math.PI/180,dLon=(b.lon-a.lon)*Math.PI/180,lat1=a.lat*Math.PI/180,lat2=b.lat*Math.PI/180;const h=Math.sin(dLat/2)**2+Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLon/2)**2;return 2*R*Math.atan2(Math.sqrt(h),Math.sqrt(1-h));}
+    function knownLocation(query){const q=normalizeText(query);if(!q)return null;return KNOWN_LOCATIONS.find(p=>normalizeText(p.name)===q)||KNOWN_LOCATIONS.find(p=>normalizeText(p.name).startsWith(q))||KNOWN_LOCATIONS.find(p=>q.includes(normalizeText(p.name))||normalizeText(p.name).includes(q));}
+    async function fetchJsonWithTimeout(url,timeout=6500){const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),timeout);try{const res=await fetch(url,{cache:"force-cache",signal:controller.signal,headers:{"Accept":"application/json"}});if(!res.ok)throw new Error(`HTTP ${res.status}`);return await res.json();}finally{clearTimeout(timer);}}
+    async function geocodePlace(query){const local=knownLocation(query);if(local)return{...local,label:local.name,local:true};const q=String(query||"").trim();if(!q)throw new Error("Kein Ort");try{const data=await fetchJsonWithTimeout(`https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=${encodeURIComponent(q)}`);const hit=Array.isArray(data)?data[0]:null;if(hit)return{lat:Number(hit.lat),lon:Number(hit.lon),label:hit.name||hit.display_name||q,local:false};}catch(e){}try{const data=await fetchJsonWithTimeout(`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=1&lang=de`);const hit=data?.features?.[0];const coords=hit?.geometry?.coordinates;if(Array.isArray(coords)&&coords.length>=2)return{lat:Number(coords[1]),lon:Number(coords[0]),label:hit.properties?.name||q,local:false};}catch(e){}throw new Error("Ort nicht gefunden");}
+    function nearbyWebcams(origin,limit=10){return WEBCAM_PRESETS.map(item=>({...item,distance:distanceKm(origin,item)})).sort((a,b)=>a.distance-b.distance).slice(0,limit);}
+    function webcamTextResults(query,limit=10){const q=normalizeText(query);if(!q)return[];return WEBCAM_PRESETS.filter(item=>presetSearchText(item).includes(q)).slice(0,limit);}
+    function worldcamMapUrl(origin){const lat=Number(origin?.lat)||51.1526,lon=Number(origin?.lon)||11.8099;return`https://de.worldcam.eu/map#11/${lat.toFixed(6)}/${lon.toFixed(6)}`;}
+    function resultMeta(item,mode){const type=typeLabel(item.type||detectType(item));if(mode==="webcam"){const dist=Number.isFinite(item.distance)?` · ${formatDistance(item.distance)}`:"";return`${item.place||"Webcam"} · ${item.source||type}${dist}`;}return`${type}${item.fallbackUrl?" · Fallback vorhanden":""}`;}
+    function showInlineTargetPicker(actions,select,item){if(!actions||!select)return;updateSelectTargets(select,activeIndex());select.value="";actions.classList.add("choosing");setQuickStatus(`Zielmonitor fuer ${item.title} auswaehlen.`);requestAnimationFrame(()=>{select.focus();if(typeof select.showPicker==="function"){try{select.showPicker();}catch(e){}}});}
+    function loadInlinePreset(actions,select,item,options={}){const ok=applyPresetToSource(selectedTargetIndex(select),item,options);if(ok)actions?.classList.remove("choosing");}
+    function renderResultCards(container,items,mode){if(!container)return;container.innerHTML="";if(!items.length){container.innerHTML=`<div class="result-empty">${mode==="webcam"?"Keine Webcam-Treffer. Oeffne die WorldCam-Karte fuer weitere Kameras.":"Keine Sender gefunden. Suche z.B. nach BLK TV, Burgenlandkreis, WELT oder DW."}</div>`;return;}items.forEach(item=>{const card=document.createElement("div");card.className="result-card";const isWebcam=mode==="webcam";const mutedDefault=isWebcam;const badge=isWebcam&&Number.isFinite(item.distance)?formatDistance(item.distance):(item.source||typeLabel(item.type||detectType(item)));card.innerHTML=`<div class="result-top"><div class="result-title"><strong>${esc(item.title)}</strong><small>${esc(resultMeta(item,mode))}</small></div><span class="result-badge">${esc(badge)}</span></div><div class="result-actions"><button class="mini load">In Monitor</button><select class="select target-select" aria-label="Zielmonitor fuer ${esc(item.title)}"></select><button class="mini open">Oeffnen</button></div>`;const actionsEl=card.querySelector(".result-actions"),targetSelect=card.querySelector(".target-select");updateSelectTargets(targetSelect,activeIndex());targetSelect.onchange=()=>loadInlinePreset(actionsEl,targetSelect,item,{muted:mutedDefault});card.querySelector(".load").onclick=()=>{if(!actionsEl.classList.contains("choosing")||!targetSelect.value){showInlineTargetPicker(actionsEl,targetSelect,item);return;}loadInlinePreset(actionsEl,targetSelect,item,{muted:mutedDefault});};card.querySelector(".open").onclick=()=>openPresetExternally(item);container.appendChild(card);});}
+    function renderChannelCatalog(query=channelSearchInput?.value||""){renderResultCards(channelResultsEl,channelResults(query), "channel");}
+    function renderWebcamResults(items){renderResultCards(webcamResultsEl,items,"webcam");}
+    async function performWebcamSearch(){const query=webcamSearchInput?.value?.trim()||"";if(!query){const origin=knownLocation("Naumburg");lastWebcamOrigin=origin;renderWebcamResults(nearbyWebcams(origin,10));setQuickStatus("Naheliegende Webcams fuer Naumburg angezeigt.");return;}setQuickStatus(`Webcams nahe ${query} werden gesucht...`);try{const origin=await geocodePlace(query);lastWebcamOrigin=origin;renderWebcamResults(nearbyWebcams(origin,10));setQuickStatus(`Webcams nahe ${origin.label||query} sortiert nach Entfernung.`);}catch(e){lastWebcamOrigin=null;const results=webcamTextResults(query,10);renderWebcamResults(results);setQuickStatus(results.length?`Ort nicht geocodiert, Texttreffer fuer ${query} angezeigt.`:`Keine Treffer fuer ${query}. WorldCam-Karte manuell oeffnen.`);}}
+    async function openWorldCamForSearch(){let origin=lastWebcamOrigin;const query=webcamSearchInput?.value?.trim();if(!origin&&query){try{origin=await geocodePlace(query);lastWebcamOrigin=origin;}catch(e){}}if(!origin)origin=knownLocation("Naumburg");window.open(worldcamMapUrl(origin),"_blank","noopener");setQuickStatus(`WorldCam-Karte fuer ${origin.label||origin.name||"Naumburg"} geoeffnet.`);}
+    function initCatalogUi(){renderChannelCatalog("");const origin=knownLocation("Naumburg");lastWebcamOrigin=origin;renderWebcamResults(nearbyWebcams(origin,10));}
+    function openMenu(){drawer.classList.add("open");scrim.classList.add("show")} function closeMenu(){drawer.classList.remove("open");scrim.classList.remove("show")}
+    document.getElementById("menuBtn").onclick=openMenu; document.getElementById("closeMenu").onclick=closeMenu; scrim.onclick=closeMenu; document.getElementById("helpBtn").onclick=()=>helpModal.classList.add("open"); document.getElementById("closeHelp").onclick=()=>helpModal.classList.remove("open"); helpModal.addEventListener("click",e=>{if(e.target===helpModal)helpModal.classList.remove("open")});
+    function createPane(i){const s=state.sources[i]||{title:`SOURCE ${i+1}`,type:"auto",url:"",volume:70,muted:true};const actualType=detectType(s);const signal=signalInfo(signalStates.get(i)?.status||signalStatusForSource(s));const pane=document.createElement("article");pane.className="pane";pane.dataset.index=i;pane.innerHTML=`<div class="head"><div class="num">${i+1}</div><span class="signal ${esc(signal.status)}" title="${esc(signal.title)}" aria-label="${esc(signal.title)}">${signal.emoji}</span><div class="monitor-title">${esc(s.title||`SOURCE ${i+1}`)} · ${actualType.toUpperCase()}</div><button class="audio-chip solo ${state.soloIndex===i?"on":""}" title="Nur diesen Stream hören">SOLO</button><button class="audio-chip mute ${isEffectivelyMuted(i)?"muted":""}" title="Stream stumm schalten">MUTE</button><button class="icon login" title="Login im eigenen Tab">🔐</button><button class="icon reload" title="Neu laden">↻</button><button class="icon open" title="Im neuen Tab öffnen">↗</button></div><div class="frame"></div><div class="resize"></div>`;renderInsideFrame(pane.querySelector(".frame"),s,i);applySignalToElement(i,pane.querySelector(".signal"));pane.querySelector(".reload").onclick=e=>{e.stopPropagation();renderInsideFrame(pane.querySelector(".frame"),state.sources[i],i);};pane.querySelector(".open").onclick=e=>{e.stopPropagation();openSourceUrl(i,false);};pane.querySelector(".login").onclick=e=>{e.stopPropagation();openSourceUrl(i,true);};pane.querySelector(".mute").onclick=e=>{e.stopPropagation();toggleMute(i);};pane.querySelector(".solo").onclick=e=>{e.stopPropagation();toggleSolo(i);};pane.addEventListener("pointerdown",()=>setActive(pane));enableDrag(pane);enableResize(pane);return pane;}
+    function openSourceUrl(index,loginMode=false){const s=state.sources[index];const u=normalizeUrl(s?.url);if(!u)return;const name=loginMode?`login_${index}`:"_blank";window.open(u,name,"noopener");}
+    function renderInsideFrame(frame,s,index){
+      frame.innerHTML="";
+      ytPlayers.delete(index);
+      videoPlayers.delete(index);
+      const type=detectType(s);
+      const u=normalizeUrl(s?.url);
+      if(!u){
+        setSignalStatus(index,"empty");
+        frame.innerHTML=`<div class="placeholder"><div><strong>NO SIGNAL</strong>Source im Menue setzen</div></div>`;
+        return;
+      }
+      setSignalStatus(index,"checking");
+      if((type==="local"||type==="iframe"||type==="login"||type==="edpweb"||type==="image")&&isMixedContentBlocked(u)){
+        setSignalStatus(index,"error","Quelle wird vom Browser blockiert.");
+        const parsed=parseUrl(u);
+        const isLan=parsed&&isPrivateIPv4Host(parsed.hostname);
+        frame.innerHTML=`<div class="note"><div><strong>Local Mode noetig</strong>Der Browser blockiert <code>${esc(u)}</code>, weil diese Wall gerade ueber HTTPS laeuft. ${isLan?"Fuer lokale IPv4-/LAN-Webseiten ist der lokale HTTP-Modus der funktionierende Turnaround.":"Diese HTTP-Seite braucht ebenfalls den lokalen HTTP-Modus."}<br><br><strong>So funktioniert es:</strong><br>1. Im Repository <code>${LOCAL_START_SCRIPT}</code> starten.<br>2. Danach <code>${localPlainWallUrl()}</code> oeffnen oder hier den Setup-Button nutzen.<br>3. Diese Kachel laedt <code>${esc(u)}</code> dann direkt im lokalen HTTP-Kontext.<div class="note-actions"><button onclick="openLocalWall()">Lokale Regie mit Setup</button><button onclick="copyLocalCommand()">Startscript kopieren</button><button onclick="window.open('${esc(u)}','_blank','noopener')">Ziel im Tab</button><button onclick="showLocalAdvice()">Hilfe</button></div></div></div>`;
+        return;
+      }
+      if(type==="youtube-live"){renderYouTubeLiveFrame(frame,s,index,u);return;}
+      if(type==="youtube"){renderYouTubeFrame(frame,s,index,u);return;}
+      if(type==="image"){renderImageFrame(frame,s,index,u);return;}
+      if(type==="hls"){
+        const video=document.createElement("video");
+        video.controls=true;
+        video.autoplay=true;
+        video.muted=isEffectivelyMuted(index);
+        video.volume=getEffectiveVolume(index);
+        video.playsInline=true;
+        frame.appendChild(video);
+        videoPlayers.set(index,video);
+        const note=document.createElement("div");
+        note.className="note";
+        note.innerHTML="<div><strong>Lade HLS...</strong>Falls nichts kommt: .m3u8-URL, CORS und Rechte pruefen.</div>";
+        frame.appendChild(note);
+        video.addEventListener("loadedmetadata",()=>{note.remove();setSignalStatus(index,"live","Videosignal erkannt.");});
+        video.addEventListener("playing",()=>setSignalStatus(index,"live","Videosignal spielt."));
+        video.addEventListener("error",()=>setSignalStatus(index,"error","Videostream liefert kein Signal."));
+        if(video.canPlayType("application/vnd.apple.mpegurl")){
+          video.src=u;
+          video.play().catch(()=>{});
+        }else if(window.Hls&&Hls.isSupported()){
+          const hls=new Hls({lowLatencyMode:true});
+          hls.loadSource(u);
+          hls.attachMedia(video);
+          hls.on(Hls.Events.MANIFEST_PARSED,()=>{setSignalStatus(index,"checking","HLS-Manifest geladen, warte auf Video.");note.remove();applyAudioToIndex(index);video.play().catch(()=>{});});
+          hls.on(Hls.Events.ERROR,(event,data)=>{if(data.fatal){setSignalStatus(index,"error","HLS-Stream liefert kein Signal.");note.innerHTML="<div><strong>HLS laedt nicht.</strong>Pruefe Stream-URL, CORS oder ob die URL noch aktuell ist.</div>";}});
+        }else{
+          setSignalStatus(index,"error","HLS wird in diesem Browser nicht unterstuetzt.");
+          note.innerHTML="<div><strong>HLS nicht unterstuetzt.</strong>Dieser Browser kann den Stream hier nicht abspielen.</div>";
+        }
+        return;
+      }
+      const iframe=document.createElement("iframe");
+      iframe.src=u;
+      iframe.referrerPolicy="strict-origin-when-cross-origin";
+      iframe.allow="local-network-access *; fullscreen; autoplay; clipboard-read; clipboard-write; encrypted-media; picture-in-picture; web-share";
+      frame.appendChild(iframe);
+      const localHttpsFrame=isLocalHttpUrl(u)&&location.protocol==="https:";
+      if(localHttpsFrame){
+        const fallback=document.createElement("div");
+        fallback.className="local-fallback";
+        fallback.innerHTML=`<button onclick="requestLocalNetworkAccess('${esc(u)}')">Freigabe</button><button onclick="renderInsideFrame(document.querySelector('.pane[data-index=&quot;${index}&quot;] .frame'),state.sources[${index}],${index})">Neu</button><button onclick="window.open('${esc(u)}','_blank','noopener')">Tab</button><button onclick="openLocalWall()">Lokal</button>`;
+        frame.appendChild(fallback);
+      }
+      const note=document.createElement("div");
+      note.className="note";
+      note.style.display="none";
+      note.innerHTML=localHttpsFrame?`<div><strong>Lokale Webseite bleibt leer?</strong>Edge/Chrome braucht eventuell die Local-Network-Freigabe fuer <code>${esc(u)}</code>.<br><div class="note-actions"><button onclick="requestLocalNetworkAccess('${esc(u)}')">Browser-Freigabe</button><button onclick="renderInsideFrame(document.querySelector('.pane[data-index=&quot;${index}&quot;] .frame'),state.sources[${index}],${index})">Neu laden</button><button onclick="window.open('${esc(u)}','_blank','noopener')">Im Tab</button><button onclick="openLocalWall()">Lokale Regie</button></div></div>`:`<div><strong>Login oder Embed blockiert?</strong>Falls die Seite im Frame nicht laedt: im normalen Tab anmelden bzw. Zertifikat/IP bestaetigen, danach hier neu laden.<br><div class="note-actions"><button onclick="window.open('${esc(u)}','login_${index}','noopener')">Login im Tab</button><button onclick="window.open('${esc(u)}','_blank','noopener')">Oeffnen</button></div></div>`;
+      frame.appendChild(note);
+      let loaded=false;
+      iframe.addEventListener("load",()=>{loaded=true;setSignalStatus(index,"unknown","Frame geladen; Videosignal nicht direkt pruefbar.");});
+      const shouldShowSlowLoadNote=localHttpsFrame||!(type==="local"||isLocalHttpUrl(u));
+      setTimeout(()=>{if(!loaded&&shouldShowSlowLoadNote){setSignalStatus(index,"error","Frame liefert kein bestaetigtes Signal.");note.style.display="grid";}},3200);
+    }
+    function showLocalAdvice(){helpModal.classList.add("open");}
+    function copyLocalCommand(){const cmd=localRunCommand();const url=localWallUrl(true);const text=`${cmd}\n${url}`;if(navigator.clipboard)navigator.clipboard.writeText(text).catch(()=>{});alert("Startscript und lokale Setup-URL kopiert.\n\n1. Im Repository ausfuehren oder doppelklicken: "+cmd+"\n2. Danach die lokale Regie mit Setup oeffnen.\n\nLokale Basis-URL: "+localPlainWallUrl());}
+    function openLocalWall(){window.open(localWallUrl(true),"_blank","noopener");}
+    async function updateLocalModeUi(){const el=document.getElementById("localModeState");if(!el)return;const imported=importedLocalState?"<br><strong>Setup uebernommen.</strong> Quellen, Layout und Positionen kamen aus der GitHub-Pages-Wall.":"";const permission=await queryLocalAccessPermission();const permissionText=permission==="unknown"?"":"<br>Browser-Freigabe: <strong>"+esc(permission)+"</strong>";el.innerHTML=isLocalMode()?`<strong>Lokaler Modus aktiv.</strong><br>Lokale IPv4-HTTP-Quellen koennen im Monitor geladen werden, sofern die Zielseite Frames erlaubt.${imported}<br><code>${localPlainWallUrl()}</code>`:`<strong>GitHub-Pages-/HTTPS-Modus.</strong><br>Lokale IPv4-HTTP-Frames werden direkt versucht und nutzen <code>local-network-access</code>. Nutze <strong>Browser-Freigabe anstossen</strong>, wenn Edge/Chrome nicht automatisch fragt.${permissionText}`;const probe=document.getElementById("localProbeUrl");if(probe&&!probe.value)probe.value=firstLocalSourceUrl();const probeBtn=document.getElementById("probeLocalAccessBtn"),copyBtn=document.getElementById("copyLocalServerBtn"),openBtn=document.getElementById("openLocalWallBtn");if(probeBtn)probeBtn.onclick=()=>requestLocalNetworkAccess();if(copyBtn)copyBtn.onclick=copyLocalCommand;if(openBtn)openBtn.onclick=openLocalWall;}
+    function initYouTubePlayer(index,holderId=null,videoId=null){if(!(window.YT&&window.YT.Player)){ensureYouTubeApi();return;}const holder=holderId?document.getElementById(holderId):document.querySelector(`[data-yt-index="${index}"]`);if(!holder)return;const id=videoId||holder.dataset.videoId;if(!id)return;const previous=ytPlayers.get(index);if(previous&&typeof previous.destroy==="function"){try{previous.destroy();}catch(e){}}const player=new YT.Player(holder.id,{videoId:id,width:"100%",height:"100%",playerVars:{autoplay:1,mute:1,controls:1,enablejsapi:1,hl:"de",playsinline:1,rel:0,origin:youtubeOrigin(),widget_referrer:youtubeWidgetReferrer()},events:{onReady:event=>{ytPlayers.set(index,event.target);setSignalStatus(index,"checking","YouTube-Player bereit, warte auf Videosignal.");applyAudioToIndex(index);try{event.target.mute();event.target.playVideo();}catch(e){}setQuickStatus(`YouTube API bereit: ${state.sources[index]?.title||id}`);},onStateChange:event=>{const ps=window.YT?.PlayerState||{};if(event.data===ps.PLAYING)setSignalStatus(index,"live","YouTube-Videosignal erkannt.");else if(event.data===ps.BUFFERING||event.data===ps.CUED)setSignalStatus(index,"checking","YouTube puffert oder wartet.");else if(event.data===ps.ENDED)setSignalStatus(index,"error","YouTube-Stream beendet.");},onError:event=>{setSignalStatus(index,"error",`YouTube Fehler ${event.data}.`);setQuickStatus(`YouTube API Fehler ${event.data}. Extern oeffnen oder Embed neu versuchen.`);}}});}
+    function getEffectiveVolume(index){const s=state.sources[index];return Math.max(0,Math.min(1,Number((s?.volume??70))/100))} function isEffectivelyMuted(index){const s=state.sources[index];if(!s)return true;if(state.soloIndex>=0&&state.soloIndex!==index)return true;return Boolean(s.muted)}
+    function applyAudioToIndex(index){const muted=isEffectivelyMuted(index),volumePercent=Math.round(getEffectiveVolume(index)*100);const video=videoPlayers.get(index);if(video){video.volume=volumePercent/100;video.muted=muted}const yt=ytPlayers.get(index);if(yt&&typeof yt.setVolume==="function"){try{yt.setVolume(volumePercent);muted?yt.mute():yt.unMute()}catch(e){}}const pane=wall.querySelector(`.pane[data-index="${index}"]`);if(pane){const muteBtn=pane.querySelector(".mute"),soloBtn=pane.querySelector(".solo");if(muteBtn)muteBtn.classList.toggle("muted",muted);if(soloBtn)soloBtn.classList.toggle("on",state.soloIndex===index)}}
+    function updateMuteAllButton(){muteAllBtn.textContent=state.muteAllSnapshot?"Unmute":"Alle stumm";muteAllBtn.classList.toggle("blue",Boolean(state.muteAllSnapshot));muteAllBtn.classList.toggle("red",!state.muteAllSnapshot)}
+    function applyAudioAll(){for(let i=0;i<state.count;i++)applyAudioToIndex(i);updateMuteAllButton();renderSources();save()}
+    function toggleMute(index){if(!state.sources[index])return;state.muteAllSnapshot=null;state.sources[index].muted=!state.sources[index].muted;if(state.soloIndex===index&&state.sources[index].muted)state.soloIndex=-1;applyAudioAll()} function toggleSolo(index){state.muteAllSnapshot=null;state.soloIndex=state.soloIndex===index?-1:index;if(state.sources[index])state.sources[index].muted=false;applyAudioAll()}
+    function toggleMuteAll(){if(state.muteAllSnapshot){state.sources.forEach((s,i)=>{if(s&&state.muteAllSnapshot[i])s.muted=Boolean(state.muteAllSnapshot[i].muted)});state.soloIndex=typeof state.muteAllSnapshot.soloIndex==="number"?state.muteAllSnapshot.soloIndex:-1;state.muteAllSnapshot=null;}else{state.muteAllSnapshot=state.sources.map(s=>({muted:Boolean(s?.muted)}));state.muteAllSnapshot.soloIndex=state.soloIndex;state.soloIndex=-1;state.sources.forEach(s=>{if(s)s.muted=true});}applyAudioAll();} muteAllBtn.onclick=toggleMuteAll;
+    function setActive(pane){document.querySelectorAll(".pane").forEach(p=>p.classList.remove("active"));activePane=pane;if(pane){pane.classList.add("active");syncQuickNaumburgTarget(Number(pane.dataset.index)||0);}}function capturePositions(){state.positions=[...document.querySelectorAll(".pane")].map(p=>({left:p.style.left,top:p.style.top,width:p.style.width,height:p.style.height}));save();}function applySavedPositions(){if(!Array.isArray(state.positions)||!state.positions.length)return false;const panes=[...document.querySelectorAll(".pane")];panes.forEach((p,i)=>{const pos=state.positions[i];if(pos)Object.assign(p.style,pos)});return true;} function render(){wall.innerHTML="";ytPlayers.clear();videoPlayers.clear();for(let i=0;i<state.count;i++)wall.appendChild(createPane(i));renderSources();profileSelect.value=activeProfile;countSelect.value=String(state.count);updateQuickNaumburgTargets();if(!applySavedPositions())applyLayout(false);updateMuteAllButton();updateViewStatus();save();}
+    function renderSources(){
+      sourcesEl.innerHTML="";
+      const datalistId="channelPresetList";
+      const datalist=document.createElement("datalist");
+      datalist.id=datalistId;
+      datalist.innerHTML=CHANNEL_PRESETS.map(ch=>`<option value="${esc(ch.title)}">${esc(ch.url)}</option>`).join("");
+      sourcesEl.appendChild(datalist);
+      for(let i=0;i<state.count;i++){
+        if(!state.sources[i])state.sources[i]={title:`SOURCE ${i+1}`,type:"auto",url:"",volume:70,muted:true};
+        const s=state.sources[i];
+        const currentType=detectType(s);
+        const row=document.createElement("div");
+        row.className="source";
+        row.innerHTML=`
+          <div class="source-top">
+            <div class="source-title">
+              <span>${i+1}</span>
+              <div><strong class="sourceName">${esc(s.title||("Monitor "+(i+1)))}</strong><small class="sourceKind">${esc(typeLabel(currentType))}</small></div>
+            </div>
+            <div class="source-actions"><button class="mini load">Laden</button><button class="mini open">Öffnen</button></div>
+          </div>
+          <div class="source-fields">
+            <input class="input titleInput" placeholder="Titel" value="${esc(s.title||"")}">
+            <input class="input urlInput" placeholder="URL, YouTube-ID oder .m3u8" value="${esc(s.url||"")}">
+          </div>
+          <details class="source-extra">
+            <summary>Optionen</summary>
+            <div class="channel-row"><input class="input channelInput" list="${datalistId}" placeholder="Sender suchen, z.B. BLK TV, Burgenlandkreis, ARD" value=""><button class="mini useChannel">Sender</button></div>
+            <div class="hint">Sender übernimmt Titel, Stream-Link und Typ.</div>
+            <label class="field-label">Typ
+              <select class="type-select typeInput"><option value="auto"${(s.type||"auto")==="auto"?" selected":""}>Auto erkennen</option><option value="iframe"${s.type==="iframe"?" selected":""}>iFrame / Website</option><option value="login"${s.type==="login"?" selected":""}>Login-Website</option><option value="edpweb"${s.type==="edpweb"?" selected":""}>EDPweb</option><option value="local"${s.type==="local"?" selected":""}>Lokaler IPv4-Dienst</option><option value="youtube"${s.type==="youtube"?" selected":""}>YouTube ID / URL</option><option value="youtube-live"${s.type==="youtube-live"?" selected":""}>YouTube Live-Kanal</option><option value="hls"${s.type==="hls"?" selected":""}>HLS / m3u8 Stream</option><option value="image"${s.type==="image"?" selected":""}>Bild-Webcam</option></select>
+            </label>
+            <div class="audio-row"><span>Vol</span><input class="volInput" type="range" min="0" max="100" value="${Number(s.volume??70)}"><button class="mini muteBtn">${isEffectivelyMuted(i)?"Unmute":"Mute"}</button><button class="mini soloBtn">${state.soloIndex===i?"Solo aus":"Solo"}</button></div>
+            <div class="source-actions extra"><button class="mini loginOpen">Login</button><button class="mini clear">Leeren</button></div>
+          </details>`;
+        const title=row.querySelector(".titleInput"),type=row.querySelector(".typeInput"),url=row.querySelector(".urlInput"),vol=row.querySelector(".volInput"),channel=row.querySelector(".channelInput"),nameEl=row.querySelector(".sourceName"),kindEl=row.querySelector(".sourceKind");
+        title.oninput=()=>{state.sources[i].title=title.value;if(nameEl)nameEl.textContent=title.value||("Monitor "+(i+1));updatePane(i);updateQuickNaumburgTargets(i);save()};
+        type.onchange=()=>{state.sources[i].type=type.value;if(kindEl)kindEl.textContent=typeLabel(detectType(state.sources[i]));updatePane(i);save()};
+        url.oninput=()=>{state.sources[i].url=url.value;save()};
+        vol.oninput=()=>{state.sources[i].volume=Number(vol.value);applyAudioToIndex(i);save()};
+        channel.onchange=()=>applyChannelToSource(i,channel.value);
+        row.querySelector(".useChannel").onclick=()=>applyChannelToSource(i,channel.value);
+        row.querySelector(".muteBtn").onclick=()=>toggleMute(i);
+        row.querySelector(".soloBtn").onclick=()=>toggleSolo(i);
+        row.querySelector(".load").onclick=()=>{state.sources[i].url=url.value;state.sources[i].type=type.value;updatePane(i);save()};
+        row.querySelector(".loginOpen").onclick=()=>openSourceUrl(i,true);
+        row.querySelector(".open").onclick=()=>openSourceUrl(i,false);
+        row.querySelector(".clear").onclick=()=>{state.sources[i].url="";url.value="";updatePane(i);save()};
+        sourcesEl.appendChild(row);
+      }
+      updateQuickNaumburgTargets();
+    }
+    function applyChannelToSource(index,query){const ch=findChannel(query);if(!ch)return;applyPresetToSource(index,{...ch,url:String(ch.url||"").replace(/^http:\/\//i,"https://")},{muted:false});}
+    function updatePane(i){const old=wall.querySelector(`.pane[data-index="${i}"]`);if(!old)return;const pos={left:old.style.left,top:old.style.top,width:old.style.width,height:old.style.height};const fresh=createPane(i);Object.assign(fresh.style,pos);old.replaceWith(fresh);}
+    function applyLayout(animated=true){const panes=[...document.querySelectorAll(".pane")],W=wall.clientWidth,H=wall.clientHeight,gap=10,preset=presetSelect.value;const set=(p,x,y,w,h)=>{if(animated)p.style.transition="left .18s ease,top .18s ease,width .18s ease,height .18s ease";p.style.left=Math.round(x)+"px";p.style.top=Math.round(y)+"px";p.style.width=Math.round(w)+"px";p.style.height=Math.round(h)+"px";if(animated)setTimeout(()=>p.style.transition="",220)};if(preset==="program"&&panes.length>=2){const mainW=W*.62;set(panes[0],gap,gap,mainW-gap*1.5,H-gap*2);const rest=panes.slice(1),rh=(H-gap*(rest.length+1))/rest.length;rest.forEach((p,i)=>set(p,mainW+gap/2,gap+i*(rh+gap),W-mainW-gap*1.5,rh));return}if(preset==="wide"&&panes.length>=3){const topH=H*.55;set(panes[0],gap,gap,W-gap*2,topH-gap*1.5);const rest=panes.slice(1),cw=(W-gap*(rest.length+1))/rest.length;rest.forEach((p,i)=>set(p,gap+i*(cw+gap),topH+gap/2,cw,H-topH-gap*1.5));return}const cols=preset==="stack"?(state.count<=4?2:4):(state.count===2?2:state.count===6?3:state.count===8?4:2);const rows=Math.ceil(state.count/cols);panes.forEach((p,i)=>{const col=i%cols,row=Math.floor(i/cols),cw=(W-gap*(cols+1))/cols,rh=(H-gap*(rows+1))/rows;set(p,gap+col*(cw+gap),gap+row*(rh+gap),cw,rh)});}
+    function enableDrag(pane){const head=pane.querySelector(".head");let sx,sy,sl,st;head.addEventListener("pointerdown",e=>{if(e.target.closest("button"))return;setActive(pane);pane.setPointerCapture(e.pointerId);sx=e.clientX;sy=e.clientY;sl=pane.offsetLeft;st=pane.offsetTop;const move=ev=>{pane.style.left=clamp(sl+ev.clientX-sx,0,wall.clientWidth-pane.offsetWidth)+"px";pane.style.top=clamp(st+ev.clientY-sy,0,wall.clientHeight-pane.offsetHeight)+"px"};const up=ev=>{pane.releasePointerCapture(ev.pointerId);pane.removeEventListener("pointermove",move);pane.removeEventListener("pointerup",up);capturePositions()};pane.addEventListener("pointermove",move);pane.addEventListener("pointerup",up);});}
+    function enableResize(pane){const h=pane.querySelector(".resize");let sx,sy,sw,sh;h.addEventListener("pointerdown",e=>{e.stopPropagation();setActive(pane);pane.setPointerCapture(e.pointerId);sx=e.clientX;sy=e.clientY;sw=pane.offsetWidth;sh=pane.offsetHeight;const move=ev=>{pane.style.width=clamp(sw+ev.clientX-sx,260,wall.clientWidth-pane.offsetLeft)+"px";pane.style.height=clamp(sh+ev.clientY-sy,180,wall.clientHeight-pane.offsetTop)+"px"};const up=ev=>{pane.releasePointerCapture(ev.pointerId);pane.removeEventListener("pointermove",move);pane.removeEventListener("pointerup",up);capturePositions()};pane.addEventListener("pointermove",move);pane.addEventListener("pointerup",up);});}
+    function clamp(n,min,max){return Math.max(min,Math.min(max,n))}
+    function activateProfile(profile,reset=true){save();activeProfile=PROFILE_PRESETS[profile]?profile:DEFAULT_PROFILE;localStorage.setItem(STORAGE_PREFIX+"activeProfile",activeProfile);state=reset?profileDefault(activeProfile):loadState();migrateBlockedSources();presetSelect.value=reset?((PROFILE_PRESETS[activeProfile]||PROFILE_PRESETS.eld).layout||DEFAULT_PRESET):profileLayout();if(reset)localStorage.setItem(scopedKey("preset"),presetSelect.value);deviceViewActive=false;render();setQuickStatus(`${PROFILE_PRESETS[activeProfile]?.label||activeProfile} Vorlage geladen.`);}
+    profileSelect.value=activeProfile;
+    countSelect.onchange=()=>{state.count=Number(countSelect.value);state.positions=null;render()};
+    presetSelect.value=deviceViewActive&&bootDeviceView?.preset?bootDeviceView.preset:profileLayout();
+    presetSelect.onchange=()=>{state.positions=null;localStorage.setItem(scopedKey("preset"),presetSelect.value);applyLayout(true);capturePositions();updateViewStatus()};
+    document.getElementById("saveDeviceViewBtn").onclick=saveDeviceView;
+    document.getElementById("saveDeviceViewTop").onclick=saveDeviceView;
+    document.getElementById("loadDeviceViewBtn").onclick=loadDeviceView;
+    document.getElementById("clearDeviceViewBtn").onclick=clearDeviceView;
+    document.getElementById("loadTemplateBtn").onclick=()=>activateProfile(profileSelect.value,true);
+    quickNaumburgTarget.onchange=loadNaumburgIntoSelectedTarget;
+    document.getElementById("quickNaumburg").onclick=()=>{if(!quickNaumburgTarget.closest(".quick-target")?.classList.contains("choosing")||!quickNaumburgTarget.value){showQuickNaumburgTargets();return;}loadNaumburgIntoSelectedTarget();};
+    document.getElementById("quickRefreshEmbed").onclick=refreshActiveEmbed;
+    document.getElementById("quickNewsHls").onclick=()=>activateProfile("news",true);
+    document.getElementById("webcamSearchBtn").onclick=performWebcamSearch;
+    document.getElementById("webcamUseNaumburgBtn").onclick=()=>{if(webcamSearchInput)webcamSearchInput.value="Naumburg";performWebcamSearch();};
+    document.getElementById("webcamWorldcamBtn").onclick=openWorldCamForSearch;
+    webcamSearchInput?.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();performWebcamSearch();}});
+    document.getElementById("channelSearchBtn").onclick=()=>renderChannelCatalog(channelSearchInput?.value||"");
+    channelSearchInput?.addEventListener("input",()=>renderChannelCatalog(channelSearchInput.value));
+    channelSearchInput?.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();renderChannelCatalog(channelSearchInput.value);}});
+    document.getElementById("fullscreenBtn").onclick=async()=>{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()};
+    window.addEventListener("resize",()=>applyLayout(false));
+    updateLocalModeUi();render();initCatalogUi();startBurgenlandkreisLiveWatch();
+  </script>
+    <script src="../../../feedback-widget.js" defer></script>
+</body>
+</html>
