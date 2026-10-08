@@ -27,6 +27,28 @@
       const localSource = new URL("../datenflix007.github.io/src/projekte.html", location.href).href;
       const productionSource = "https://datenflix007.github.io/src/projekte.html";
       const sources = location.hostname === "datenflix007.github.io" ? [productionSource] : [localSource, productionSource];
+      const removedWorksheetTitles = new Set([
+        "Der Jenaer Wald und wir",
+        "Klima-Labor: Nachhaltige Stadtentwicklung",
+      ]);
+
+      const createMindmapCard = () => {
+        const card = document.createElement("article");
+        card.className = "card project";
+        card.innerHTML = `
+          <h3>Mindmap</h3>
+          <div role="img" aria-label="Vorschau einer vernetzten Mindmap" style="width:100%; aspect-ratio:16/9; display:grid; place-items:center; margin:12px 0; border-radius:12px; overflow:hidden; background:radial-gradient(circle at 50% 50%, rgba(98,224,192,.22), transparent 34%), linear-gradient(135deg, #0b2530, #15213d); border:1px solid #62e0c0;">
+            <svg viewBox="0 0 320 180" width="100%" height="100%" aria-hidden="true">
+              <g stroke="#62e0c0" stroke-width="3" opacity=".82"><path d="M160 90 76 42M160 90 66 132M160 90 254 42M160 90 264 132" /></g>
+              <g fill="#0b2530" stroke="#62e0c0" stroke-width="3"><circle cx="160" cy="90" r="29" fill="#62e0c0" /><circle cx="76" cy="42" r="18" /><circle cx="66" cy="132" r="18" /><circle cx="254" cy="42" r="18" /><circle cx="264" cy="132" r="18" /></g>
+              <text x="160" y="96" text-anchor="middle" fill="#0b2530" font-family="system-ui, sans-serif" font-size="17" font-weight="800">Ideen</text>
+            </svg>
+          </div>
+          <p class="muted">Kollaboratives Arbeitsmodul</p>
+          <p class="muted">Gemeinsam Ideen sammeln: Gruppen arbeiten an Mindmaps, die Referentenansicht bündelt und exportiert die Ergebnisse.<br><br /><a style="color:#4FC3F7; font-weight:600;" href="https://datenflix007.github.io/mindmap/" target="_blank" rel="noopener">Online nutzen</a></p>
+          <div><span class="tag">Mindmap</span><span class="tag">Kollaboration</span><span class="tag">Bildung</span></div>`;
+        return card;
+      };
       try {
         let sourceText;
         let sourceUrl;
@@ -42,9 +64,14 @@
         if (!sourceText) throw new Error("Katalogquelle nicht erreichbar");
         const documentFromSource = new DOMParser().parseFromString(sourceText, "text/html");
         const sourceDetails = [...documentFromSource.querySelectorAll("details")].find((element) => element.querySelector("summary")?.textContent.trim() === category);
-        const cards = sourceDetails ? [...sourceDetails.querySelectorAll(".grid > .card.project")] : [];
+        const cards = sourceDetails
+          ? [...sourceDetails.querySelectorAll(".grid > .card.project")].filter(
+              (card) => !removedWorksheetTitles.has(card.querySelector("h3")?.textContent.trim()),
+            )
+          : [];
         if (!cards.length) throw new Error("Keine Tool-Karten gefunden");
         const fragment = document.createDocumentFragment();
+        fragment.append(createMindmapCard());
         cards.forEach((sourceCard) => {
           const card = sourceCard.cloneNode(true);
           card.querySelectorAll("img[src], a[href]").forEach((element) => {
