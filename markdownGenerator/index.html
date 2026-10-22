@@ -141,6 +141,25 @@
             color: var(--text-1);
             margin-left: auto
         }
+
+        .export-note {
+            margin: -2px 0 2px;
+            color: var(--text-1);
+            font-size: 12px;
+            line-height: 1.4
+        }
+
+        .export-status {
+            min-height: 18px;
+            margin: 2px 0 0;
+            color: #a7f3d0;
+            font-size: 12px;
+            line-height: 1.35
+        }
+
+        .export-status.is-error {
+            color: #fda4af
+        }
         
         .card {
             background: linear-gradient(180deg, rgba(255, 255, 255, .04), rgba(255, 255, 255, .02));
@@ -476,6 +495,13 @@
                 <button class="btn" data-action="alert-warning">Warnung <small>[!WARNING]</small></button>
                 <button class="btn" data-action="alert-caution">Vorsicht <small>[!CAUTION]</small></button>
                 <button class="btn" data-action="outline">Gliederung</button>
+                <h2>Export für Kommiliton:innen</h2>
+                <p class="export-note">Teile deine Vorlesungsnotizen als vollständige HTML-Datei oder als PDF – jeweils im hellen oder dunklen Leselayout.</p>
+                <button class="btn" data-export="html" data-theme="light">HTML herunterladen <small>hell</small></button>
+                <button class="btn" data-export="html" data-theme="dark">HTML herunterladen <small>dunkel</small></button>
+                <button class="btn" data-export="pdf" data-theme="light">PDF herunterladen <small>hell</small></button>
+                <button class="btn" data-export="pdf" data-theme="dark">PDF herunterladen <small>dunkel</small></button>
+                <p id="exportStatus" class="export-status" role="status" aria-live="polite"></p>
             </aside>
 
             <section class="card">
@@ -1347,6 +1373,187 @@
             a.download = 'README.md';
             a.click();
             URL.revokeObjectURL(url);
+        });
+
+        const exportStatus = document.getElementById('exportStatus');
+
+        function setExportStatus(message, isError = false) {
+            exportStatus.textContent = message;
+            exportStatus.classList.toggle('is-error', isError);
+        }
+
+        function getExportTitle() {
+            const heading = preview.querySelector('h1')?.textContent?.trim();
+            return heading || 'Vorlesungsnotizen';
+        }
+
+        function getExportFilename(extension, theme) {
+            const stem = getExportTitle()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/[^a-zA-Z0-9]+/g, '-')
+                .replace(/^-+|-+$/g, '')
+                .toLowerCase() || 'vorlesungsnotizen';
+            const layout = theme === 'dark' ? 'dunkel' : 'hell';
+            return `${stem}-${layout}.${extension}`;
+        }
+
+        function downloadBlob(blob, filename) {
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.append(link);
+            link.click();
+            link.remove();
+            window.setTimeout(() => URL.revokeObjectURL(url), 0);
+        }
+
+        function getExportCss(theme, scoped = false) {
+            const isDark = theme === 'dark';
+            const root = scoped ? '.export-document' : 'body';
+            const prefix = scoped ? '.export-document ' : '';
+            const all = scoped ? '.export-document, .export-document *' : '*';
+            const colors = isDark ? {
+                background: '#0b1020',
+                surface: '#11182d',
+                text: '#e7ecff',
+                muted: '#a9b1d6',
+                border: '#36405f',
+                accent: '#8ab4ff',
+                code: '#18213d',
+                table: '#151f3b'
+            } : {
+                background: '#ffffff',
+                surface: '#f8fafc',
+                text: '#172033',
+                muted: '#526072',
+                border: '#cbd5e1',
+                accent: '#245ec7',
+                code: '#eef2f7',
+                table: '#eef5ff'
+            };
+
+            return `
+                ${root} { color-scheme: ${isDark ? 'dark' : 'light'}; margin: 0; background: ${colors.background}; color: ${colors.text}; font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; }
+                ${all} { box-sizing: border-box; }
+                .export-document { max-width: 920px; margin: 0 auto; padding: 48px 56px 64px; }
+                .export-meta { margin: 0 0 32px; padding-bottom: 16px; border-bottom: 1px solid ${colors.border}; color: ${colors.muted}; font-size: 13px; }
+                ${prefix}h1, ${prefix}h2, ${prefix}h3, ${prefix}h4, ${prefix}h5, ${prefix}h6 { color: ${colors.text}; line-height: 1.22; margin: 1.6em 0 .55em; page-break-after: avoid; break-after: avoid; }
+                ${prefix}h1 { font-size: 2.1rem; margin-top: 0; } ${prefix}h2 { font-size: 1.55rem; } ${prefix}h3 { font-size: 1.22rem; }
+                ${prefix}p { margin: 0 0 1em; } ${prefix}a { color: ${colors.accent}; text-decoration: underline; text-underline-offset: 2px; }
+                ${prefix}img { display: block; max-width: 100%; height: auto; margin: 1em 0; border-radius: 8px; }
+                ${prefix}ul, ${prefix}ol { padding-left: 1.5em; } ${prefix}li { margin: .3em 0; }
+                ${prefix}blockquote { margin: 1.2em 0; padding: .2em 1em; border-left: 4px solid ${colors.accent}; color: ${colors.muted}; }
+                ${prefix}pre { overflow: auto; padding: 14px; border: 1px solid ${colors.border}; border-radius: 8px; background: ${colors.code}; page-break-inside: avoid; break-inside: avoid; }
+                ${prefix}code { padding: .1em .32em; border-radius: 4px; background: ${colors.code}; font: .9em ui-monospace, SFMono-Regular, Consolas, monospace; }
+                ${prefix}pre code { padding: 0; background: transparent; }
+                ${prefix}table { width: 100%; border-collapse: collapse; margin: 1.2em 0; } ${prefix}th, ${prefix}td { border: 1px solid ${colors.border}; padding: 8px 10px; text-align: left; vertical-align: top; } ${prefix}th { background: ${colors.table}; }
+                ${prefix}.gh-alert { margin: 1em 0; padding: 12px 14px; border-left: 4px solid ${colors.accent}; border-radius: 7px; background: ${colors.surface}; } ${prefix}.gh-alert-title { margin: 0 0 .3em; font-weight: 700; }
+                ${prefix}.gh-alert-tip { border-left-color: #16a34a; } ${prefix}.gh-alert-important { border-left-color: #8b5cf6; } ${prefix}.gh-alert-warning { border-left-color: #d97706; } ${prefix}.gh-alert-caution { border-left-color: #e11d48; }
+                ${prefix}.footnotes { margin-top: 2.5em; padding-top: 1em; border-top: 1px solid ${colors.border}; color: ${colors.muted}; font-size: .9em; }
+                ${prefix}input[type="checkbox"] { accent-color: ${colors.accent}; }
+                @media print { ${root} { background: ${colors.background}; } .export-document { max-width: none; padding: 12mm; } ${prefix}a { color: inherit; } }
+            `;
+        }
+
+        function createExportMarkup(theme) {
+            const title = getExportTitle();
+            return `<!doctype html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>${escapeHtml(title)}</title>
+    <style>${getExportCss(theme)}</style>
+</head>
+<body>
+    <main class="export-document">
+        <p class="export-meta">Vorlesungsnotizen · exportiert am ${new Date().toLocaleDateString('de-DE')}</p>
+        ${preview.innerHTML}
+    </main>
+</body>
+</html>`;
+        }
+
+        function exportHtml(theme) {
+            const blob = new Blob([createExportMarkup(theme)], { type: 'text/html;charset=utf-8' });
+            downloadBlob(blob, getExportFilename('html', theme));
+            setExportStatus(`HTML im ${theme === 'dark' ? 'dunklen' : 'hellen'} Layout heruntergeladen.`);
+        }
+
+        function waitForExportImages(root) {
+            return Promise.all([...root.querySelectorAll('img')].map(image => {
+                if (image.complete) return Promise.resolve();
+                return new Promise(resolve => {
+                    image.addEventListener('load', resolve, { once: true });
+                    image.addEventListener('error', resolve, { once: true });
+                });
+            }));
+        }
+
+        async function exportPdf(theme) {
+            if (!window.html2canvas || !window.jspdf?.jsPDF) {
+                setExportStatus('Der PDF-Export konnte nicht geladen werden. Bitte versuchen Sie es mit der HTML-Datei.', true);
+                return;
+            }
+
+            setExportStatus('PDF wird erstellt …');
+            const container = document.createElement('main');
+            container.className = 'export-document';
+            container.setAttribute('aria-hidden', 'true');
+            container.style.cssText = 'position:fixed; left:-12000px; top:0; width:920px; pointer-events:none;';
+            container.innerHTML = `<p class="export-meta">Vorlesungsnotizen · exportiert am ${new Date().toLocaleDateString('de-DE')}</p>${preview.innerHTML}`;
+
+            const style = document.createElement('style');
+            style.textContent = getExportCss(theme, true);
+            document.head.append(style);
+            document.body.append(container);
+
+            try {
+                await waitForExportImages(container);
+                const canvas = await window.html2canvas(container, {
+                    backgroundColor: theme === 'dark' ? '#0b1020' : '#ffffff',
+                    scale: 1.5,
+                    useCORS: true,
+                    logging: false
+                });
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4', compress: true });
+                const margin = 10;
+                const pageWidth = 210 - margin * 2;
+                const pageHeight = 297 - margin * 2;
+                const pixelsPerMillimeter = canvas.width / pageWidth;
+                const pagePixels = Math.floor(pageHeight * pixelsPerMillimeter);
+                const pageCanvas = document.createElement('canvas');
+                pageCanvas.width = canvas.width;
+                const context = pageCanvas.getContext('2d');
+
+                for (let offset = 0, page = 0; offset < canvas.height; offset += pagePixels, page++) {
+                    const sliceHeight = Math.min(pagePixels, canvas.height - offset);
+                    pageCanvas.height = sliceHeight;
+                    context.drawImage(canvas, 0, offset, canvas.width, sliceHeight, 0, 0, canvas.width, sliceHeight);
+                    if (page > 0) pdf.addPage();
+                    pdf.addImage(pageCanvas.toDataURL('image/png'), 'PNG', margin, margin, pageWidth, sliceHeight / pixelsPerMillimeter, undefined, 'FAST');
+                }
+
+                pdf.save(getExportFilename('pdf', theme));
+                setExportStatus(`PDF im ${theme === 'dark' ? 'dunklen' : 'hellen'} Layout heruntergeladen.`);
+            } catch (error) {
+                console.error('PDF export failed:', error);
+                setExportStatus('PDF konnte nicht erstellt werden. Bitte probieren Sie den HTML-Export.', true);
+            } finally {
+                container.remove();
+                style.remove();
+            }
+        }
+
+        document.querySelectorAll('[data-export]').forEach(button => {
+            button.addEventListener('click', () => {
+                const { export: format, theme } = button.dataset;
+                if (format === 'html') exportHtml(theme);
+                if (format === 'pdf') exportPdf(theme);
+            });
         });
 
         const today = new Date();
