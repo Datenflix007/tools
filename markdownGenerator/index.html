@@ -149,6 +149,29 @@
             line-height: 1.4
         }
 
+        .export-title-label {
+            margin-top: 4px;
+            color: var(--text-1);
+            font-size: 12px;
+            font-weight: 600
+        }
+
+        .export-title-input {
+            width: 100%;
+            padding: 9px 10px;
+            border: 1px solid rgba(255, 255, 255, .14);
+            border-radius: 10px;
+            outline: none;
+            color: var(--text-0);
+            background: rgba(255, 255, 255, .035);
+            font: inherit
+        }
+
+        .export-title-input:focus {
+            border-color: rgba(122, 162, 247, .8);
+            box-shadow: 0 0 0 3px rgba(122, 162, 247, .16)
+        }
+
         .export-status {
             min-height: 18px;
             margin: 2px 0 0;
@@ -497,6 +520,8 @@
                 <button class="btn" data-action="outline">Gliederung</button>
                 <h2>Export für Kommiliton:innen</h2>
                 <p class="export-note">Teile deine Vorlesungsnotizen als vollständige HTML-Datei oder als PDF – jeweils im hellen oder dunklen Leselayout.</p>
+                <label class="export-title-label" for="exportTitle">Notizentitel im Export</label>
+                <input id="exportTitle" class="export-title-input" type="text" value="Vorlesungsnotizen" placeholder="z. B. Algorithmen I – VL 3" maxlength="120">
                 <button class="btn" data-export="html" data-theme="light">HTML herunterladen <small>hell</small></button>
                 <button class="btn" data-export="html" data-theme="dark">HTML herunterladen <small>dunkel</small></button>
                 <button class="btn" data-export="pdf" data-theme="light">PDF herunterladen <small>hell</small></button>
@@ -1376,6 +1401,7 @@
         });
 
         const exportStatus = document.getElementById('exportStatus');
+        const exportTitleInput = document.getElementById('exportTitle');
 
         function setExportStatus(message, isError = false) {
             exportStatus.textContent = message;
@@ -1383,6 +1409,8 @@
         }
 
         function getExportTitle() {
+            const customTitle = exportTitleInput.value.trim();
+            if (customTitle) return customTitle;
             const heading = preview.querySelector('h1')?.textContent?.trim();
             return heading || 'Vorlesungsnotizen';
         }
@@ -1469,7 +1497,7 @@
 </head>
 <body>
     <main class="export-document">
-        <p class="export-meta">Vorlesungsnotizen · exportiert am ${new Date().toLocaleDateString('de-DE')}</p>
+        <p class="export-meta">${escapeHtml(title)} · exportiert am ${new Date().toLocaleDateString('de-DE')}</p>
         ${preview.innerHTML}
     </main>
 </body>
@@ -1503,7 +1531,7 @@
             container.className = 'export-document';
             container.setAttribute('aria-hidden', 'true');
             container.style.cssText = 'position:fixed; left:-12000px; top:0; width:920px; pointer-events:none;';
-            container.innerHTML = `<p class="export-meta">Vorlesungsnotizen · exportiert am ${new Date().toLocaleDateString('de-DE')}</p>${preview.innerHTML}`;
+            container.innerHTML = `<p class="export-meta">${escapeHtml(getExportTitle())} · exportiert am ${new Date().toLocaleDateString('de-DE')}</p>${preview.innerHTML}`;
 
             const style = document.createElement('style');
             style.textContent = getExportCss(theme, true);
